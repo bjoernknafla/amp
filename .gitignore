@@ -1,0 +1,45 @@
+#Ignore Mac OS X .DS_Store files
+.DS_Store
+
+#Ignore user-specific settings
+*.mode1v3
+*.mode2v3
+*.pbxuser
+*.perspective
+*.perspectivev3
+
+#Ignore temp nibs and swap files
+*.swp
+*~.nib
+
+#TextMate build errors
+*.tm_build_errors
+
+#Ignore the build directory
+build/
+
+#Ignore Visual Studio
+*.suo
+*.user
+Debug/
+Release/
+bin/
+obj/
+*.ncb
+*.obj
+*.VisualState.xml
+TestResults.xml
+*.exe
+*.dll
+*.pdb
+*.cache
+
+#Ignore Windows
+Thumbs.db
+
+#Compile intermediates
+*.o
+*.d
+
+#Ignore Doxygen generated html documentation
+doc/html/
