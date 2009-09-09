@@ -1,0 +1,14 @@
+
+
+//
+//  UnitTest++.xcconfig
+//  Hive project
+//
+//  Created by Björn Knafla on 15.04.09.
+//  Copyright 2009 Bjoern Knafla Parallelization + AI + Gamedev Consulting. All rights reserved.
+//
+
+    
+UNITTESTCPP_ROOT_PATH = /Users/bknafla/Projects/ForeignProjects/unittest-cpp/UnitTest++/
+UNITTESTCPP_HEADER_PATH = $(UNITTESTCPP_ROOT_PATH)/src
+UNITTESTCPP_LIBRARY_PATH = $(UNITTESTCPP_ROOT_PATH)    
