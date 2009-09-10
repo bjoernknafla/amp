@@ -33,13 +33,25 @@
 /**
  * @file
  *
- * Unit test runner.
+ * Main header file includes all raw amp headers. Raw headers are dependent
+ * on platform specific headers and therefore include them. Non-raw headers
+ * aren't platform dependent and don't include any platform-specific headers.
+ *
+ * See amp.h and README.markdown for more infos.
+ *
+ *
+ * TODO: @todo Add include for all non-raw amp headers.
  */
 
+#ifndef AMP_amp_raw_H
+#define AMP_amp_raw_H
 
-#include <UnitTest++.h>
+#include <amp/amp_stddef.h>
 
-int main(int, char* [])
-{
-    return UnitTest::RunAllTests();
-}
+#include <amp/amp_raw_mutex.h>
+#include <amp/amp_raw_semaphore.h>
+#include <amp/amp_raw_thread.h>
+#include <amp/amp_raw_thread_local_slot.h>
+
+
+#endif /* AMP_amp_raw_H */

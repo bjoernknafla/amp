@@ -6,6 +6,20 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		328DA0E410594F11003F0E1E /* Doxygen doc generation */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 328DA0E710594F30003F0E1E /* Build configuration list for PBXAggregateTarget "Doxygen doc generation" */;
+			buildPhases = (
+				328DA0E310594F11003F0E1E /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = "Doxygen doc generation";
+			productName = "Doxygen doc generation";
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		325928A31058711E00D5379D /* amp_raw_mutex_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 3259289B1058711E00D5379D /* amp_raw_mutex_pthreads.c */; };
 		325928A41058711E00D5379D /* amp_raw_semaphore_posix_1003_1b.c in Sources */ = {isa = PBXBuildFile; fileRef = 3259289D1058711E00D5379D /* amp_raw_semaphore_posix_1003_1b.c */; };
@@ -18,7 +32,6 @@
 		325928C3105875BB00D5379D /* amp_raw_semaphore_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928AA1058714000D5379D /* amp_raw_semaphore_test.cpp */; };
 		325928C4105875BC00D5379D /* amp_raw_mutex_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928AC1058714000D5379D /* amp_raw_mutex_test.cpp */; };
 		325928C5105875BF00D5379D /* amp_raw_mutex_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 3259289B1058711E00D5379D /* amp_raw_mutex_pthreads.c */; };
-		325928C6105875C000D5379D /* amp_raw_semaphore_posix_1003_1b.c in Sources */ = {isa = PBXBuildFile; fileRef = 3259289D1058711E00D5379D /* amp_raw_semaphore_posix_1003_1b.c */; };
 		325928C7105875C100D5379D /* amp_raw_semaphore_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 3259289E1058711E00D5379D /* amp_raw_semaphore_pthreads.c */; };
 		325928C8105875C100D5379D /* amp_raw_thread_local_slot_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A11058711E00D5379D /* amp_raw_thread_local_slot_pthreads.c */; };
 		325928C9105875C200D5379D /* amp_raw_thread_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A21058711E00D5379D /* amp_raw_thread_pthreads.c */; };
@@ -61,6 +74,12 @@
 		325928AC1058714000D5379D /* amp_raw_mutex_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_raw_mutex_test.cpp; sourceTree = "<group>"; };
 		325928BB1058759300D5379D /* amp_unit_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = amp_unit_tests; sourceTree = BUILT_PRODUCTS_DIR; };
 		325928CC105875DB00D5379D /* libUnitTest++.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libUnitTest++.a"; path = "../../../../ForeignProjects/unittest-cpp/UnitTest++/libUnitTest++.a"; sourceTree = SOURCE_ROOT; };
+		328D7F0C105921BE003F0E1E /* amp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = amp.h; path = ../../../src/c/amp/amp.h; sourceTree = SOURCE_ROOT; };
+		328D7F1D105923CA003F0E1E /* amp_raw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = amp_raw.h; path = ../../../src/c/amp/amp_raw.h; sourceTree = SOURCE_ROOT; };
+		328D7F5D105948C9003F0E1E /* Doxyfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Doxyfile; sourceTree = "<group>"; };
+		328D7F5E105948C9003F0E1E /* special_doxygen_documentation.dox */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = special_doxygen_documentation.dox; sourceTree = "<group>"; };
+		328DA0EF10594F77003F0E1E /* how_to_publish_amp.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = how_to_publish_amp.txt; sourceTree = "<group>"; };
+		328DA0F81059512D003F0E1E /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; path = html; sourceTree = "<group>"; };
 		8DD76FB20486AB0100D96B5E /* amp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = amp; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6A0FF2C0290799A04C91782 /* amp.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = amp.1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -118,6 +137,7 @@
 		3259288B1058700600D5379D /* doc */ = {
 			isa = PBXGroup;
 			children = (
+				328DA0F81059512D003F0E1E /* html */,
 				3259288C1058700600D5379D /* doxygen */,
 				3259288D1058700600D5379D /* notes */,
 			);
@@ -128,6 +148,8 @@
 		3259288C1058700600D5379D /* doxygen */ = {
 			isa = PBXGroup;
 			children = (
+				328D7F5D105948C9003F0E1E /* Doxyfile */,
+				328D7F5E105948C9003F0E1E /* special_doxygen_documentation.dox */,
 			);
 			path = doxygen;
 			sourceTree = "<group>";
@@ -135,6 +157,7 @@
 		3259288D1058700600D5379D /* notes */ = {
 			isa = PBXGroup;
 			children = (
+				328DA0EF10594F77003F0E1E /* how_to_publish_amp.txt */,
 			);
 			path = notes;
 			sourceTree = "<group>";
@@ -168,10 +191,10 @@
 			isa = PBXGroup;
 			children = (
 				325928A81058713F00D5379D /* unit_tests_main.cpp */,
-				325928A91058714000D5379D /* amp_raw_thread_test.cpp */,
+				325928AC1058714000D5379D /* amp_raw_mutex_test.cpp */,
 				325928AA1058714000D5379D /* amp_raw_semaphore_test.cpp */,
 				325928AB1058714000D5379D /* amp_raw_thread_local_slot_test.cpp */,
-				325928AC1058714000D5379D /* amp_raw_mutex_test.cpp */,
+				325928A91058714000D5379D /* amp_raw_thread_test.cpp */,
 			);
 			name = test;
 			path = ../../../test;
@@ -180,6 +203,8 @@
 		325928B21058715A00D5379D /* C */ = {
 			isa = PBXGroup;
 			children = (
+				328D7F0C105921BE003F0E1E /* amp.h */,
+				328D7F1D105923CA003F0E1E /* amp_raw.h */,
 				325928991058711E00D5379D /* amp_stddef.h */,
 				3259289A1058711E00D5379D /* amp_raw_mutex.h */,
 				3259289B1058711E00D5379D /* amp_raw_mutex_pthreads.c */,
@@ -266,9 +291,26 @@
 			targets = (
 				8DD76FA90486AB0100D96B5E /* amp */,
 				325928BA1058759300D5379D /* amp_unit_tests */,
+				328DA0E410594F11003F0E1E /* Doxygen doc generation */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		328DA0E310594F11003F0E1E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here\n# Change to project root directory\ncd ${SRCROOT}/../../../\n# Run Doxygen from the project root to enable relative paths in the Doxyfile\ndoxygen doc/doxygen/Doxyfile\nexit 0";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		325928B81058759300D5379D /* Sources */ = {
@@ -281,7 +323,6 @@
 				325928C3105875BB00D5379D /* amp_raw_semaphore_test.cpp in Sources */,
 				325928C4105875BC00D5379D /* amp_raw_mutex_test.cpp in Sources */,
 				325928C5105875BF00D5379D /* amp_raw_mutex_pthreads.c in Sources */,
-				325928C6105875C000D5379D /* amp_raw_semaphore_posix_1003_1b.c in Sources */,
 				325928C7105875C100D5379D /* amp_raw_semaphore_pthreads.c in Sources */,
 				325928C8105875C100D5379D /* amp_raw_thread_local_slot_pthreads.c in Sources */,
 				325928C9105875C200D5379D /* amp_raw_thread_pthreads.c in Sources */,
@@ -376,6 +417,7 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = AMP_USE_PTHREADS;
 				HEADER_SEARCH_PATHS = (
 					"\"$(UNITTESTCPP_HEADER_PATH)\"",
 					"\"$(SRCROOT)/../../../src/c\"",
@@ -400,6 +442,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
+				GCC_PREPROCESSOR_DEFINITIONS = AMP_USE_PTHREADS;
 				HEADER_SEARCH_PATHS = (
 					"\"$(UNITTESTCPP_HEADER_PATH)\"",
 					"\"$(SRCROOT)/../../../src/c\"",
@@ -412,6 +455,27 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = amp_unit_tests;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		328DA0E510594F12003F0E1E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Doxygen doc generation";
+			};
+			name = Debug;
+		};
+		328DA0E610594F12003F0E1E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = "Doxygen doc generation";
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -442,6 +506,15 @@
 			buildConfigurations = (
 				325928BD1058759500D5379D /* Debug */,
 				325928BE1058759500D5379D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		328DA0E710594F30003F0E1E /* Build configuration list for PBXAggregateTarget "Doxygen doc generation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				328DA0E510594F12003F0E1E /* Debug */,
+				328DA0E610594F12003F0E1E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

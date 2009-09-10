@@ -1,0 +1,16 @@
+How to publish amp
+
+Adhere to the following steps when puglishing a new version of amp:
+1. Update the documentation (README.markdown, 
+   doc/doxygen/special_doxygen_documentation.txt) and the comments in the 
+   code (especially the readme-mirroring in amp.h).
+2. Update the version number in the Doxyfile and add new release notes to the
+   documentation (see above).
+3. Run all tests on all supported platforms. 
+   Only proceede if all tests run without problems (errors or warnings), 
+   otherwise clean-up the code and fix the problems.
+4. Commit the current version.
+5. Tag the current version based on the version number set in step 2.
+6. Push the changes to Github (git push --tag). Pushin a tag to Github
+   automatically generates downloadable archives.
+7. Share your happiness about the new version via Twitter or on the blog.

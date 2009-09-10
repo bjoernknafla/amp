@@ -33,13 +33,19 @@
 /**
  * @file
  *
- * Unit test runner.
+ * Main header file includes all non-raw amp headers.
+ *
+ * See README.markdown for more infos.
+ *
+ * TODO: @todo Add include for all non-raw amp headers.
  */
 
+#ifndef AMP_amp_H
+#define AMP_amp_H
 
-#include <UnitTest++.h>
 
-int main(int, char* [])
-{
-    return UnitTest::RunAllTests();
-}
+#include <amp/amp_stddef.h>
+
+
+
+#endif /* AMP_amp_H */
