@@ -4,7 +4,9 @@ amp - assemblies for parallelism
 *amp* is a collection of portable low-level *C* assemblies for parallelism and   
 threading, for example `amp_thread`, `amp_semaphore`, or `amp_mutex`. Use these  
 parallelism atoms to create higher-level parallel solutions by including  
-`amp/amp.h`.
+`amp/amp.h`. *amp* tries to be as minimal as possible to be easily portable 
+and usable in different projects so they don't have to write this low-level
+cross-platform wrappers again and again.
 
 All functions and types use the `amp_` prefix, while preprocessor symbols use  
 `AMP_`.  
@@ -15,16 +17,25 @@ shallow wrappers around the platforms thread functionality and include platform
 headers.  
 
 
-The code can be downloaded at: http://github.com/bjoernknafla/amp/
-Please file issues with the code at: http://github.com/bjoernknafla/amp/issues
+The code can be downloaded at: [http://github.com/bjoernknafla/amp/](http://github.com/bjoernknafla/amp/)  
+Please file issues with the code at: [http://github.com/bjoernknafla/amp/issues](http://github.com/bjoernknafla/amp/issues)  
+
+
+### Warning ###
+
+*amp* just started to aggregate in code - and it will change, transform, and
+grow before it is really usable.
 
 
 ### Author(s) and Contact ###
 
-Bjoern Knafla
-Bjoern Knafla Parallelization + AI + Gamedev Consulting
-amp@bjoernknafla.com
-www.bjoernknafla.com
+You have got questions, need to critisize me, or just want to say hello? I am 
+looking forward to hear from you!
+
+Bjoern Knafla  
+Bjoern Knafla Parallelization + AI + Gamedev Consulting  
+[amp@bjoernknafla.com](mailto:amp@bjoernknafla.com)  
+[www.bjoernknafla.com](http://www.bjoernknafla.com)  
 
 
 ### Copyright and License ###
@@ -35,7 +46,7 @@ package. This license is equal to the Simplified BSD License.
 
 *amp* was developed to parallelize the AiGameDev.com Sandbox and as a 
 foundation to experiment and research job pools for computer and video games.
-Joint ownership of the copyright belongs to AiGameDev.com.
+Joint ownership of the copyright belongs to [AiGameDev.com](http://AiGameDev.com).
 
 
 ### Building ###

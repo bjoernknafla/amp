@@ -5,7 +5,9 @@
  * @em amp is a collection of portable low-level C assemblies for parallelism and   
  * threading, for example @c amp_thread, @c amp_semaphore, or @c amp_mutex. Use 
  * these parallelism atoms to create higher-level parallel solutions by 
- * including @c amp/amp.h.
+ * including @c amp/amp.h. @em amp tries to be as minimal as possible to be 
+ * easily portable and usable in different projects so they don't have to write 
+ * this low-level cross-platform wrappers again and again.
  *
  * All functions and types use the @c amp_ prefix, while preprocessor symbols 
  * use @c AMP_.  
@@ -13,13 +15,16 @@
  * No platform specific headers and symbols are included by @c amp/amp.h. 
  * However you can access headers containing @c _raw_ in their file name. These 
  * are shallow wrappers around the platforms thread functionality and include 
- * platform headers.  
+ * platform headers. 
  *
  * The code can be found and downloaded at: http://github.com/bjoernknafla/amp <br>
  * Please file issues with the code at: http://github.com/bjoernknafla/amp/issues <br>
  *
  *
  * @section authors_and_contact Author(s) and Contact
+ *
+ * You have got questions, need to critisize me, or just want to say hello? I
+ * am looking forward to hear from you!
  *
  * Bjoern Knafla <br>
  * Bjoern Knafla Parallelization + AI + Gamedev Consulting <br>
