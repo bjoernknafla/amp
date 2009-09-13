@@ -33,6 +33,18 @@
 /**
  * @file
  *
+ * @attention Don't pass pointers to an invalid semaphore structure to any
+ *            of the functions. Don't pass non-initialized (or after 
+ *            initialization destroyed) semaphores to any function other than
+ *            to amp_raw_semaphore_init. Don't pass initialized semaphores
+ *            to amp_raw_semaphore_init.
+ *
+ * @attention ENOSYS might be returned by the functions if the POSIX 1003 1b 
+ *            backend is used and the system doesn't support semaphores. Use 
+ *            another backend while compiling, for example AMP_USE_WINTHREADS,
+ *            or AMP_USE_PTHREADS and don't define
+ *            AMP_USE_POSIX_1003_1b_SEMAPHORES.
+ *
  * TODO: @todo Add a state variable to amp_raw_semaphore_s to help 
  *             detecting use of an uninitialized instance.
  *
@@ -110,16 +122,64 @@ extern "C" {
     
     
     /**
-     * sem mustn't be NULL.
-     * init_count mustn't be negative and mustn't be greater than
-     * AMP_RAW_SEMAPHORE_COUNT_MAX.
+     * Initializes the semaphore pointed to by sem.
+     *
+     * @param init_count specifies the initial (non-negative and lesser or equal
+     *                   than AMP_RAW_SEMAPHORE_COUNT_MAX) semaphore counter 
+     *                   value.
+     *
+     * @return AMP_SUCCESS on successful initialization, otherwise:
+     *         EINVAL if the semaphore is invalid, the init_count is negative or
+     *         greater than AMP_RAW_SEMAPHORE_COUNT_MAX.
+     *         ENOMEM if memory is insufficient.
+     *         EAGAIN if other system resources are insufficient.
+     *         ENOSPC if the POSIX 1003 1b backend is used and the system lacks
+     *         resources.
+     *         ENOSYS if the POSIX 1003 1b backend is used and the system 
+     *         doesn't support semaphores. Use another backend while compiling,
+     *         for example AMP_USE_WINTHREADS, or AMP_USE_PTHREADS and don't 
+     *         define AMP_USE_POSIX_1003_1b_SEMAPHORES.
+     *         Other error codes might be returned to signal errors while
+     *         initializing, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it asserts that these programming errors don't happen.
+     *         EPERM if the process lacks privileges to initialize the 
+     *         semaphore.
+     *         EBUSY if the semaphore is already initialized.
+     *
+     * @attention sem mustn't be NULL.
+     *
+     * @attention Don't pass an initialized (and not finalized after 
+     *            initialization) semaphore to amp_raw_semaphore_init.
+     *
+     * @attention init_count mustn't be negative and mustn't be greater than
+     *            AMP_RAW_SEMAPHORE_COUNT_MAX.
+     *
+     * TODO: @todo See how many of the backend specific error codes are really
+     *             needed.
      */
     int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                                         amp_raw_semaphore_count_t init_count);
+                               amp_raw_semaphore_count_t init_count);
     
     /**
+     * Finalizes a semaphore and frees the resources it used.
      *
-     * sem mustn't be NULL.
+     * @return AMP_SUCCESS on successful finalization.
+     *         Error codes might be returned to signal errors while
+     *         finalization, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it asserts that these programming errors don't happen.
+     *         ENOSYS if the backend doesn't support semaphores.
+     *         EBUSY if threads block on the semaphore.
+     *         EINVAL if the semaphore isn't valied, e.g. not initialized.
+     *
+     * @attention sem mustn't be NULL.
+     *
+     * @attention Don't pass an uninitialized semaphore into 
+     *            amp_raw_semaphore_finalize.
+     *
+     * @attention Don't call on a blocked semaphore, otherwise behavior is 
+     *            undefined.
      */
     int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem);
     

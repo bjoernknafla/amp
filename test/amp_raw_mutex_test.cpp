@@ -40,6 +40,7 @@
 #include <UnitTest++.h>
 
 
+
 // Include EDEADLK
 #include <errno.h>
 
@@ -105,7 +106,11 @@ SUITE(amp_raw_mutex)
     }
     
     
-    
+    // The following test will trigger an assert if NDEBUG isn't defined
+    // and will result in undefined behavior if it is defined. Therefore
+    // it makes no sense to run the test at all as long as the documented
+    // behavior of amp_mutex_lock according to recursive locking doesn't change.
+#if 0
     TEST(check_recursive_locking_not_allowed)
     {
         struct amp_raw_mutex_s mutex;
@@ -127,7 +132,7 @@ SUITE(amp_raw_mutex)
                 CHECK_EQUAL(EDEADLK, rv);
                 
                 rv = amp_raw_mutex_trylock(&mutex);
-                CHECK((EDEADLK == rv) || (EBUSY == rv));
+                CHECK(EBUSY == rv);
                 
             }
             retval = amp_raw_mutex_unlock(&mutex);
@@ -139,6 +144,8 @@ SUITE(amp_raw_mutex)
         
         
     }
+#endif // 0
+    
     
     namespace 
     {
@@ -164,7 +171,6 @@ SUITE(amp_raw_mutex)
             if ((EBUSY == retval) || (EDEADLK == retval)) {
                 context->check_flag = CHECK_FLAG_SET;
             }
-            
         }
         
         
@@ -200,6 +206,11 @@ SUITE(amp_raw_mutex)
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
+    // The following test will trigger an assert if NDEBUG isn't defined
+    // and will result in undefined behavior if it is defined. Therefore
+    // it makes no sense to run the test at all as long as the documented
+    // behavior of amp_mutex_unlock doesn't change.
+#if 0
     namespace 
     {
         
@@ -208,23 +219,25 @@ SUITE(amp_raw_mutex)
             struct mutex_and_one_check_flag_s *context = 
             static_cast<struct mutex_and_one_check_flag_s*>(ctxt);
             
-            int retval = amp_raw_mutex_unlock(&context->mutex);
-            if (EPERM == retval) {
+            int retval = amp_raw_mutex_unlock(&(context->mutex));
+            if (EPERM == retval || AMP_SUCCESS != retval) {
                 context->check_flag = CHECK_FLAG_SET;
             }
+
         }
         
     } // anonymous namespace
+    
     
     TEST(wrong_thread_tries_to_unlock)
     {
         struct mutex_and_one_check_flag_s mutex_and_flag;
         mutex_and_flag.check_flag = CHECK_FLAG_UNSET;
         
-        int retval = amp_raw_mutex_init(&mutex_and_flag.mutex);
+        int retval = amp_raw_mutex_init(&(mutex_and_flag.mutex));
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_lock(&mutex_and_flag.mutex);
+        retval = amp_raw_mutex_lock(&(mutex_and_flag.mutex));
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -237,14 +250,14 @@ SUITE(amp_raw_mutex)
         
         CHECK_EQUAL(CHECK_FLAG_SET, mutex_and_flag.check_flag);
         
-        retval = amp_raw_mutex_unlock(&mutex_and_flag.mutex);
+        retval = amp_raw_mutex_unlock(&(mutex_and_flag.mutex));
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
-        retval = amp_raw_mutex_finalize(&mutex_and_flag.mutex);
+        retval = amp_raw_mutex_finalize(&(mutex_and_flag.mutex));
         CHECK_EQUAL(AMP_SUCCESS, retval);      
-    }
-    
+    } 
+#endif // 0
     
     namespace 
     {
@@ -263,7 +276,8 @@ SUITE(amp_raw_mutex)
         // its context and sets the check flag.
         void staggered_locking_thread_func(void *ctxt)
         {
-            struct staggered_data_s *context = static_cast<struct staggered_data_s*>(ctxt);
+            struct staggered_data_s *context = 
+                static_cast<struct staggered_data_s*>(ctxt);
             
             context->return_code = AMP_SUCCESS;
             
@@ -322,8 +336,8 @@ SUITE(amp_raw_mutex)
             thread_contexts[i].check_flag = CHECK_FLAG_UNSET;
             
             int const retv = amp_raw_thread_launch(&threads[i], 
-                                                             &thread_contexts[i], 
-                                                             staggered_locking_thread_func);
+                                                   &thread_contexts[i], 
+                                                   staggered_locking_thread_func);
             CHECK_EQUAL(AMP_SUCCESS, retv);
         }
         

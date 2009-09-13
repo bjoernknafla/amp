@@ -37,6 +37,12 @@
  *
  * See README.markdown for more infos.
  *
+ * @em amp is highly inspired and build after POSXI threads (Pthreads) - though
+ * only offers a tiny part of its or Windows thread functionality.
+ *
+ * Most @em amp functions return an return code while they might also set errno.
+ * Always check and rely on the returned error code and don't look at errno.
+ *
  * TODO: @todo Add include for all non-raw amp headers.
  */
 

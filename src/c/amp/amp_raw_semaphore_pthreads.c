@@ -61,12 +61,11 @@
 int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
                                      amp_raw_semaphore_count_t init_count)
 {
-    /* TODO: @todo only assert or only check for error and return error code? */
-    if (!(NULL != sem) ||
-        !((amp_raw_semaphore_count_t)0 <= init_count) ||
-        !(AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count)) {
+    assert(NULL != sem);
+    
+    if (((amp_raw_semaphore_count_t)0 >init_count) ||
+        (AMP_RAW_SEMAPHORE_COUNT_MAX < init_count)) {
         
-        assert(NULL != sem);
         assert((amp_raw_semaphore_count_t)0 <= init_count);
         assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count);
         

@@ -18,7 +18,7 @@ headers.
 
 
 The code can be downloaded at: [http://github.com/bjoernknafla/amp/](http://github.com/bjoernknafla/amp/)  
-Please file issues with the code at: [http://github.com/bjoernknafla/amp/issues](http://github.com/bjoernknafla/amp/issues)  
+Please file issues with the code at: [http://github.com/bjoernknafla/amp/issues/](http://github.com/bjoernknafla/amp/issues)  
 
 
 ### Warning ###

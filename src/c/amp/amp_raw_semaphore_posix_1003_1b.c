@@ -36,6 +36,8 @@
  *
  */
 
+#error Implementation is completely untested and haven't been compiled yet. Take care!
+
 
 #include "amp_raw_semaphore.h"
 

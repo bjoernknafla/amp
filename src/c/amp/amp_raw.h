@@ -39,6 +39,12 @@
  *
  * See amp.h and README.markdown for more infos.
  *
+ * @attention Don't use amp functions other than the init functions on a
+ *            non-initialized data structure.
+ * @attention Don't call any amp init function on an already initialized (and
+ *            non-finalized) data structure.
+ * @attention Never reyl on undefined behavior - as it can vary between versions
+ *            of @em amp and the used backend (Pthreads, Windows threads, etc.).
  *
  * TODO: @todo Add include for all non-raw amp headers.
  */

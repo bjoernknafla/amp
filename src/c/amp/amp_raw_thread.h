@@ -60,12 +60,16 @@ extern "C" {
 #endif
 
     
-    /// Type of the user function to run on the thread.
-    /// @param context user data passed into the function.
+    /**
+     * Type of the user function to run on the thread.
+     * @param context user data passed into the function.
+     */
     typedef void (*amp_raw_thread_func_t)(void *context);
     
-    /// Treat this type as opaque as its internals will change from version to
-    /// version!
+    /**
+     * Treat this type as opaque as its internals will change from version to
+     * version!
+     */
     struct amp_native_thread_s {
 #if defined(AMP_USE_PTHREADS)
         pthread_t thread;
@@ -78,8 +82,10 @@ extern "C" {
     };
     typedef struct amp_native_thread_s amp_native_thread_t;
     
-    /// Treat this type as opaque as its internals will change from version to
-    /// version!
+    /**
+     * Treat this type as opaque as its internals will change from version to
+     * version!
+     */
     struct amp_raw_thread_s {
         amp_raw_thread_func_t thread_func;
         void *thread_func_context;
@@ -91,29 +97,35 @@ extern "C" {
     typedef struct amp_raw_thread_s amp_raw_thread_t;
     
     
-    /// Calls platforms thread creation function that might call malloc 
-    /// internally and launches the thread.
-    ///
-    /// thread must be kept alive as long as the thread exectures - until
-    /// amp_raw_thread_join returned.
-    ///
-    /// Mental thread model: a thread is like a spaceship. After launch
-    /// it needs to explicitly land - otherwise it just crashes with undefined
-    /// behavior for the whole surrounding of the crash-site.
-    ///
-    /// Might call malloc internally to create platform internal thread 
-    /// representation.
-    ///
-    /// If fed with already launched native thread behavior is undefined.
+    /**
+     * Calls platforms thread creation function that might call malloc 
+     * internally and launches the thread.
+     *
+     * thread must be kept alive as long as the thread exectures - until
+     * amp_raw_thread_join returned.
+     *
+     * Mental thread model: a thread is like a spaceship. After launch
+     * it needs to explicitly land - otherwise it just crashes with undefined
+     * behavior for the whole surrounding of the crash-site.
+     *
+     * Might call malloc internally to create platform internal thread 
+     * representation.
+     *
+     * If fed with already launched native thread behavior is undefined.
+     *
+     * TODO: @todo Add restrict to the pointers and docuement it.
+     */
     int amp_raw_thread_launch(amp_raw_thread_t *thread, 
                                void *thread_func_context, 
                                amp_raw_thread_func_t thread_func);
     
-    /// Waits until the thread stops and frees its OS resources. 
-    ///
-    /// If thread hasn't been launched behavior is undefined.
-    ///
-    /// thread memory can be freed after successful join.
+    /**
+     * Waits until the thread stops and frees its OS resources. 
+     *
+     * If thread hasn't been launched behavior is undefined.
+     *
+     * thread memory can be freed after successful join.
+     */
     int amp_raw_thread_join(amp_raw_thread_t *thread);
     
     
