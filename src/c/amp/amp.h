@@ -44,6 +44,15 @@
  * Always check and rely on the returned error code and don't look at errno.
  *
  * TODO: @todo Add include for all non-raw amp headers.
+ *
+ * TODO: @todo Rename "Unexpected error" assert messages to 
+ *             "Non-standard-conform error." to show what these asserts check.
+ *
+ * TODO: @todo Instead of using assert use an own assertion-macro that allows
+ *             abortion only in debug mode or, if a compile time preprocessor
+ *             symbol is set, also aborting in non-debug mode, to clearly point
+ *             to problem areas in the code instead of hiding them behind
+ *             undefined behavior.
  */
 
 #ifndef AMP_amp_H

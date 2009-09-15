@@ -165,13 +165,13 @@ extern "C" {
      * Finalizes a semaphore and frees the resources it used.
      *
      * @return AMP_SUCCESS on successful finalization.
+     *         ENOSYS if the backend doesn't support semaphores.
      *         Error codes might be returned to signal errors while
      *         finalization, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it asserts that these programming errors don't happen.
-     *         ENOSYS if the backend doesn't support semaphores.
      *         EBUSY if threads block on the semaphore.
-     *         EINVAL if the semaphore isn't valied, e.g. not initialized.
+     *         EINVAL if the semaphore isn't valid, e.g. not initialized.
      *
      * @attention sem mustn't be NULL.
      *
@@ -189,7 +189,24 @@ extern "C" {
      * counter becomes greater than zero again and its the threads turn to 
      * decrease and pass it.
      *
-     * sem mustn't be NULL.
+     * @return AMP_SUCCESS after waited successful on the semaphore.
+     *         EINTR if the semaphore was interrupted by a signal when using a
+     *         backend that supports signal interruption.
+     *         ENOSYS if the backend doesn't support semaphores.
+     *         Error codes might be returned to signal errors while
+     *         waiting, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it asserts that these programming errors don't happen.
+     *         EDEADLK if a deadlock condition was detected.
+     *         EINVAL if the semaphore isn't valid, e.g. not initialized.
+     *         EPERM if the process lacks privileges to wait on the 
+     *         semaphore.
+     *
+     * @attention sem mustn't be NULL.
+     *
+     * @attention Based on the backend amp_raw_semaphores might or might not 
+     *            react to / are or are not usable with signals. Set the threads
+     *            signal mask to not let any signals through.
      *
      * TODO: @todo Decide if os signals should be able to interrupt the waiting.
      */
@@ -200,7 +217,18 @@ extern "C" {
      * semaphore one of them is woken up and gets the chance to decrease the 
      * counter and pass the semaphore.
      *
-     * sem mustn't be NULL.
+     * @return AMP_SUCCESS after succesful signaling the semaphore.
+     *         ENOSYS if the backend doesn't support semaphores.
+     *         Error codes might be returned to signal errors while
+     *         signaling, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it asserts that these programming errors don't happen.
+     *         EINVAL if the semaphore isn't valid, e.g. not initialized.
+     *         EDEADLK if a deadlock condition is detected.
+     *         EPERM if the process lacks privileges to signal the 
+     *         semaphore.
+     *
+     * @attention sem mustn't be NULL.
      */
     int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem);
     

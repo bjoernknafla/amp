@@ -62,80 +62,126 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
                                      amp_raw_semaphore_count_t init_count)
 {
     assert(NULL != sem);
+    // assert((amp_raw_semaphore_count_t)0 <= init_count);
+    // assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count);
     
-    if (((amp_raw_semaphore_count_t)0 >init_count) ||
+    
+    if (((amp_raw_semaphore_count_t)0 > init_count) ||
         (AMP_RAW_SEMAPHORE_COUNT_MAX < init_count)) {
         
-        assert((amp_raw_semaphore_count_t)0 <= init_count);
-        assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count);
-        
+        /* Set to zero to potentially show detectable strange behavior
+         * if the non-initialized mutex doesn't crash or act up and the dev
+         * doesn't check and react to the return code.
+         */
+        sem->count = 0;
         return EINVAL;
-    }
-    
-    int retval = pthread_mutex_init(&sem->mutex, NULL);
-    if (0 != retval) {
-        assert(EAGAIN != retval && "Insufficient system resources.");
-        assert(ENOMEM != retval && "Insufficient memory.");
-        assert(EPERM != retval && "No privileges to perform operation.");
-        assert(EBUSY != retval && "Mutex already initialized.");
-        assert(EINVAL != retval && "Attribute is invalid.");
-        assert(0 == retval && "Unknown error code.");
-        
-        return retval;
-    }
-    
-    retval = pthread_cond_init(&sem->a_thread_can_pass, NULL);
-    if (0 != retval) {
-        assert(EAGAIN != retval && "Insufficient system resources.");
-        assert(ENOMEM != retval && "Insufficient memory.");
-        assert(EBUSY != retval && "Condition variable is already initialized.");
-        assert(EINVAL != retval && "Attribute is invalid.");
-        assert(0 == retval && "Unknown error code.");
-        
-        int const retv = pthread_mutex_destroy(&sem->mutex);
-        
-        if (0 != retv) {
-            assert(EBUSY != retv && "Mutex is in use.");
-            assert(EINVAL != retv && "Mutex is invalid.");
-            assert(0 == retval && "Unknown error code.");
-            
-            return retv;
-        }
-        
-        return retval;
     }
     
     sem->count = init_count;
     
+    int retval = AMP_SUCCESS;
+    pthread_mutexattr_t mutex_attributes;
+    /* If the system lacks memory can return ENOMEM. */
+    retval = pthread_mutexattr_init(&mutex_attributes);
+    assert((0 == retval || ENOMEM == retval) && "Unexpected error.");
+    if (0 != retval) {
+        return retval;
+    }
+    
+    /* Use an error checking mutex while asserts/debug mode are enabled. */
+#if !defined(NDEBUG)
+    retval = pthread_mutexattr_settype(&mutex_attributes, 
+                                       PTHREAD_MUTEX_ERRORCHECK);
+    assert(EINVAL != retval && "Attribute or type invalid.");
+    assert(0 == retval && "Unexpected error.");
+#endif /* !defined(NDEBUG) */
+    
+    /*
+     * Might generate EAGAIN or ENOMEM errors which are handed back to the 
+     * caller.
+     * EINVAL, EPERM, and EBUSY  error codes are implementation problems and are
+     * therefore checked while debugging.
+     */ 
+    retval = pthread_mutex_init(&sem->mutex,&mutex_attributes);
+    assert(EINVAL != retval && "Attribute is invalid.");
+    assert(EPERM != retval && "No privileges to perform operation.");
+    assert(EBUSY != retval && "Mutex already initialized.");
+    
+    /* 
+     *Get rid of the mutex attribute - it isn't used anymore (nor in
+     * mutex creation error case, nor in non-error case).
+     */
+    int const mattr_destroy_retval = pthread_mutexattr_destroy(&mutex_attributes);
+    assert(EINVAL != mattr_destroy_retval && "Mutex attributes invalid.");
+    assert(0 == mattr_destroy_retval && "Unexpected error.");
+    assert( (0 == retval
+             || AMP_SUCCESS == retval
+             || EAGAIN == retval 
+             || ENOMEM == retval )
+           && "Unexpected error.");
+    /* 
+     *If an error occured return error code from mutex creation after mutex
+     * attributes have been destroyed.
+     */
+    if (0 != retval) {
+        return retval;
+    }
+    
+    /*
+     * Create a process private condition variable.
+     * Lack of resources and memory errors are reported back as EAGAIN, ENOMEM. 
+     * Other errors indicate programming errors and trigger assertions in debug 
+     * mode (and are also returned in non-debug mode).
+     */
+    retval = pthread_cond_init(&sem->a_thread_can_pass, NULL);
+    assert(EBUSY != retval && "Condition variable is already initialized.");
+    assert(EINVAL != retval && "Attribute is invalid.");
+    assert( (0 == retval
+             || AMP_SUCCESS == retval
+             || EAGAIN == retval 
+             || ENOMEM == retval )
+           && "Unexpected error.");
+    
+    if (0 != retval) {
+        int const retv = pthread_mutex_destroy(&sem->mutex);
+        assert(EBUSY != retv && "Mutex is in use.");
+        assert(EINVAL != retv && "Mutex is invalid.");
+        assert( (0 == retv
+                 || AMP_SUCCESS == retval
+                 || EBUSY == retval 
+                 || EINVAL == retval )
+               && "Unexpected error.");
+        if (0 != retv ) {
+            return retv;
+        }
+        
+        
+        return retval;
+    }
+        
     return AMP_SUCCESS;
 }
 
 
 int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
 {
-    /* TODO: @todo only assert or only check for error and return error code? */
-    if (!(NULL != sem)) {
-        assert(NULL != sem);
-        
-        return EINVAL;
-    }
-    
+    assert(NULL != sem);
     
     int retval = pthread_cond_destroy(&sem->a_thread_can_pass);
+    assert(EBUSY != retval && "Condition variable is in use.");
+    assert(EINVAL != retval && "Condition varialbe is invalid.");
+    assert(0 == retval && "Unexpected error.");
+    
     if (0 != retval) {
-        assert(EBUSY != retval && "Condition variable is in use.");
-        assert(EINVAL != retval && "Condition varialbe is invalid.");
-        assert(0 == retval && "Unknown error code.");
-        
         return retval;
     }
     
     retval = pthread_mutex_destroy(&sem->mutex);
+    assert(EBUSY != retval && "Mutex is in use.");
+    assert(EINVAL != retval && "Mutex is invalid.");
+    assert(0 == retval && "Unexpected error.");
+    
     if (0 != retval) {
-        assert(EBUSY != retval && "Mutex is in use.");
-        assert(EINVAL != retval && "Mutex is invalid.");
-        assert(0 == retval && "Unknown error code.");
-        
         return retval;
     }
     
@@ -145,35 +191,31 @@ int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
 
 int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
 {    
-    if( !(NULL != sem)) {
-        assert(NULL != sem);
-        
-        return EINVAL;
-    }
+    assert(NULL != sem);
     
     int retval = pthread_mutex_lock(&sem->mutex);
+    assert(EINVAL != retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
+    assert(EDEADLK != retval && "Calling thread already owns the mutex.");
+    assert(0 == retval && "Unknown error code.");
+    
     if (0 != retval) {
-        assert(EINVAL != retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
-        assert(EDEADLK != retval && "Calling thread already owns the mutex.");
-        assert(0 == retval && "Unknown error code.");
-        
+
         return retval;
     }
     
     {
         while (0 == sem->count) {
+            /* The following asserts trigger on user programming errors. */
             int const rv = pthread_cond_wait(&sem->a_thread_can_pass, &sem->mutex);
+            assert(EINVAL != rv && "Condition variable or mutex is invalid or different mutexes are used for concurrent waits or mutex is not owned by calling thread.");
+            assert(0 == rv && "Unexpected error.");
+            
             if (0 != rv) {
-                assert(EINVAL != rv && "Condition variable or mutex is invalid or different mutexes are used for concurrent waits or mutex is not owned by calling thread.");
-                assert(0 == rv && "Unknown error code.");
-                
                 int const r = pthread_mutex_unlock(&sem->mutex);
+                assert(EINVAL != r && "Mutex is invalid.");
+                assert(EPERM != r && "Calling thread does not own mutex.");
+                assert(0 == r && "Unexpected error.");
                 if (0 != r) {
-                    assert(EINVAL != r && "Mutex is invalid.");
-                    assert(EPERM != r && "Calling thread does not own mutex.");
-                    assert(0 == r && "Unknown error code.");
-                    
-                    // TODO: @todo How to handle this kind of dependent errors?
                     return r;
                 }
                 
@@ -184,16 +226,12 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
         --(sem->count);
     }
     retval = pthread_mutex_unlock(&sem->mutex);
+    assert(EINVAL != retval && "Mutex is invalid.");
+    assert(EPERM != retval && "Calling thread does not own mutex.");
+    assert(0 == retval && "Unknown error code.");
     if (0 != retval) {
-        assert(EINVAL != retval && "Mutex is invalid.");
-        assert(EPERM != retval && "Calling thread does not own mutex.");
-        assert(0 == retval && "Unknown error code.");
-        
         return retval;
     }
-    
-    
-    
     
     return AMP_SUCCESS;
 }
@@ -201,36 +239,32 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
 
 int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
 {
-    if (!(NULL != sem)){
-        assert(NULL != sem);
-        
-        return EINVAL;
-    }
+    assert(NULL != sem);
     
     int retval = pthread_mutex_lock(&sem->mutex);
+    assert(EINVAL != retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
+    assert(EDEADLK != retval && "Calling thread already owns the mutex.");
+    assert(0 == retval && "Unexpected error.");
+    
     if (0 != retval) {
-        assert(EINVAL != retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
-        assert(EDEADLK != retval && "Calling thread already owns the mutex.");
-        assert(0 == retval && "Unknown error code.");
-        
         return retval;
     }
     {
         ++(sem->count);
         
-        // Could also signal after unlocking the mutex. Needs experimentation.
+        /* Could also signal after unlocking the mutex. Needs experimentation.*/
         int const rv = pthread_cond_signal(&sem->a_thread_can_pass);
+        assert(EINVAL != rv && "Condition variable is invalid.");
+        assert(0 == rv && "Unexpected error.");
         if (0 != rv) {
-            assert(EINVAL != rv && "Condition variable is invalid.");
-            assert(0 == rv && "Unknown error code.");
-            
             int const r = pthread_mutex_unlock(&sem->mutex);
+            assert(EINVAL != r && "Mutex is invalid.");
+            assert(EPERM != r && "Calling thread does not own mutex.");
+            assert(0 == r && "Unexpected error.");
             if (0 != r) {
-                assert(EINVAL != r && "Mutex is invalid.");
-                assert(EPERM != r && "Calling thread does not own mutex.");
-                assert(0 == r && "Unknown error code.");
-                
-                // TODO: @todo How to handle this kind of dependent errors?
+                /*
+                 * TODO: @todo How to handle this kind of dependent errors? 
+                 */
                 return r;
             }
             
@@ -239,11 +273,10 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
         }
     }
     retval = pthread_mutex_unlock(&sem->mutex);
+    assert(EINVAL != retval && "Mutex is invalid.");
+    assert(EPERM != retval && "Calling thread does not own mutex.");
+    assert(0 == retval && "Unexpected error.");
     if (0 != retval) {
-        assert(EINVAL != retval && "Mutex is invalid.");
-        assert(EPERM != retval && "Calling thread does not own mutex.");
-        assert(0 == retval && "Unknown error code.");
-        
         return retval;
     }
     

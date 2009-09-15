@@ -63,21 +63,22 @@ int amp_raw_mutex_init(amp_raw_mutex_t mutex)
     }
     
     /* Use an error checking mutex while asserts/debug mode are enabled. */
-    #if !defined(NDEBUG)
-        retval = pthread_mutexattr_settype(&mutex_attributes, 
-                                           PTHREAD_MUTEX_ERRORCHECK);
-        assert(EINVAL != retval && "Attribute or type invalid.");
-    #endif
+#if !defined(NDEBUG)
+    retval = pthread_mutexattr_settype(&mutex_attributes, 
+                                       PTHREAD_MUTEX_ERRORCHECK);
+    assert(EINVAL != retval && "Attribute or type invalid.");
+    assert(0 == retval && "Unexpected error.");
+#endif
     
     /* Might generate EAGAIN or ENOMEM errors which are handed back to the 
      * caller.
-     * EINVAL and EPERM error codes are implementation problems and are
+     * EINVAL, EPERM, and EBUSY error codes are implementation problems and are
      * therefore checked while debugging.
      */ 
     retval = pthread_mutex_init(&mutex->mutex, &mutex_attributes);
     assert(EINVAL != retval  && "Attribute is invalid.");
-    assert(EPERM != retval && "No privilege to perform operation.");
-       
+    assert(EPERM != retval && "No privileges to perform operation.");
+    assert(EBUSY != retval && "Mutex already initialized.");   
     
     /* Get rid of the mutex attribute - it isn't used anymore. */
     int const mattr_destroy_retval = pthread_mutexattr_destroy(&mutex_attributes);
