@@ -33,6 +33,8 @@
 /**
  * @file
  *
+ * Shallow wrapper around a semaphore type of the platform.
+ *
  * @attention Don't pass pointers to an invalid semaphore structure to any
  *            of the functions. Don't pass non-initialized (or after 
  *            initialization destroyed) semaphores to any function other than

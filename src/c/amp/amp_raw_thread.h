@@ -31,6 +31,9 @@
  */
 
 /**
+ * Shallow wrapper around the platforms threads. Threads launched must always
+ * be joined to prevent resource leaks. Currently threads can't be detached.
+ *
  * TODO: @todo Manage threads when using cocoa (create at least one NSTask and create an autoreleasepool inside the threads.
  * TODO: @todo Rename this file and its functions to raw threads and create a amp_thread ADT or a amp thread cluster that collects threads and controls the functions running on the thread. Then add semaphores, mutexes, locks, atomic barriers and ops, and perhaps other stuff as needed.
  * TODO: @todo Add docu to say how many threads can run at max and if joined thread slots are recycled or are blocked for the runtime of the app. Decide if the id is really necessary.
@@ -59,6 +62,16 @@
 extern "C" {
 #endif
 
+    
+#if defined(AMP_USE_PTHREADS)
+#   define AMP_RAW_THREAD_COUNT_MAX PTHREAD_THREADS_MAX
+#elif defined(AMP_USE_WINTHREADS)
+#   error Implement
+#else
+#   error Unsupported platform.
+#endif
+    
+    
     
     /**
      * Type of the user function to run on the thread.
@@ -113,7 +126,16 @@ extern "C" {
      *
      * If fed with already launched native thread behavior is undefined.
      *
-     * TODO: @todo Add restrict to the pointers and docuement it.
+     * @return AMP_SUCCESS on successful thread launch.
+     *         EAGAIN if the system is lacking resources for thread creation.
+     *
+     * @attention Passing NULL for @a thread or @a thread_func results in 
+     *            undefined behavior.
+     *
+     * @attention Don't pass an already existing thread in or you won't be able
+     *            to join it which results in a resource leak.
+     *
+     * TODO: @todo Add restrict to the pointers and document it.
      */
     int amp_raw_thread_launch(amp_raw_thread_t *thread, 
                                void *thread_func_context, 
@@ -124,7 +146,19 @@ extern "C" {
      *
      * If thread hasn't been launched behavior is undefined.
      *
-     * thread memory can be freed after successful join.
+     * Thread memory can be freed after successful join.
+     *
+     * @return AMP_SUCCESS after succesfully joining with the thread.
+     *         EDEADLK If a deadlock condition was detected or the calling
+     *         thread tries to join with itself.
+     *         EINVAL argument doesn't refer to a joinable thread.
+     *         ESRCH if no  system thread is associated with the argument.
+     *
+     * @attention Only pass a thread as an argument if its launching was 
+     *            successful, otherwise behavior is undefined.
+     *
+     * @attention Don't try to join a thread with itself, otherwise behavior is
+     *            undefined.
      */
     int amp_raw_thread_join(amp_raw_thread_t *thread);
     

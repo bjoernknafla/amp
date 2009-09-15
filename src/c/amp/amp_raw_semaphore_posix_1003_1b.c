@@ -41,17 +41,17 @@
 
 #include "amp_raw_semaphore.h"
 
-// Include NULL
+/* Include NULL */
 #include <stddef.h>
 
-// Include assert
+/* Include assert */
 #include <assert.h>
 
-// Include errno, EINVAL, ENOSYS, ENOSPC, EPERM, EBUSY, EINTR, EDEADLK
+/* Include errno, EINVAL, ENOSYS, ENOSPC, EPERM, EBUSY, EINTR, EDEADLK */
 #include <errno.h>
 
 
-// Include AMP_SUCCESS
+/* Include AMP_SUCCESS */
 #include "amp_stddef.h"
 
 

@@ -41,13 +41,13 @@
 
 #include "amp_raw_semaphore.h"
 
-// Include EAGAIN, ENOMEM, EPERM, EBUSY, EINVAL
+/* Include EAGAIN, ENOMEM, EPERM, EBUSY, EINVAL */
 #include <errno.h>
 
-// Include assert
+/* Include assert */
 #include <assert.h>
 
-// Include AMP_SUCCESS
+/* Include AMP_SUCCESS */
 #include "amp_stddef.h"
 
 
@@ -62,9 +62,6 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
                                      amp_raw_semaphore_count_t init_count)
 {
     assert(NULL != sem);
-    // assert((amp_raw_semaphore_count_t)0 <= init_count);
-    // assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count);
-    
     
     if (((amp_raw_semaphore_count_t)0 > init_count) ||
         (AMP_RAW_SEMAPHORE_COUNT_MAX < init_count)) {

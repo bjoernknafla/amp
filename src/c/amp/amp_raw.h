@@ -46,7 +46,12 @@
  * @attention Never reyl on undefined behavior - as it can vary between versions
  *            of @em amp and the used backend (Pthreads, Windows threads, etc.).
  *
+ * TODO: @todo Add windows threads backends.
+ *
  * TODO: @todo Add include for all non-raw amp headers.
+ *
+ * TODO: @todo Add Apple OS X 10.6 libdispatch backends for amp_raw_ semaphore
+ *             and mutex.
  */
 
 #ifndef AMP_amp_raw_H

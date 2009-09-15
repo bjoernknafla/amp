@@ -33,7 +33,7 @@
 /**
  * @file
  *
- *
+ * Base type and preprocessor symbol definitions.
  */
 
 
@@ -41,7 +41,7 @@
 #define AMP_amp_stddef_H
 
 #define AMP_SUCCESS 0
-// #define AMP_FAILURE -1 // Might collide with c std and posix error codes...
+/* #define AMP_FAILURE -1 // Might collide with c std and posix error codes... */
 
 #define AMP_BOOL int
 #define AMP_TRUE 1

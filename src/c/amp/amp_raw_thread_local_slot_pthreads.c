@@ -50,18 +50,13 @@
 
 int amp_raw_thread_local_slot_init(amp_raw_thread_local_slot_key_t *key)
 {
-    if (NULL == key) {
-        assert(NULL != key);
-        
-        return EINVAL;
-    }
+    assert(NULL != key);
     
     int const retval = pthread_key_create(&(key->key), NULL);
+    assert( (0 == retval || EAGAIN == retval || ENOMEM == retval) 
+           && "Unexpected error.");
+    
     if (0 != retval) {
-        assert(EAGAIN != retval && "Insufficient resources or PTHREAD_KEYS_MAX exceeded.");
-        assert(ENOMEM != retval && "Insufficient memory to create key.");
-        assert(0 == retval && "Unknown error code.");
-        
         return retval;
     }
     
@@ -73,10 +68,10 @@ int amp_raw_thread_local_slot_init(amp_raw_thread_local_slot_key_t *key)
 int amp_raw_thread_local_slot_finalize(amp_raw_thread_local_slot_key_t key)
 {
     int const retval = pthread_key_delete(key.key);
+    assert(EINVAL != retval && "Key is invalid.");
+    assert(0 == retval && "Unexpected error.");
+    
     if (0 != retval) {
-        assert(EINVAL != retval && "Key is invalid.");
-        assert(0 == retval && "Unknown error code.");
-        
         return retval;
     }
     
@@ -89,11 +84,10 @@ int amp_raw_thread_local_slot_set_value(amp_raw_thread_local_slot_key_t key,
                                                   void *value)
 {
     int const retval = pthread_setspecific(key.key, value);
+    assert(EINVAL != retval && "Key is invalid.");
+    assert( (0 == retval || ENOMEM == retval) && "Unexpected error.");
+    
     if (0 != retval) {
-        assert(ENOMEM != retval && "");
-        assert(EINVAL != retval && "");
-        assert(0 == retval && "Unknown error code.");
-        
         return retval;
     }
     
@@ -104,8 +98,10 @@ int amp_raw_thread_local_slot_set_value(amp_raw_thread_local_slot_key_t key,
 
 void* amp_raw_thread_local_slot_get_value(amp_raw_thread_local_slot_key_t key)
 {
-    // TODO: @todo Add a debug status flag to check if a key has been 
-    // initialized correctly.
+    /**
+     * TODO: @todo Add a debug status flag to check if a key has been 
+     * initialized correctly.
+     */
     return pthread_getspecific(key.key);
 }
 
