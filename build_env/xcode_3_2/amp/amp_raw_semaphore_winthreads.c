@@ -33,10 +33,12 @@
 /**
  * @file
  *
- * Shallow wrapper around POSIX 1003 1b semaphores.
+ * Shallow wrapper around Windows semaphores.
+ *
+ * TODO: @todo Check for all Windows event waiting code if internal 
+ *             event pumping events should be handled or not during waiting.
  */
 
-#error Implementation is completely untested and haven't been compiled yet. Take care!
 
 
 #include "amp_raw_semaphore.h"
@@ -56,35 +58,15 @@
 
 
 
-#if !defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
-#   error Build configuration problem - this source file shouldn't be compiled.
-#endif
-
-
-#if !defined(_POSIX_SEMAPHORES)
-#   error POSIX 1003.1b-1993 semaphores aren't supported.
-#endif
 
 
 
 int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                                     amp_semaphore_count_t init_count)
+                           amp_semaphore_count_t init_count)
 {
     assert(NULL != sem);
     
-    int const retval = sem_init(&sem->semaphore, 
-                                0, /* Don't share semaphore between processes */
-                                (unsigned int)init_count);
-    assert(EPERM != errno && "Process lacks privileges.");
-    assert( (0 == retval || ENOSYS == errno || EINVAL == errno) 
-           && "Unexpected error.");
-    
-    int return_code = AMP_SUCCESS;
-    if (0 != retval) {
-        return_code = errno;
-    }
-    
-    return return_code;
+
 }
 
 
@@ -93,16 +75,7 @@ int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
 {
     assert(NULL != sem);
     
-    int retval = sem_destroy(&sem->semaphore);
-    assert(EBUSY != errno && "Threads are still blocked on the semaphore.");
-    assert((0 == retval || ENOSYS == errno)&& "Unexpected error.");
-    
-    int return_code = AMP_SUCCESS;
-    if(0 != retval) {
-        return_code = errno;
-    }
 
-    return return_code;
 }
 
 
@@ -111,20 +84,7 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
 {
     assert(NULL != sem);
     
-    int retval = sem_wait(&sem->semaphore);
-    assert(EINVAL != errno && "sem->semaphore is not a valid semaphore.");
-    assert(EDEADLK != errno && "A deadlock was detected.");
-    assert( (0 == retval
-             || EINTR == errno 
-             || ENOSYS == errno) 
-           && "Unexpected error.");
-    
-    int return_code = AMP_SUCCESS;
-    if(0 != retval) {        
-        return_code = errno;
-    }
-    
-    return return_code;
+
 }
 
 
@@ -132,17 +92,7 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
 {
     assert(NULL != sem);
     
-    int retval = sem_post(&sem->semaphore);
-    assert(EINVAL != errno && "sem->semaphore is not a valid semaphore.");
-    assert((0 == retval || ENOSYS == errno) && "Unexpected error.");
-    
-    int return_code = AMP_SUCCESS;
-    if(0 != retval) {        
-        return_code = errno;
-    }
-    
-    return return_code;    
-}
 
+}
 
 

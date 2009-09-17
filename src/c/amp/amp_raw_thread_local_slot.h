@@ -105,7 +105,7 @@ extern "C" {
      *         Error codes might be returned to signal errors while
      *         finalization, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EINVAL if the key is invalid.
      *
      * @attention Trying to access a slot via an invalid, e.g. finalized key,
@@ -122,7 +122,7 @@ extern "C" {
      *         Error codes might be returned to signal errors while
      *         setting the value, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EINVAL if the key is invalid.
      *
      * @attention NULL is a special value - for @em amp it means that the slot

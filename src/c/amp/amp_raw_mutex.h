@@ -81,6 +81,9 @@
  *
  *
  * TODO: @todo Rework the documentation to be more concise. 
+ *
+ * TODO: @todo At least on Windows store the locking threads id to detect
+ *             if wrong thread tries to unlock in debug mode.
  */
 
 
@@ -92,8 +95,10 @@
 #if defined(AMP_USE_PTHREADS)
 #   include <pthread.h>
 #elif defined(AMP_USE_WINTHREADS)
-#   define WIN32_LEAN_AND_MEAN
-#   error Not implemented yet.
+#   define WIN32_LEAN_AND_MEAN /* Only include streamlined windows header. */
+#   define AMP_WINTHREADS_REQUIRE_MIN_WIN_VERSION 0x0403 /* Min Win version supporting CriticalSection. */
+#   define _WIN32_WINNT AMP_WINTHREADS_REQUIRE_MIN_WIN_VERSION /* Include CriticalSection from Win headers. */
+#   include <windows.h>
 #else
 #   error Unsupported platform.
 #endif
@@ -106,16 +111,25 @@ extern "C" {
 #endif
 
     /**
-     * Simple non-recursive mutex.
+     * Simple non-recursive mutex to synchronization inside the owning process.
+     * No inter-process snycing supported.
+     *
+     * @attention Don't copy or move an amp_raw_mutex instance or behavior is
+     *            undefined - use pointers to an amp_raw_mutex instead.
      */
     struct amp_raw_mutex_s {
 #if defined(AMP_USE_PTHREADS)
+        /* Don't copy or move - therefore don't copy or move amp_mutex_s. */
         pthread_mutex_t mutex;
-#   if defined _POSIX_THREADS
-        /* pthread_t locking_thread_debug_helper; */
-#   endif /* _POSTIX_THREADS */
 #elif defined(AMP_USE_WINTHREADS)
-#   error Not implemented yet.
+        /* Don't copy or move - therefore don't copy or move amp_mutex_s. */
+        CRITICAL_SECTION critical_section;
+        /* Helper to prevent recursive locking on Windows. This is always
+         * included instead of only in debug mode because the interface and the
+         * way the source is compiled can differ which might lead to hard to 
+         * track down errors.
+         */
+        BOOL is_locked;
 #else
 #   error Unsupported platform.
 #endif
@@ -124,6 +138,8 @@ extern "C" {
     /**
      * Simple non-recursive mutex.
      * See amp_raw_mutex_s.
+     * Can be moved or copied - but every copy identifies the same mutex - 
+     * manage ownership and reference counts yourself.
      */
     typedef struct amp_raw_mutex_s *amp_raw_mutex_t;
     
@@ -146,7 +162,7 @@ extern "C" {
      *         Other error codes might be returned to signal errors while
      *         initializing, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      */
     int amp_raw_mutex_init(amp_raw_mutex_t mutex);
     
@@ -158,7 +174,7 @@ extern "C" {
      *         Error codes might be returned to signal errors while
      *         finalizing, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EINVAL if the mutex attribute isn't valid, e.g. not initialized.
      *         EBUSY if the mutex is locked by a thread.
      *
@@ -182,7 +198,7 @@ extern "C" {
      *         Error codes might be returned to signal errors while
      *         locking, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EDEADLK if the thread already holding the lock attempts to lock
      *         again (recursively).
      *         EINVAL if the mutex is invalid, e.g. not initialized.
@@ -197,11 +213,12 @@ extern "C" {
      * returns with an error code.
      *
      * @return AMP_SUCCESS if the lock has been taken.
-     *         EBUSY if lock hasn't been taken.
+     *         EBUSY if lock hasn't been taken because it is locked by another 
+     *         thread.
      *         Error codes might be returned to signal errors while
      *         trying to lock, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EINVAL if the mutex isn't valid, e.g. not initialized.
      *         EDEADLK if trying to lock recursively (probably EBUSY is returned
      *         instead).
@@ -223,7 +240,7 @@ extern "C" {
      *         Error codes might be returned to signal errors while
      *         unlocking, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EINVAL if the mutex isn't valid, e.g. not initialized.
      *         EPERM if a thread not holding the lock tries to unlock the mutex.
      *

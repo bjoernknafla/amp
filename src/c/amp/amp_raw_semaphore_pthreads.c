@@ -33,6 +33,8 @@
 /**
  * @file
  *
+ * Shallow wrapper around Pthread mutex to emulate an amp raw semaphore.
+ *
  * TODO: @todo Look through all error return codes and identify which 
  *             are purely internal (error in this code) and shouldn't leave the
  *             function but be fixed.

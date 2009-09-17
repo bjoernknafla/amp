@@ -35,6 +35,10 @@
  *
  * Shallow wrapper around a semaphore type of the platform.
  *
+ * @attention Don't copy or move semaphores - copying and moving pointers to
+ *            them is ok though you need to take care about ownership 
+ *            management.
+ * 
  * @attention Don't pass pointers to an invalid semaphore structure to any
  *            of the functions. Don't pass non-initialized (or after 
  *            initialization destroyed) semaphores to any function other than
@@ -144,7 +148,7 @@ extern "C" {
      *         Other error codes might be returned to signal errors while
      *         initializing, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EPERM if the process lacks privileges to initialize the 
      *         semaphore.
      *         EBUSY if the semaphore is already initialized.
@@ -171,7 +175,7 @@ extern "C" {
      *         Error codes might be returned to signal errors while
      *         finalization, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EBUSY if threads block on the semaphore.
      *         EINVAL if the semaphore isn't valid, e.g. not initialized.
      *
@@ -198,7 +202,7 @@ extern "C" {
      *         Error codes might be returned to signal errors while
      *         waiting, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EDEADLK if a deadlock condition was detected.
      *         EINVAL if the semaphore isn't valid, e.g. not initialized.
      *         EPERM if the process lacks privileges to wait on the 
@@ -224,7 +228,7 @@ extern "C" {
      *         Error codes might be returned to signal errors while
      *         signaling, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it asserts that these programming errors don't happen.
+     *         set it might assert that these programming errors don't happen.
      *         EINVAL if the semaphore isn't valid, e.g. not initialized.
      *         EDEADLK if a deadlock condition is detected.
      *         EPERM if the process lacks privileges to signal the 
