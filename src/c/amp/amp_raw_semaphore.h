@@ -56,6 +56,10 @@
  *             detecting use of an uninitialized instance.
  *
  * TODO: @todo Document return codes for all supported platforms.
+ *
+ * TODO: @todo When adding a trywait function look if POSIX specifies EBUSY
+ *             or EAGAIN as a return value to indicate that the thread would
+ *             block.
  */
 
 #ifndef AMP_amp_raw_semaphore_H
@@ -71,6 +75,7 @@
 #elif defined(AMP_USE_WINTHREADS)
 #   define WIN32_LEAN_AND_MEAN
 #   include <windows.h>
+#   include <limits.h>
 #else
 #   error Unsupported platform.
 #endif
@@ -89,20 +94,31 @@ extern "C" {
      * When changing the type also adapt AMP_RAW_SEMAPHORE_COUNT_MAX
      * and check if limits.h must be included or not.
      */
+#if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
     typedef unsigned int amp_raw_semaphore_count_t;
-    
+#elif defined(AMP_USE_PTHREADS)
+    typedef unsigned int amp_raw_semaphore_count_t;
+#elif defined(AMP_USE_WINTHREADS)
+    typedef long amp_raw_semaphore_count_t;
+#else
+#   error Unsupported platform.
+#endif
+
     /**
      * @def  AMP_RAW_SEMAPHORE_COUNT_MAX
      *
      * Maximal value of the internal semaphore counter to not-block threads
      * when waiting on the semaphore.
+     *
+     * TODO: @todo Try to find a Windows platform constant for the max number
+     *             of semaphores allowed (not found yet).
      */
 #if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
-#   define AMP_RAW_SEMAPHORE_COUNT_MAX (amp_raw_semaphore_count_t)(SEM_VALUE_MAX)
+#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(SEM_VALUE_MAX))
 #elif defined(AMP_USE_PTHREADS)
-#   define AMP_RAW_SEMAPHORE_COUNT_MAX (amp_raw_semaphore_count_t)(UINT_MAX)
+#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(UINT_MAX))
 #elif defined(AMP_USE_WINTHREADS)
-#   define AMP_RAW_SEMAPHORE_COUNT_MAX (amp_raw_semaphore_count_t)(MAX_SEM_COUNT)
+#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(LONG_MAX))
 #else
 #   error Unsupported platform.
 #endif
@@ -138,8 +154,6 @@ extern "C" {
      *                   value.
      *
      * @return AMP_SUCCESS on successful initialization, otherwise:
-     *         EINVAL if the semaphore is invalid, the init_count is negative or
-     *         greater than AMP_RAW_SEMAPHORE_COUNT_MAX.
      *         ENOMEM if memory is insufficient.
      *         EAGAIN if other system resources are insufficient.
      *         ENOSPC if the POSIX 1003 1b backend is used and the system lacks
@@ -152,6 +166,8 @@ extern "C" {
      *         initializing, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
+     *         EINVAL if the semaphore is invalid, the init_count is negative or
+     *         greater than AMP_RAW_SEMAPHORE_COUNT_MAX.
      *         EPERM if the process lacks privileges to initialize the 
      *         semaphore.
      *         EBUSY if the semaphore is already initialized.
@@ -202,6 +218,7 @@ extern "C" {
      *         EINTR if the semaphore was interrupted by a signal when using a
      *         backend that supports signal interruption.
      *         ENOSYS if the backend doesn't support semaphores.
+     *         EOVERFLOW if the semaphore counter value exceeds 
      *         Error codes might be returned to signal errors while
      *         waiting, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
@@ -228,6 +245,8 @@ extern "C" {
      *
      * @return AMP_SUCCESS after succesful signaling the semaphore.
      *         ENOSYS if the backend doesn't support semaphores.
+     *         EOVERFLOW if the semaphore counter value exceeds 
+     *           AMP_RAW_SEMAPHORE_COUNT_MAX .
      *         Error codes might be returned to signal errors while
      *         signaling, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG

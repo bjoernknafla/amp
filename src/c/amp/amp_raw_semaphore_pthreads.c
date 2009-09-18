@@ -68,6 +68,11 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
     if (((amp_raw_semaphore_count_t)0 > init_count) ||
         (AMP_RAW_SEMAPHORE_COUNT_MAX < init_count)) {
         
+        /* TODO: @todo Decide if to assert or no to assert. */
+        assert( ((amp_raw_semaphore_count_t)0 <= init_count 
+                 && AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count) 
+               && "init_count must be greater or equal to zero and lesser or equal to AMP_RAW_SEMAPHORE_COUNT_MAX.");
+        
         /* Set to zero to potentially show detectable strange behavior
          * if the non-initialized mutex doesn't crash or act up and the dev
          * doesn't check and react to the return code.
@@ -192,47 +197,44 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
 {    
     assert(NULL != sem);
     
-    int retval = pthread_mutex_lock(&sem->mutex);
-    assert(EINVAL != retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
-    assert(EDEADLK != retval && "Calling thread already owns the mutex.");
-    assert(0 == retval && "Unknown error code.");
+    int retval = AMP_SUCCESS;
+    int const mlock_retval = pthread_mutex_lock(&sem->mutex);
+    assert(EINVAL != mlock_retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
+    assert(EDEADLK != mlock_retval && "Calling thread already owns the mutex.");
+    assert(0 == mlock_retval && "Unknown error code.");
     
-    if (0 != retval) {
+    if (0 != mlock_retval) {
 
-        return retval;
+        return mlock_retval;
     }
     
     {
-        while (0 == sem->count) {
+        while ((0 == sem->count) && (AMP_SUCCESS == retval)) {
             /* The following asserts trigger on user programming errors. */
             int const rv = pthread_cond_wait(&sem->a_thread_can_pass, &sem->mutex);
             assert(EINVAL != rv && "Condition variable or mutex is invalid or different mutexes are used for concurrent waits or mutex is not owned by calling thread.");
             assert(0 == rv && "Unexpected error.");
             
             if (0 != rv) {
-                int const r = pthread_mutex_unlock(&sem->mutex);
-                assert(EINVAL != r && "Mutex is invalid.");
-                assert(EPERM != r && "Calling thread does not own mutex.");
-                assert(0 == r && "Unexpected error.");
-                if (0 != r) {
-                    return r;
-                }
-                
-                return rv;
+                retval = rv;
             }
         }
         
-        --(sem->count);
+        if (AMP_SUCCESS == retval) {
+            --(sem->count);
+        }
     }
-    retval = pthread_mutex_unlock(&sem->mutex);
-    assert(EINVAL != retval && "Mutex is invalid.");
-    assert(EPERM != retval && "Calling thread does not own mutex.");
-    assert(0 == retval && "Unknown error code.");
-    if (0 != retval) {
-        return retval;
+    int const munlock_retval = pthread_mutex_unlock(&sem->mutex);
+    assert(EINVAL != munlock_retval && "Mutex is invalid.");
+    assert(EPERM != munlock_retval && "Calling thread does not own mutex.");
+    assert(0 == munlock_retval && "Unexpected error.");
+    if (0 != munlock_retval) {
+        return munlock_retval;
     }
     
-    return AMP_SUCCESS;
+    assert(AMP_SUCCESS == retval && "Unexpected error.");
+    
+    return retval;
 }
 
 
@@ -240,46 +242,47 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
 {
     assert(NULL != sem);
     
-    int retval = pthread_mutex_lock(&sem->mutex);
-    assert(EINVAL != retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
-    assert(EDEADLK != retval && "Calling thread already owns the mutex.");
-    assert(0 == retval && "Unexpected error.");
+    int retval = AMP_SUCCESS;
     
-    if (0 != retval) {
-        return retval;
+    int const mlock_retval = pthread_mutex_lock(&sem->mutex);
+    assert(EINVAL != mlock_retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
+    assert(EDEADLK != mlock_retval && "Calling thread already owns the mutex.");
+    assert(0 == mlock_retval && "Unexpected error.");
+    
+    if (0 != mlock_retval) {
+        /* retval = mlock_retval; */
+        return mlock_retval;
     }
     {
-        ++(sem->count);
-        
-        /* Could also signal after unlocking the mutex. Needs experimentation.*/
-        int const rv = pthread_cond_signal(&sem->a_thread_can_pass);
-        assert(EINVAL != rv && "Condition variable is invalid.");
-        assert(0 == rv && "Unexpected error.");
-        if (0 != rv) {
-            int const r = pthread_mutex_unlock(&sem->mutex);
-            assert(EINVAL != r && "Mutex is invalid.");
-            assert(EPERM != r && "Calling thread does not own mutex.");
-            assert(0 == r && "Unexpected error.");
-            if (0 != r) {
-                /*
-                 * TODO: @todo How to handle this kind of dependent errors? 
-                 */
-                return r;
+        if (sem->count < AMP_RAW_SEMAPHORE_COUNT_MAX) {
+            ++(sem->count); 
+            
+            /* Could also signal after unlocking the mutex. Needs experimentation.*/
+            int const rv = pthread_cond_signal(&sem->a_thread_can_pass);
+            assert(EINVAL != rv && "Condition variable is invalid.");
+            assert(0 == rv && "Unexpected error.");
+            
+            if (0 != rv) {
+                retval = rv;
             }
             
-            
-            return rv;
+        } else {
+            retval = EOVERFLOW;
         }
     }
-    retval = pthread_mutex_unlock(&sem->mutex);
-    assert(EINVAL != retval && "Mutex is invalid.");
-    assert(EPERM != retval && "Calling thread does not own mutex.");
-    assert(0 == retval && "Unexpected error.");
-    if (0 != retval) {
-        return retval;
+    int const munlock_retval = pthread_mutex_unlock(&sem->mutex);
+    assert(EINVAL != munlock_retval && "Mutex is invalid.");
+    assert(EPERM != munlock_retval && "Calling thread does not own mutex.");
+    assert(0 == munlock_retval && "Unexpected error.");
+    if (0 != munlock_retval) {
+        /* retval = munlock_retval; */
+        return munlock_retval;
     }
     
-    return AMP_SUCCESS;
+    assert( (AMP_SUCCESS == retval || EOVERFLOW == retval) 
+           && "Unexpected error.");
+    
+    return retval;
 }
 
 

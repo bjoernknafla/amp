@@ -73,6 +73,10 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
                                      amp_semaphore_count_t init_count)
 {
     assert(NULL != sem);
+    /* TODO: @todo Decide if to assert or no to assert. */
+    assert( ((amp_raw_semaphore_count_t)0 <= init_count 
+             && AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count) 
+           && "init_count must be greater or equal to zero and lesser or equal to AMP_RAW_SEMAPHORE_COUNT_MAX.");
     
     int const retval = sem_init(&sem->semaphore, 
                                 0, /* Don't share semaphore between processes */
@@ -136,7 +140,8 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
     
     int retval = sem_post(&sem->semaphore);
     assert(EINVAL != errno && "sem->semaphore is not a valid semaphore.");
-    assert((0 == retval || ENOSYS == errno) && "Unexpected error.");
+    assert((0 == retval || ENOSYS == errno || EOVERFLOW == errno) 
+           && "Unexpected error.");
     
     int return_code = AMP_SUCCESS;
     if(0 != retval) {        
