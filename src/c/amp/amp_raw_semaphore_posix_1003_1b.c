@@ -50,6 +50,8 @@
 /* Include errno, EINVAL, ENOSYS, ENOSPC, EPERM, EBUSY, EINTR, EDEADLK */
 #include <errno.h>
 
+/* Include _POSIX_SEMAPHORES (if supported) */
+#include <unistd.h>
 
 /* Include AMP_SUCCESS */
 #include "amp_stddef.h"

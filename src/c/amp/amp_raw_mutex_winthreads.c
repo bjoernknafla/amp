@@ -116,6 +116,10 @@ int amp_raw_mutex_finalize(amp_raw_mutex_t mutex)
         BOOL const locked = mutex->is_locked;
         LeaveCriticalSection(&mutex->critical_section);
         
+        /* 
+         * Assert to really show programming error in debug mode - return after
+         * never reached but shows what could happen (undefined behavior).
+         */
         assert(FALSE == locked 
                && "Finalizing a locked mutex leads to undefined behavior." 
                && "Finalizing a mutex locked by the same thread leads to undefined behavior.");
@@ -125,6 +129,10 @@ int amp_raw_mutex_finalize(amp_raw_mutex_t mutex)
         }    
 
     } else {
+        /* 
+         * Assert to really show programming error in debug mode - return after
+         * never reached but shows what could happen (undefined behavior).
+         */
         assert(TRUE == tryenterretval 
                && "Finalizing a locked mutex leads to undefined behavior.");
         
@@ -170,6 +178,10 @@ int amp_raw_mutex_lock(amp_raw_mutex_t mutex)
          * locking in the first place.
          */
         LeaveCriticalSection(&mutex->critical_section);
+        /* 
+         * Assert to really show programming error in debug mode - return after
+         * never reached but shows what could happen (undefined behavior).
+         */
         assert(false && "Recursive locking not allowed.");
         
         return EDEADLK;
@@ -197,6 +209,10 @@ int amp_raw_mutex_trylock(amp_raw_mutex_t mutex)
 #if !defined(NDEBUG)
         if (TRUE == mutex->is_locked) {
             LeaveCriticalSection(&mutex->critical_section);
+            /* 
+             * Assert to really show programming error in debug mode - return after
+             * never reached but shows what could happen (undefined behavior).
+             */
             assert(FALSE == mutex->is_locked 
                    && "Trying to lock recursively leads to undefined behavior.");
             return EDEADLK;
@@ -230,6 +246,10 @@ int amp_raw_mutex_unlock(amp_raw_mutex_t mutex)
         BOOL const locked = mutex->is_locked;
         LeaveCriticalSection(&mutex->critical_section);
         
+        /* 
+         * Assert to really show programming error in debug mode - return after
+         * never reached but shows what could happen (undefined behavior).
+         */
         assert(TRUE == locked 
                && "Calling unlock for a non-locked mutex leads to undefined behavior.");
         
@@ -239,6 +259,10 @@ int amp_raw_mutex_unlock(amp_raw_mutex_t mutex)
         
         
     } else {
+        /* 
+         * Assert to really show programming error in debug mode - return after
+         * never reached but shows what could happen (undefined behavior).
+         */
         assert(TRUE == trylockretval 
                && "Calling unlock for a mutex locked by another thread leads to undefined behavior.");
         return EPERM;

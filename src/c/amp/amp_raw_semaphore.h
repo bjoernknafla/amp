@@ -33,7 +33,8 @@
 /**
  * @file
  *
- * Shallow wrapper around a semaphore type of the platform.
+ * Shallow wrapper around a semaphore type of the platform which is only
+ * used inside one process.
  *
  * @attention Don't copy or move semaphores - copying and moving pointers to
  *            them is ok though you need to take care about ownership 
@@ -110,6 +111,8 @@ extern "C" {
     /**
      * Must be initialized before usage and finalized to free reserved 
      * resources.
+     *
+     * @attention Don't copy or move, otherwise behavior is undefined.
      */
     struct amp_raw_semaphore_s {
 #if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
