@@ -56,12 +56,13 @@ extern "C" {
 #endif
 
 
-    
+    /* Minimal available slots that are for sure usable on the platform. */
 #if defined(AMP_USE_PTHREADS)
-#   define AMP_RAW_THREAD_LOCAL_SLOT_COUNT_MIN PTHREADS_KEY_MAX
-#   define AMP_RAW_THREAD_LOCAL_SLOT_COUNT_MAX PTHREADS_KEY_MAX
+#   define AMP_RAW_THREAD_LOCAL_SLOT_COUNT_AVAILABLE_FOR_SURE PTHREADS_KEY_MAX
+/* #   define AMP_RAW_THREAD_LOCAL_SLOT_COUNT_POSSIBLY_AVAILABLE_MAX PTHREADS_KEY_MAX */
 #elif defined(AMP_USE_WINTHREADS)
-#   error Not implemented yet.
+#   define AMP_RAW_THREAD_LOCAL_SLOT_COUNT_AVAILABLE_FOR_SURE TLS_MINIMUM_AVAILABLE
+/* #   define AMP_RAW_THREAD_LOCAL_SLOT_COUNT_POSSIBLY_AVAILABLE_MAX 1088 */
 #else
 #   error Unsupported platform.
 #endif    
@@ -70,7 +71,7 @@ extern "C" {
 #if defined(AMP_USE_PTHREADS)
         pthread_key_t key;
 #elif defined(AMP_USE_WINTHREADS)
-#   error Not implemented yet.
+        DWORD tls_index;
 #else
 #   error Unsupported platform.
 #endif
@@ -89,6 +90,11 @@ extern "C" {
      *         EAGAIN if system resource are insufficient or the max slot count
      *         has been exceeded.
      *         ENOMEM if the system has insufficient memory to create the key.
+     *         Error codes might be returned to signal errors while
+     *         finalization, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL if the key can't be stored in the argument.
      *
      * @attention key mustn't be NULL.
      */

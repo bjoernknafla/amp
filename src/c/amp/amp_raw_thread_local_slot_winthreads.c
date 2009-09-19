@@ -33,7 +33,16 @@
 /**
  * @file
  *
- * Shallow wrapper around Pthreads thread-specific data.
+ * Shallow wrapper around Windows thread-local storage.
+ *
+ * See http://msdn.microsoft.com/en-us/library/ms686749(VS.85).aspx
+ * See http://support.microsoft.com/kb/94804
+ * See http://msdn.microsoft.com/en-us/library/ms686991(VS.85).aspx
+ * See http://msdn.microsoft.com/en-us/library/ms686997(VS.85).aspx
+ * See http://msdn.microsoft.com/en-us/library/ms686801(VS.85).aspx
+ * See http://msdn.microsoft.com/en-us/library/ms686804(VS.85).aspx
+ * See http://msdn.microsoft.com/en-us/library/ms686818(VS.85).aspx
+ * See http://msdn.microsoft.com/en-us/library/ms686812(VS.85).aspx
  */
 
 
@@ -51,18 +60,22 @@
 int amp_raw_thread_local_slot_init(amp_raw_thread_local_slot_key_t *key)
 {
     assert(NULL != key);
-    
+
     if (NULL == key) {
         return EINVAL;
     }
     
-    int const retval = pthread_key_create(&(key->key), NULL);
-    assert( (0 == retval || EAGAIN == retval || ENOMEM == retval) 
-           && "Unexpected error.");
+    DWORD const index = TlsAlloc();
     
-    if (0 != retval) {
-        return retval;
+    if (TLS_OUT_OF_INDEXES == index) {
+        assert(TLS_OUT_OF_INDEXES != index && "Maximum slot count exceeded.");
+        
+        /* TODO: @todo Call GetLastError to get better error diagnsotics. */
+        
+        return EAGAIN;
     }
+
+    key->tls_index = index;
     
     return AMP_SUCCESS;
 }
@@ -71,12 +84,14 @@ int amp_raw_thread_local_slot_init(amp_raw_thread_local_slot_key_t *key)
 
 int amp_raw_thread_local_slot_finalize(amp_raw_thread_local_slot_key_t key)
 {
-    int const retval = pthread_key_delete(key.key);
-    assert(EINVAL != retval && "Key is invalid.");
-    assert(0 == retval && "Unexpected error.");
+    BOOL const free_retval = TlsFree(key.tls_index);
     
-    if (0 != retval) {
-        return retval;
+    if (FALSE == free_retval) {
+        assert(TRUE == free_retval && "Unknown error.");
+        
+        /* TODO: @todo Call GetLastError to get better error diagnsotics. */
+        
+        return EINVAL;
     }
     
     return AMP_SUCCESS;
@@ -85,14 +100,16 @@ int amp_raw_thread_local_slot_finalize(amp_raw_thread_local_slot_key_t key)
 
 
 int amp_raw_thread_local_slot_set_value(amp_raw_thread_local_slot_key_t key,
-                                                  void *value)
+                                        void *value)
 {
-    int const retval = pthread_setspecific(key.key, value);
-    assert(EINVAL != retval && "Key is invalid.");
-    assert( (0 == retval || ENOMEM == retval) && "Unexpected error.");
+    BOOL const set_retval = TlsSetValue(key.tls_index, value);
     
-    if (0 != retval) {
-        return retval;
+    if (FALSE == set_retval) {
+        assert(TRUE == set_retval && "Unknown error.");
+        
+        /* TODO: @todo Call GetLastError to get better error diagnsotics. */
+        
+        return EINVAL;
     }
     
     return AMP_SUCCESS;
@@ -105,8 +122,18 @@ void* amp_raw_thread_local_slot_get_value(amp_raw_thread_local_slot_key_t key)
     /**
      * TODO: @todo Add a debug status flag to check if a key has been 
      * initialized correctly.
+     *
+     * If 0 is returned GetLastError might return ERROR_SUCCESS to indicate that
+     * everything is alright - Pthreads doesn't detect errors but might lead
+     * to undefined behavior when using an invalid key.
      */
-    return pthread_getspecific(key.key);
+    void *retval =  TlsGetvalue(key.tls_index);
+    
+    assert((NULL != retval || ERROR_SUCCESS == GetLastError())
+           && "Unknown error.");
+    
+    
+    return retval;
 }
 
 

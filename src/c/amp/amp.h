@@ -53,6 +53,10 @@
  *             symbol is set, also aborting in non-debug mode, to clearly point
  *             to problem areas in the code instead of hiding them behind
  *             undefined behavior.
+ *
+ * TODO: @todo Add a section to the readme files how to build @em amp on
+ *             the different supported platforms. Mention the need for 
+ *             @em UnitTest++ .
  */
 
 #ifndef AMP_amp_H
