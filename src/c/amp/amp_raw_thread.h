@@ -128,6 +128,11 @@ extern "C" {
      *
      * @return AMP_SUCCESS on successful thread launch.
      *         EAGAIN if the system is lacking resources for thread creation.
+     *         Other error codes might be returned to signal errors while
+     *         launching, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL The thread or the thread function is invalid.
      *
      * @attention Passing NULL for @a thread or @a thread_func results in 
      *            undefined behavior.
@@ -149,6 +154,10 @@ extern "C" {
      * Thread memory can be freed after successful join.
      *
      * @return AMP_SUCCESS after succesfully joining with the thread.
+     *         Other error codes might be returned to signal errors while
+     *         launching, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
      *         EDEADLK If a deadlock condition was detected or the calling
      *         thread tries to join with itself.
      *         EINVAL argument doesn't refer to a joinable thread.

@@ -33,7 +33,7 @@
 /**
  * @file
  *
- *
+ * Shallow wrapper around Pthreads threads.
  */
 
 
@@ -95,21 +95,19 @@ int amp_raw_thread_launch(amp_raw_thread_t *thread,
     assert(NULL != thread);
     assert(NULL != thread_func);
     
-    /*
-    if (NULL == thread_func) {
+    if (NULL == thread || NULL == thread_func) {
         return EINVAL;
     }
-    */
     
     thread->thread_func = thread_func;
     thread->thread_func_context = thread_func_context;
     thread->state = AMP_RAW_THREAD_PRELAUNCH_STATE;
     
     int const retval = pthread_create(&(thread->native_thread_description.thread), 
-                                      NULL,
+                                      NULL, /* Default thread creation attribs. */
                                       native_thread_adapter_func, 
                                       thread);
-    assert(EINVAL != retval);
+    assert(EINVAL != retval && "Thread attributes are invalid.");
     assert((0 == retval || EAGAIN == retval) && "Unexpected error.");
     
     if (0 == retval) {
