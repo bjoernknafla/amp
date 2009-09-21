@@ -240,7 +240,7 @@ int amp_raw_thread_join(amp_raw_thread_t *thread)
 
 
 
-amp_raw_thread_id_t amp_raw_thread_get_id(void)
+amp_raw_thread_id_t amp_raw_thread_id(void)
 {
     /*
      * TODO: @todo Remove hack! Most Pthreads libraries implement pthread_t as
@@ -248,6 +248,19 @@ amp_raw_thread_id_t amp_raw_thread_get_id(void)
      *             
      */
     return (amp_raw_thread_id_t)GetCurrentThreadId();
+}
+
+
+
+amp_raw_thread_id_t amp_raw_thread_get_id(amp_raw_thread_t *thread)
+{
+    assert(NULL != thread);
+    
+    if (AMP_RAW_THREAD_LAUNCHED_STATE != thread->state) {
+        return 0;
+    }
+    
+    return (amp_raw_thread_id_t)(thread->native_thread_description.thread_id);
 }
 
 

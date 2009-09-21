@@ -191,7 +191,15 @@ extern "C" {
      * thread, therefore beware of joining with this new thread if you believe
      * that its the old thread.
      */
-    amp_raw_thread_id_t amp_raw_thread_get_id(void);
+    amp_raw_thread_id_t amp_raw_thread_id(void);
+    
+    
+    /**
+     * Returns the thread id associated with the amp_raw_thread_t argument.
+     * 
+     * @attention Don't pass an non-launched or invalid thread as an argument.
+     */
+    amp_raw_thread_id_t amp_raw_thread_get_id(amp_raw_thread_t *thread);
     
     /**
      * Hints the operating system that it might be benificial to context switch
