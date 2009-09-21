@@ -72,7 +72,7 @@
 
 
 int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                           amp_semaphore_count_t init_count)
+                           amp_raw_semaphore_count_t init_count)
 {
     assert(NULL != sem);
     
@@ -96,7 +96,7 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
     if (NULL == sem->semaphore_handle) {
         
         switch (last_error) {
-            case ERROR_TOO_MANY_SEMAPHORE:
+            case ERROR_TOO_MANY_SEMAPHORES:
                 retval = EAGAIN;
                 break;
             case ERROR_EXCL_SEM_ALREADY_OWNED:
@@ -244,7 +244,8 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
             case ERROR_TOO_MANY_SEM_REQUESTS:
                 assert(false 
                        && "Unclear what is meant by requests - overflow in counter for waiting semaphores?");
-                retval = EOVERFLOW;
+                /* retval = EOVERFLOW; */
+                retval = EAGAIN;
                 break;
                 /*case ERROR_INVALID_AT_INTERRUPT_TIME:
                  break;*/
@@ -264,7 +265,8 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
                 break;
             case ERROR_TOO_MANY_POSTS:
                 assert(false && "If POSTS mean signals, then the max semaphore count has been reached.");
-                retval = EOVERFLOW;
+                /* retval = EOVERFLOW; */
+                retval = EAGAIN;
                 break;
             default:
                 /* TODO: @todo Check which code to use to flag an unknown error. 
@@ -290,7 +292,7 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
     BOOL const release_retval = ReleaseSemaphore(sem->semaphore_handle, 1, NULL);
     
     if (FALSE == release_retval) {
-        DWORD const last_error = GetLastError();
+        
         
         retval = EINVAL;
 #if !defined(NDEBUG)
@@ -313,7 +315,8 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
             case ERROR_TOO_MANY_SEM_REQUESTS:
                 assert(false 
                        && "Unclear what is meant by requests - overflow in counter for waiting semaphores?");
-                retval = EOVERFLOW;
+                /* retval = EOVERFLOW; */
+                retval = EAGAIN;
                 break;
                 /*case ERROR_INVALID_AT_INTERRUPT_TIME:
                  break;*/
@@ -333,7 +336,8 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
                 break;
             case ERROR_TOO_MANY_POSTS:
                 assert(false && "If POSTS mean signals, then the max semaphore count has been reached.");
-                retval = EOVERFLOW;
+                /* retval = EOVERFLOW; */
+                retval = EAGAIN;
                 break;
             default:
                 /* TODO: @todo Check which code to use to flag an unknown error. 

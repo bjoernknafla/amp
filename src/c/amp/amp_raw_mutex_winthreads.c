@@ -81,11 +81,14 @@ int amp_raw_mutex_init(amp_raw_mutex_t mutex)
      * therefore accidentially set the flag to wrong values...
      */
     
+    BOOL retval;
+
     assert(NULL != mutex);
     
-    DWORD const spint_count = AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT | AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000;
-    BOOL const retval = InitializeCriticalSectionAndSpinCount(&mutex->critical_section,
-                                                              spin_count);
+    /* DWORD const spint_count = AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT | AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000; */
+    /* BOOL const retval; */
+    retval = InitializeCriticalSectionAndSpinCount(&mutex->critical_section,
+        AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT | AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000);
     
     if (FALSE == retval) {
         /* GetLastError has more infos. */

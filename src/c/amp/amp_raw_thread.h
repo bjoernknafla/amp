@@ -62,7 +62,7 @@
 extern "C" {
 #endif
 
-    
+/*    
 #if defined(AMP_USE_PTHREADS)
 #   define AMP_RAW_THREAD_COUNT_MAX PTHREAD_THREADS_MAX
 #elif defined(AMP_USE_WINTHREADS)
@@ -70,7 +70,7 @@ extern "C" {
 #else
 #   error Unsupported platform.
 #endif
-    
+  */  
     
     
     /**

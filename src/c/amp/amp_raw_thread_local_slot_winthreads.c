@@ -127,7 +127,7 @@ void* amp_raw_thread_local_slot_get_value(amp_raw_thread_local_slot_key_t key)
      * everything is alright - Pthreads doesn't detect errors but might lead
      * to undefined behavior when using an invalid key.
      */
-    void *retval =  TlsGetvalue(key.tls_index);
+    void *retval =  TlsGetValue(key.tls_index);
     
     assert((NULL != retval || ERROR_SUCCESS == GetLastError())
            && "Unknown error.");

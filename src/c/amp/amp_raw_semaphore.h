@@ -245,7 +245,7 @@ extern "C" {
      *
      * @return AMP_SUCCESS after succesful signaling the semaphore.
      *         ENOSYS if the backend doesn't support semaphores.
-     *         EOVERFLOW if the semaphore counter value exceeds 
+     *         EOVERFLOW or EAGAIN if the semaphore counter value exceeds 
      *           AMP_RAW_SEMAPHORE_COUNT_MAX .
      *         Error codes might be returned to signal errors while
      *         signaling, too. These are programming errors and mustn't 

@@ -54,6 +54,11 @@
 
 
 
+/* Include AMP_SUCCESS */
+#include "amp_stddef.h"
+
+
+
 /**
  * Token for amp_raw_thread_s->state symbolizes thread hasn't launched.
  */
@@ -77,7 +82,7 @@
  * Native code (not managed code).
  */
 unsigned int __stdcall native_thread_adapter_func(void *thread);
-unsigned int __stdcall native_thread_adapter_func(void *thread);
+unsigned int __stdcall native_thread_adapter_func(void *thread)
 {
     struct amp_raw_thread_s *thread_context = (struct amp_raw_thread_s *)thread;
     
@@ -114,16 +119,16 @@ int amp_raw_thread_launch(amp_raw_thread_t *thread,
 
     /* Thread creation for native code. */
     unsigned int inter_process_thread_id = 0;
-    uintptr_t thread_handle = (HANDLE)_beginthreadx(NULL, /* Non-inheritable security attribs. */
-                                                    0,  /* Default thread stack size. */
-                                                    native_thread_adapter_func, 
-                                                    thread, 
-                                                    0, /* Start thread running. */
-                                                    &inter_process_thread_id);
+    uintptr_t thread_handle = _beginthreadex(NULL, /* Non-inheritable security attribs. */
+                                             0,  /* Default thread stack size. */
+                                             native_thread_adapter_func, 
+                                             thread, 
+                                             0, /* Start thread running. */
+                                             &inter_process_thread_id);
     int retval = AMP_SUCCESS;
     if (0 != thread_handle) {
         /* Thread launched successfully. */
-        thread->native_thread_description.handle = (HANDLE) thread_handle;
+        thread->native_thread_description.thread_handle = (HANDLE) thread_handle;
         thread->native_thread_description.thread_id = (DWORD) inter_process_thread_id;
         thread->state = AMP_RAW_THREAD_LAUNCHED_STATE;
         
@@ -217,7 +222,7 @@ int amp_raw_thread_join(amp_raw_thread_t *thread)
         }
     } else {
         /* An error occured - handle seems to be invalid, e.g. already closed */
-        assert(WAIT_TIMEOUT == wait_retval && "INFINITE can't timeout.")
+        assert(WAIT_TIMEOUT == wait_retval && "INFINITE can't timeout.");
         
         /* DWORD const last_error = GetLastError(); */
         
