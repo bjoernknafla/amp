@@ -57,6 +57,9 @@
  * TODO: @todo Add a section to the readme files how to build @em amp on
  *             the different supported platforms. Mention the need for 
  *             @em UnitTest++ .
+ *
+ * TODO: @todo Implement setting or using _WIN32_WINNT to include Windows 
+ *             version specific functionality correctly.
  */
 
 #ifndef AMP_amp_H

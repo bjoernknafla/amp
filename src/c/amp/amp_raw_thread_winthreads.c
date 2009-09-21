@@ -252,7 +252,7 @@ amp_raw_thread_id_t amp_raw_thread_get_id(void)
 
 
 
-void amp_raw_thread_yield(void)
+int amp_raw_thread_yield(void)
 {
     /* Ignore return code as it only indicates if there are other threads
      * to switch to or not, but @em amp uses this function only as a hint.
