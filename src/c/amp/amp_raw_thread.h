@@ -49,8 +49,10 @@
 
 #if defined(AMP_USE_PTHREADS)
 #   include <pthread.h>
+#   include <stdint.h>
 #elif defined(AMP_USE_WINTHREADS)
 #   define WIN32_LEAN_AND_MEAN
+#   define _WIN32_WINNT 0x0400 /* To support SwitchToThread function */
 #   include <windows.h>
 #else
 #   error Unsupported platform.
@@ -108,6 +110,15 @@ extern "C" {
         int state;
     };
     typedef struct amp_raw_thread_s amp_raw_thread_t;
+    
+    
+#if defined(AMP_USE_PTHREADS)  
+    typedef uintptr_t amp_raw_thread_id_t;
+#elif defined(AMP_USE_WINTHREADS)
+    typedef DWORD amp_raw_thread_id_t;
+#else
+#   error Unsupported platform.
+#endif
     
     
     /**
@@ -170,6 +181,31 @@ extern "C" {
      *            undefined.
      */
     int amp_raw_thread_join(amp_raw_thread_t *thread);
+    
+    
+    
+    /**
+     * Returns the thread id of the thread calling the function.
+     * The id can be compared to other ids.
+     * When a thread is joined its thread id might be reused by a newly started
+     * thread, therefore beware of joining with this new thread if you believe
+     * that its the old thread.
+     */
+    amp_raw_thread_id_t amp_raw_thread_get_id(void);
+    
+    /**
+     * Hints the operating system that it might be benificial to context switch
+     * to another thread.
+     *
+     * Suggestion from David R. Butenhof's book 
+     * "Programming with POSIX threads", p. 316 : call before locking a mutex to 
+     * minimize the chance of a timeslice while the mutex is locked.
+     *
+     * @return AMP_SUCCESS on success, otherwise
+     *         ENOSYS is returned if not supported.
+     */
+    int amp_raw_thread_yield(void);
+    
     
     
 #if defined(__cplusplus)

@@ -48,6 +48,12 @@
 
 
 
+/* Include sched_yield */
+#include <sched.h>
+
+
+
+
 /**
  * Token for amp_raw_thread_s->state symbolizes thread hasn't launched.
  */
@@ -154,4 +160,25 @@ int amp_raw_thread_join(amp_raw_thread_t *thread)
     
     return retval;
 }
+
+
+
+
+amp_raw_thread_id_t amp_raw_thread_get_id(void)
+{
+    /*
+     * TODO: @todo Remove hack! Most Pthreads libraries implement pthread_t as
+     *             a pointer to a thread struct, a pointeter can be converted to
+     *             
+     */
+    return (amp_raw_thread_id_t)pthread_self();
+}
+
+
+
+int amp_raw_thread_yield(void)
+{
+    return sched_yield();
+}
+
 

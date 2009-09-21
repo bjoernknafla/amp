@@ -172,5 +172,3 @@ int amp_raw_mutex_unlock(amp_raw_mutex_t mutex)
 }
 
 
-
-
