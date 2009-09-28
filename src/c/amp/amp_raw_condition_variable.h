@@ -33,43 +33,66 @@
 /**
  * @file
  *
- * Main header file includes all raw amp headers. Raw headers are dependent
- * on platform specific headers and therefore include them. Non-raw headers
- * aren't platform dependent and don't include any platform-specific headers.
+ * Shallow wrapper around condition variables.
  *
- * See amp.h and README.markdown for more infos.
- *
- * @attention Don't use amp functions other than the init functions on a
- *            non-initialized data structure.
- * @attention Don't call any amp init function on an already initialized (and
- *            non-finalized) data structure.
- * @attention Never reyl on undefined behavior - as it can vary between versions
- *            of @em amp and the used backend (Pthreads, Windows threads, etc.).
- *
- * TODO: @todo Add windows threads backends.
- *
- * TODO: @todo Add include for all non-raw amp headers.
- *
- * TODO: @todo Add Apple OS X 10.6 libdispatch backends for amp_raw_ semaphore
- *             and mutex.
- *
- * TODO: @todo Include amp_raw_condition_variable.h
- *
- * TODO: @todo When adding the non-raw data types and connect them to the raw
- *             ones it might make sense to add the work opaque to the raw
- *             data structures.
+ * TODO: @todo Add a backend implementation using Windows Vista condition 
+ *             variables.
  */
 
-#ifndef AMP_amp_raw_H
-#define AMP_amp_raw_H
+#ifndef AMP_amp_raw_condition_variable_H
+#define AMP_amp_raw_condition_variable_H
 
 
-#include <amp/amp_stddef.h>
-/* #include <amp/amp/raw_condition_variable.h> */
-#include <amp/amp_raw_mutex.h>
-#include <amp/amp_raw_semaphore.h>
-#include <amp/amp_raw_thread.h>
-#include <amp/amp_raw_thread_local_slot.h>
+
+#if defined(AMP_USE_PTHREADS)
+#   include <pthread.h>
+#elif defined(AMP_USE_WINTHREADS)
+#   error Implement
+#else
+#   error Unsupported platform.
+#endif
 
 
-#endif /* AMP_amp_raw_H */
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+    /* Forward declaration */
+    typedef struct amp_raw_mutex_s *amp_raw_mutex_t;
+    
+    /**
+     * Don't copy and don't move, pointer can be copied and moved but ownership
+     * management is up to the user.
+     */
+    struct amp_raw_condition_variable_s
+    {
+#if defined(AMP_USE_PTHREADS)
+        pthread_cond_t cond;
+#elif defined(AMP_USE_WINTHREADS)
+#   error Implement
+#endif
+    };
+    
+    typedef struct amp_raw_condition_variable_s *amp_raw_condition_variable_t;
+    
+    
+    
+    
+    int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond);
+    int amp_raw_condition_variable_finalize(amp_raw_condition_variable_t cond);
+    
+    int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond);
+    int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond);
+    
+    int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
+                                        amp_raw_mutex_t mutex);
+    
+    
+
+#if defined(__cplusplus)
+} /*  extern "C" */
+#endif    
+    
+    
+#endif /* AMP_amp_raw_condition_variable_H */

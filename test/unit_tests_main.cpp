@@ -34,6 +34,12 @@
  * @file
  *
  * Unit test runner.
+ *
+ * @attention If multiple tests show problems concentrate in the following
+ *            order on problems: threads, thread local slots, mutexes, 
+ *            semaphores, condition variables. Fixing one of the problems from
+ *            the beginning of this list might automtically fix the problems
+ *            of the others alongside too.
  */
 
 

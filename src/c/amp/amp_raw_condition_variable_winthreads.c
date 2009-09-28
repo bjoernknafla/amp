@@ -33,43 +33,15 @@
 /**
  * @file
  *
- * Main header file includes all raw amp headers. Raw headers are dependent
- * on platform specific headers and therefore include them. Non-raw headers
- * aren't platform dependent and don't include any platform-specific headers.
+ * Implementation of POSIX thread condition variable alikes using Windows
+ * CRITICAL_SECTION, events, event waiting and signaling.
  *
- * See amp.h and README.markdown for more infos.
- *
- * @attention Don't use amp functions other than the init functions on a
- *            non-initialized data structure.
- * @attention Don't call any amp init function on an already initialized (and
- *            non-finalized) data structure.
- * @attention Never reyl on undefined behavior - as it can vary between versions
- *            of @em amp and the used backend (Pthreads, Windows threads, etc.).
- *
- * TODO: @todo Add windows threads backends.
- *
- * TODO: @todo Add include for all non-raw amp headers.
- *
- * TODO: @todo Add Apple OS X 10.6 libdispatch backends for amp_raw_ semaphore
- *             and mutex.
- *
- * TODO: @todo Include amp_raw_condition_variable.h
- *
- * TODO: @todo When adding the non-raw data types and connect them to the raw
- *             ones it might make sense to add the work opaque to the raw
- *             data structures.
+ * See http://www.cse.wustl.edu/~schmidt/win32-cv-1.html for infos about
+ * possible different implementation techniques.
  */
 
-#ifndef AMP_amp_raw_H
-#define AMP_amp_raw_H
 
+#include "amp_raw_condition_variable.h"
 
-#include <amp/amp_stddef.h>
-/* #include <amp/amp/raw_condition_variable.h> */
-#include <amp/amp_raw_mutex.h>
-#include <amp/amp_raw_semaphore.h>
-#include <amp/amp_raw_thread.h>
-#include <amp/amp_raw_thread_local_slot.h>
+#error "Not Implemented"
 
-
-#endif /* AMP_amp_raw_H */
