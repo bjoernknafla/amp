@@ -33,7 +33,16 @@
 /**
  * @file
  *
- * Shallow wrapper around condition variables.
+ * Simple implementation that behaves alike POSIX threads condition variables.
+ *
+ * Never pass an invalid or NULL argument to the functions.
+ * Never pass a non-initialized condition variable to the functions other than
+ * the init function. Never pass an initialized function to the init function
+ * if it hasn't been finalized before.
+ * Don't finalize a condition variable that is still in use by threads, e.g.
+ * while threads are waiting on it or might signal it later on.
+ * Initializing and finalizing a condition variable must only be done 
+ * by a single thread, it isn't thread-safe.
  *
  * TODO: @todo Add a backend implementation using Windows Vista condition 
  *             variables.
@@ -78,13 +87,96 @@ extern "C" {
     
     
     
-    
+    /**
+     * Initializes a condition variable.
+     *
+     * Only call from one thread for a non-initialized condition variable.
+     *
+     * @return AMP_SUCCESS if initialized successful, otherwise error codes are
+     *         returned.
+     *         EAGAIN if a system resource other than memory wasn't available.
+     *         ENOMEM if available memory was lacking.
+     *         Error codes might be returned to signal errors while
+     *         initializing, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EBUSY if the condition variable is already initialized.
+     *         EINVAL is the condition variable is invalid or already 
+     *         initialized.
+     */
     int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond);
+    
+    /**
+     * Finalizes a condition variable.
+     *
+     * Only call from one thread after when the condition variable isn't in use
+     * anymore.
+     *
+     * @return AMP_SUCCESS if the condition variable was successfully finalized.
+     *         Error codes might be returned to signal errors while
+     *         finalizing, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL the condition variable is invalid.
+     *         EBUSY the condition variable is in use.
+     */
     int amp_raw_condition_variable_finalize(amp_raw_condition_variable_t cond);
     
+    /**
+     * Wakes up all threads waiting on the condition variable. Only one thread
+     * will be able to get the lock of the associated mutex (see wait function
+     * below), all other will block while waiting on the lock. The "winner"
+     * thread will leave its call to amp_raw_condition_variable_wait with the
+     * assoicated mutex locked already.
+     * The thread calling broadcast can but needn't own the lock on the 
+     * associated mutex.
+     *
+     * @return AMP_SUCCESS on successful broadcasting.
+     *         Error codes might be returned to signal errors while
+     *         broadcasting, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL if the condition variable isn't valid.
+     */
     int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond);
+    
+    /**
+     * Wakes up an unspecified single waiting thread of the threads waiting on
+     * the condition variable. The woken up thread will leave the 
+     * call to amp_raw_condition_variable_wait with the associated mutex locked.
+     * The thread calling signal can but needn't own the lock on the associated
+     * mutex.
+     *
+     * @return AMP_SUCCESS on successful broadcasting.
+     *         Error codes might be returned to signal errors while
+     *         broadcasting, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL if the condition variable isn't valid.
+     */
     int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond);
     
+    /**
+     * The thread calling amp_raw_condition_variable_wait waits on the 
+     * conditiona variable until awaken by a signal or broadcast. When awaking
+     * the associated mutex is already locked. The thread should then re-check 
+     * that the predicate or state condition it waited on via the condition
+     * variable is true or should wait on the condition variable again 
+     * otherwise.
+     * The thread calling must own the lock on the mutex assocaited with the
+     * condition variable.
+     *
+     * @return AMP_SUCCESS after the calling thread has been awoken by a signal 
+     *         or broadcast and has already locked the associated mutex.
+     *         Error codes might be returned to signal errors while
+     *         waiting, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL is the condition variable or the mutex are invalid, or
+     *         if different mutexes are used for concurrent waits on the same
+     *         condition variable, or if the mutex isn't owned by the calling
+     *         thread.
+     */
     int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
                                         amp_raw_mutex_t mutex);
     
