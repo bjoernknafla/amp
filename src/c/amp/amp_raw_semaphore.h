@@ -69,6 +69,9 @@
 
 #if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
 #   include <semaphore.h>
+#elif defined(AMP_USE_LIBDISPATCH_SEMAPHORES)
+#   include <dispatch/dispatch.h>
+#   include <limits.h>
 #elif defined(AMP_USE_PTHREADS)
 #   include <pthread.h>
 #   include <limits.h>
@@ -96,6 +99,8 @@ extern "C" {
      */
 #if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
     typedef unsigned int amp_raw_semaphore_count_t;
+#elif defined(AMP_USE_LIBDISPATCH_SEMAPHORES)
+    typedef long amp_raw_semaphore_count_t;
 #elif defined(AMP_USE_PTHREADS)
     typedef unsigned int amp_raw_semaphore_count_t;
 #elif defined(AMP_USE_WINTHREADS)
@@ -115,6 +120,8 @@ extern "C" {
      */
 #if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
 #   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(SEM_VALUE_MAX))
+#elif defined(AMP_USE_LIBDISPATCH_SEMAPHORES)
+#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(LONG_MAX)
 #elif defined(AMP_USE_PTHREADS)
 #   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(UINT_MAX))
 #elif defined(AMP_USE_WINTHREADS)
@@ -133,6 +140,8 @@ extern "C" {
     struct amp_raw_semaphore_s {
 #if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
         sem_t semaphore;
+#elif defined(AMP_USE_LIBDISPATCH_SEMAPHORES)
+        dispatch_semaphore_t semaphore;
 #elif defined(AMP_USE_PTHREADS)
         pthread_mutex_t mutex;
         pthread_cond_t a_thread_can_pass;

@@ -60,6 +60,12 @@
  *
  * TODO: @todo Implement setting or using _WIN32_WINNT to include Windows 
  *             version specific functionality correctly.
+ *
+ * TODO: @todo Document all AMP_USE_ prefixed preprocessor symbols to 
+ *                      differentiate specific platform backends (Windows Vista
+ *                      condition variables, Mac OS X 10.6 dispatch semaphores.
+ * TODO: @todo Add error preprocessor commands to all platform-ifdefs to 
+ *             signal where new platforms need to add code when adapting them.
  */
 
 #ifndef AMP_amp_H

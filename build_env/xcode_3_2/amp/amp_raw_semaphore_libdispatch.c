@@ -33,47 +33,81 @@
 /**
  * @file
  *
- * Implementation of POSIX thread condition variable alikes using Windows
- * CRITICAL_SECTION, events, event waiting and signaling, and semaphores.
- *
- * See http://www.cse.wustl.edu/~schmidt/win32-cv-1.html for infos about
- * possible different implementation techniques but beware - there are bugs
- * in all so called "solutions" shown.
+ * Shallow wrapper around Mac OS X 10.6 libdispatch semaphores.
  */
 
-
-#include "amp_raw_condition_variable.h"
-
+#include "amp_raw_semaphore.h"
 
 
-int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
+int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
+                           amp_raw_semaphore_count_t init_count)
 {
-    assert(NULL != condvar);
+    /* No way to reliably detect if the sem is already initialized... */
     
-    if (NULL == condvar) {
+    assert(NULL != sem);
+    assert(0l <= init_count);
+    
+    if (NULL == sem) {
         return EINVAL;
     }
     
+    if (0l > init_count) {
+        return EINVAL;
+    }
     
-    CRITICAL_SECTION wake_waiting_threads_critsec;
-    CRITICAL_SECTION access_waiting_threads_count_critsec;
-    HANDLE waking_waiting_threads_count_control_sem;
+    sem->semaphore = dispatch_semaphore_create(init_count);
     
-    cond->finished_waking_waiting_threads_event = CreateEvent(NULL, /* Default security and no inheritance to child processes */
-                                                              FALSE, /* No manual reset */
-                                                              0, /* Initially not signaled */
-                                                              NULL /* Not inter-process available */
-                                                              );
-                                                              
+    if (NULL == sem->semaphore) {
+        return ENOMEM;
+    }
     
-#error
-    
-    LONG waiting_thread_count;
-    
-    
-    
+    return AMP_SUCCESS;
 }
 
 
 
+int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
+{
+    assert(NULL != sem);
+    assert(NULL != sem->semaphore);
+    
+    if (NULL == sem)  {
+        return EINVAL;
+    }
+    
+    if (NULL == sem->semaphore) {
+        return EINVAL;
+    }
+    
+    dispatch_release(sem->semaphore);
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
+{
+    assert(NULL != sem);
+    assert(NULL != sem->semaphore);
+
+    long retval = dispatch_semaphore_wait(sem->semaphore, DISPATCH_TIME_FOREVER);
+    (void)retval;
+    
+    assert(0 == retval && "Unexpected error.");
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
+{
+    assert(NULL != sem);
+    assert(NULL != sem->semaphore);
+    
+    dispatch_semaphore_signal(sem->semaphore);
+    
+    return AMP_SUCCESS;
+}
 

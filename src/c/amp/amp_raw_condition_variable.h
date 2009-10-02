@@ -55,8 +55,18 @@
 
 #if defined(AMP_USE_PTHREADS)
 #   include <pthread.h>
+#elif defined(AMP_USE_WINVISTA_CONDITION_VARIABLES)
+#   define WIN32_LEAN_AND_MEAN /* Only include streamlined windows header. */
+#   if !define(_WIN32_WINNT) || (_WIN32_WINNT < 0x0601) /* To support CONDITION_VARIABLE */
+#       error Windows version not supported.
+#   endif
+#   include <windows.h>
 #elif defined(AMP_USE_WINTHREADS)
-#   error Implement
+#   define WIN32_LEAN_AND_MEAN /* Only include streamlined windows header. */
+#   if !define(_WIN32_WINNT) || (_WIN32_WINNT < 0x0403) /* To support CRITICAL_SECTION */
+#       error Windows version not supported.
+#   endif
+#   include <windows.h>
 #else
 #   error Unsupported platform.
 #endif
@@ -78,8 +88,16 @@ extern "C" {
     {
 #if defined(AMP_USE_PTHREADS)
         pthread_cond_t cond;
+#elif defined(AMP_USE_WINVISTA_CONDITION_VARIABLES)
+        CONDITION_VARIABLE cond;
 #elif defined(AMP_USE_WINTHREADS)
-#   error Implement
+        CRITICAL_SECTION wake_waiting_threads_critsec;
+        CRITICAL_SECTION access_waiting_threads_count_critsec;
+        HANDLE waking_waiting_threads_count_control_sem;
+        HANDLE finished_waking_waiting_threads_event;
+        LONG waiting_thread_count;
+#else
+#   error Unsupported platform.
 #endif
     };
     

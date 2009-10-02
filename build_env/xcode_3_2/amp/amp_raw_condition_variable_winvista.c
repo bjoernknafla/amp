@@ -33,47 +33,82 @@
 /**
  * @file
  *
- * Implementation of POSIX thread condition variable alikes using Windows
- * CRITICAL_SECTION, events, event waiting and signaling, and semaphores.
+ * Shallow wrapper around Windows Vista condition variables.
  *
- * See http://www.cse.wustl.edu/~schmidt/win32-cv-1.html for infos about
- * possible different implementation techniques but beware - there are bugs
- * in all so called "solutions" shown.
+ * TODO: @todo Test on Windows Vista system.
  */
 
-
-#include "amp_raw_condition_variable.h"
-
+#inlude "amp_raw_condition_variable.h"
 
 
 int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
 {
-    assert(NULL != condvar);
+    assert(NULL != cond);
     
-    if (NULL == condvar) {
+    if (NULL == cond) {
         return EINVAL;
     }
     
+    /* No value returned. */
+    InitializeConditionVariable(&cond->cond);
     
-    CRITICAL_SECTION wake_waiting_threads_critsec;
-    CRITICAL_SECTION access_waiting_threads_count_critsec;
-    HANDLE waking_waiting_threads_count_control_sem;
-    
-    cond->finished_waking_waiting_threads_event = CreateEvent(NULL, /* Default security and no inheritance to child processes */
-                                                              FALSE, /* No manual reset */
-                                                              0, /* Initially not signaled */
-                                                              NULL /* Not inter-process available */
-                                                              );
-                                                              
-    
-#error
-    
-    LONG waiting_thread_count;
-    
-    
-    
+    return AMP_SUCCESS;
 }
 
+
+
+int amp_raw_condition_variable_finalize(amp_raw_condition_variable_t cond)
+{
+    assert(NULL != cond);
+    
+    if (NULL == cond) {
+        return EINVAL;
+    }
+    
+    /* Nothing to do... */
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
+{
+    assert(NULL != cond);
+    
+    /* No value returned. */
+    WakeAllConditionVariable(&cond->cond);
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
+{
+    assert(NULL != cond);
+    
+    /* No value returned. */
+    WakeConditionVariable(&cond->cond);
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
+                                    amp_raw_mutex_t mutex)
+{
+    assert(NULL != cond);
+    assert(NULL != mutex);
+    
+    BOOL retval = SleepConditionVariable(&cond->cond, &mutex->critical_section, INFINITE);
+    assert(FALSE != retval && "Unexpected error.");
+    
+    /* GetLastError has more infos in case of error. */
+    
+    return AMP_SUCCESS;
+}
 
 
 
