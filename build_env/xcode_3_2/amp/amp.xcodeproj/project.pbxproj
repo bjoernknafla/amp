@@ -58,6 +58,7 @@
 		321EFA981070EBF000CC24FF /* amp_raw_condition_variable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = amp_raw_condition_variable.h; path = ../../../src/c/amp/amp_raw_condition_variable.h; sourceTree = SOURCE_ROOT; };
 		321EFA991070EBF000CC24FF /* amp_raw_condition_variable_pthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_condition_variable_pthreads.c; path = ../../../src/c/amp/amp_raw_condition_variable_pthreads.c; sourceTree = SOURCE_ROOT; };
 		321EFA9B1070EC1700CC24FF /* amp_raw_condition_variable_winthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_condition_variable_winthreads.c; path = ../../../src/c/amp/amp_raw_condition_variable_winthreads.c; sourceTree = SOURCE_ROOT; };
+		323FA9941079105C00BCD891 /* amp_internal_winthreads_critical_section_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = amp_internal_winthreads_critical_section_config.h; sourceTree = "<group>"; };
 		3259288910586FE000D5379D /* COPYRIGHT.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = COPYRIGHT.txt; path = ../../../COPYRIGHT.txt; sourceTree = SOURCE_ROOT; };
 		3259288A10586FE000D5379D /* README.markdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.markdown; path = ../../../README.markdown; sourceTree = SOURCE_ROOT; };
 		325928911058706E00D5379D /* UnitTest++.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "UnitTest++.xcconfig"; sourceTree = "<group>"; };
@@ -237,6 +238,7 @@
 				325928A01058711E00D5379D /* amp_raw_thread_local_slot.h */,
 				325928A11058711E00D5379D /* amp_raw_thread_local_slot_pthreads.c */,
 				32A2D67A106512B3001C4DE3 /* amp_raw_thread_local_slot_winthreads.c */,
+				323FA9941079105C00BCD891 /* amp_internal_winthreads_critical_section_config.h */,
 			);
 			name = C;
 			sourceTree = "<group>";

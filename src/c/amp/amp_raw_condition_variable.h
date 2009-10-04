@@ -78,6 +78,7 @@ extern "C" {
 #endif
 
     /* Forward declaration */
+    struct amp_raw_mutex_s;
     typedef struct amp_raw_mutex_s *amp_raw_mutex_t;
     
     /**

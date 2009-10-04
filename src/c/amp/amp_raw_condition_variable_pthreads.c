@@ -11,6 +11,11 @@
 
 
 
+#include <errno.h>
+#include <assert.h>
+
+
+
 #include "amp_raw_mutex.h"
 
 
@@ -24,7 +29,7 @@ int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
     }
     
     int retval = pthread_cond_init(&cond->cond, NULL);
-    assert(EINVAL != retval && "Condition variable attribute is invalid.")
+    assert(EINVAL != retval && "Condition variable attribute is invalid.");
     assert(EBUSY != retval && "Condition variable is already initialized.");
     
     assert( (0 == retval || EAGAIN == retval || ENOMEM == retval) 
@@ -92,7 +97,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
 
     assert(EINVAL != retval && "Condition variable or mutex is invalid or different mutexes for concurrent waits or mutex is not owned by calling thread.");
 
-    assert(= == retval && "Unexpected error.");
+    assert(0 == retval && "Unexpected error.");
     
     return retval;
 }

@@ -53,23 +53,7 @@
 
 
 #include "amp_stddef.h"
-
-
-#define AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_ZERO_SPIN_COUNT 0
-#define AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT 1500
-
-
-/*
- * Flag or-ed into the spin count when calling 
- * @c InitializeCriticalSectionAndSpinCount . On Win2000 the flag triggers
- * an immediate initialization instead of the Win2000-typical lazy 
- * initialization to prevent later otherwise possible exceptions when entering
- * or leaving the CRITICAL_SECTION. Later Windows version won't throw 
- * exceptions and ignore the high bit set by this flag.
- * 
- * See http://msdn.microsoft.com/en-us/library/ms683476(VS.85).aspx for details.
- */
-#define AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000 0x080000000
+#include "amp_internal_winthreads_critical_section_config.h"
 
 
 

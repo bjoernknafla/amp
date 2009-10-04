@@ -33,91 +33,29 @@
 /**
  * @file
  *
- * Shallow wrapper around Mac OS X 10.6 libdispatch semaphores.
+ * Standard settings for Windows CRITICAL_SECTION 
+ * InitializeCriticalSectionAndSpinCount function.
  */
 
-#include "amp_raw_semaphore.h"
+#ifndef AMP_amp_internal_winthreads_critical_section_config_H
+#define AMP_amp_internal_winthreads_critical_section_config_H
 
 
-
-#include <errno.h>
-#include <assert.h>
-
+#define AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_ZERO_SPIN_COUNT 0
+#define AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT 1500
 
 
-#include "amp_stddef.h"
+/*
+ * Flag or-ed into the spin count when calling 
+ * @c InitializeCriticalSectionAndSpinCount . On Win2000 the flag triggers
+ * an immediate initialization instead of the Win2000-typical lazy 
+ * initialization to prevent later otherwise possible exceptions when entering
+ * or leaving the CRITICAL_SECTION. Later Windows version won't throw 
+ * exceptions and ignore the high bit set by this flag.
+ * 
+ * See http://msdn.microsoft.com/en-us/library/ms683476(VS.85).aspx for details.
+ */
+#define AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000 0x080000000
 
 
-
-int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                           amp_raw_semaphore_count_t init_count)
-{
-    /* No way to reliably detect if the sem is already initialized... */
-    
-    assert(NULL != sem);
-    assert(0l <= init_count);
-    
-    if (NULL == sem) {
-        return EINVAL;
-    }
-    
-    if (0l > init_count) {
-        return EINVAL;
-    }
-    
-    sem->semaphore = dispatch_semaphore_create(init_count);
-    
-    if (NULL == sem->semaphore) {
-        return ENOMEM;
-    }
-    
-    return AMP_SUCCESS;
-}
-
-
-
-int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
-{
-    assert(NULL != sem);
-    assert(NULL != sem->semaphore);
-    
-    if (NULL == sem)  {
-        return EINVAL;
-    }
-    
-    if (NULL == sem->semaphore) {
-        return EINVAL;
-    }
-    
-    dispatch_release(sem->semaphore);
-    
-    return AMP_SUCCESS;
-}
-
-
-
-int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
-{
-    assert(NULL != sem);
-    assert(NULL != sem->semaphore);
-
-    long retval = dispatch_semaphore_wait(sem->semaphore, DISPATCH_TIME_FOREVER);
-    (void)retval;
-    
-    assert(0 == retval && "Unexpected error.");
-    
-    return AMP_SUCCESS;
-}
-
-
-
-int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
-{
-    assert(NULL != sem);
-    assert(NULL != sem->semaphore);
-    
-    dispatch_semaphore_signal(sem->semaphore);
-    
-    return AMP_SUCCESS;
-}
-
+#endif /* AMP_amp_internal_winthreads_critical_section_config_H */

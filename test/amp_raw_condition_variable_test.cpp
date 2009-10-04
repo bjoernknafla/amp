@@ -20,6 +20,7 @@
 #include <UnitTest++.h>
 
 
+#include <amp/amp_stddef.h>
 #include <amp/amp_raw_mutex.h>
 #include <amp/amp_raw_semaphore.h>
 #include <amp/amp_raw_thread.h>
