@@ -97,6 +97,7 @@ extern "C" {
         HANDLE waking_waiting_threads_count_control_sem;
         HANDLE finished_waking_waiting_threads_event;
         LONG waiting_thread_count;
+        BOOL broadcast_in_progress;
 #else
 #   error Unsupported platform.
 #endif

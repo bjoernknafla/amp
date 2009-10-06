@@ -58,6 +58,10 @@
  * TODO: @todo When adding the non-raw data types and connect them to the raw
  *             ones it might make sense to add the work opaque to the raw
  *             data structures.
+ *
+ * TODO: @todo In winthreads sources store the result of GetLastError in an 
+ *             otherwise unused variable to allow inspection of the error code
+ *             from the debugger.
  */
 
 #ifndef AMP_amp_raw_H

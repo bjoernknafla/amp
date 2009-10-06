@@ -170,6 +170,7 @@ int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
     
     
     cond->waiting_thread_count = 0l;
+    cond->broadcast_in_progress = FALSE;
     
     return AMP_SUCCESS;
 }
@@ -243,6 +244,8 @@ int amp_raw_condition_variable_finalize(amp_raw_condition_variable_t cond)
 
 int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
 {
+    assert(NULL != cond);
+    
     
 }
 
@@ -250,7 +253,8 @@ int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
 
 int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
 {
-    
+    assert(NULL != cond);
+
 }
 
 
@@ -258,7 +262,160 @@ int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
 int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
                                     amp_raw_mutex_t mutex)
 {
+    /*
+     * TODO: @todo Rewrite this function to prevent duplication of error 
+     *             handling code. Use goto or nested if-else-branches?
+     */
+     
+    assert(NULL != cond);
+    assert(NULL != mutex);
     
+    /* Get the lock that controls that threads can only add themselves to 
+     * the waiting count as long as no other thread is doing so, or as long as
+     * broadcast or signal aren't waiting on all previously waiting threads
+     * to be woken.
+     *
+     * TODO: @todo Decide if to use an atomic increment instruction, possibly 
+     *             with aquire semantics to prevent instruction reordering 
+     *             inside the function.
+     *             The critical section needs to stay though, to coordinate with
+     *             signal and broadcast which can't allow new waiters to add
+     *             themselves until all previously waiting threads are awake.
+     */
+    EnterCriticalSection(&cond->wake_waiting_threads_critsec);
+    {
+        ++(cond->waiting_thread_count);
+    }
+    LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
+    
+    /* Unlock the mutex to allow other threads to add themselves to the waiting
+     * count or to allow broadcast or signal to be called while the mutex
+     * is locked.
+     * Must be done before waiting on the semaphore that control how many
+     * threads are awoken so no deadlock occurs.
+     *
+     * Current mutex implementation should assert in debug mode and not
+     * return any error in non-debug mode.
+     */
+    int retval = amp_raw_mutex_unlock(mutex);
+    assert(EINVAL != retval && "Mutex is invalid.");
+    assert(EPERM != retval && "Mutex is owned by another thread.");
+    assert(AMP_SUCCESS == retval && "Unexpected error.");
+    /* TODO: @todo Decide if to really handle this error that indicates a 
+     *             programming error. 
+     */
+    if (AMP_SUCCESS != retval) {
+        EnterCriticalSection(&cond->wake_waiting_threads_critsec);
+        {
+            --(cond->waiting_thread_count);
+        }
+        LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
+        
+        /* EINVAL is returned to signal different errors, e.g. not EPERM. */
+        return EINVAL;
+    }
+    
+    
+    DWORD const sem_wait_retval = WaitForSingleSemaphore(cond->waking_waiting_threads_count_control_sem, 
+                           INFINITE);
+    assert(WAIT_OBJECT_0 == sem_wait_retval);
+    /* TODO: @todo Decide if to really handle this error. Based on MSDN unsure
+     *             if it can really happen.
+     */
+    if (WAIT_OBJECT_0 != sem_wait_retval) {
+        EnterCriticalSection(&cond->wake_waiting_threads_critsec);
+        {
+            --(cond->waiting_thread_count);
+        }
+        LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
+        
+        /* Lock the mutex before handing back control to the caller.
+         *
+         * Current mutex implementation should assert in debug mode and not
+         * return any error in non-debug mode.
+         */
+        int retval = amp_raw_mutex_lock(mutex);
+        /* Error would surface earlier */
+        assert(EINVAL != retval && "Mutex is invalid.");
+        /* Error would surface earlier */
+        assert(EDEADLK != retval && "Mutex is already locked by this thread."); 
+        assert(AMP_SUCCESS == retval && "Unexpected error.");
+        
+        return EINVAL;
+    }
+    
+    /* Control and synchronize access to the waiting thread counter. It is only
+     * accessed from awoken waiting threads.
+     *
+     * TODO: @todo Decide if to replace the critical section by using 
+     *             an atomic decrement instruction, possibly with release
+     *             semantics to prevent instruction reordering inside the
+     *             function. Then atomic loading of the broadcast_in_progress
+     *             member field is also needed.
+     */
+
+    BOOl broadcast_in_progress = FALSE;
+    LONG count = 0;
+    EnterCriticalSection(&);
+    {
+        count = --(cond->waiting_thread_count);
+        
+        /* Accessing this field inside the critical section to be sure to
+         * get a synchronized value as set by broadcast.
+         */
+        broadcast_in_progress = cond->broadcast_in_progress;
+    }
+    LeaveCriticalSection(&);
+    
+    BOOL all_waiting_threads_awake = TRUE;
+    if (TRUE == broadcast_in_progress && count > 0) {
+        all_waiting_threads_awake = FALSE;
+    }
+    
+    if (TRUE == all_waiting_threads_awake) {
+        /* Tell the signal or broadcast that all threads to wake up are awake
+         * so the signal or broadcast can end and allow new waiters to add
+         * themselves to the count.
+         */
+        BOOL const set_event_retval = SetEvent(cond->finished_waking_waiting_threads_event);
+        assert(TRUE == set_event_retval);
+        if (FALSE == set_event_retval) {
+            /* This means that the signal or broadcast call will never return...
+             * Their thread is lost, and if they were called from inside the
+             * critical section with a locked mutex all threads will deadlock
+             * while trying to lock the mutex.
+             */
+            
+            /* Lock the mutex before handing back control to the caller.
+             *
+             * Current mutex implementation should assert in debug mode and not
+             * return any error in non-debug mode.
+             */
+            int retval = amp_raw_mutex_lock(mutex);
+            /* Error would surface earlier */
+            assert(EINVAL != retval && "Mutex is invalid.");
+            /* Error would surface earlier */
+            assert(EDEADLK != retval && "Mutex is already locked by this thread."); 
+            assert(AMP_SUCCESS == retval && "Unexpected error.");
+            
+            return EINVAL;
+        }
+    }
+    
+    
+    /* Lock the mutex before handing back control to the caller.
+     *
+     * Current mutex implementation should assert in debug mode and not
+     * return any error in non-debug mode.
+     */
+    int retval = amp_raw_mutex_lock(mutex);
+    /* Error would surface earlier */
+    assert(EINVAL != retval && "Mutex is invalid.");
+    /* Error would surface earlier */
+    assert(EDEADLK != retval && "Mutex is already locked by this thread."); 
+    assert(AMP_SUCCESS == retval && "Unexpected error.");
+    
+    return AMP_SUCCESS;
 }
 
 
