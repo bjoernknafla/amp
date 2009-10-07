@@ -97,6 +97,9 @@ extern "C" {
         HANDLE waking_waiting_threads_count_control_sem;
         HANDLE finished_waking_waiting_threads_event;
         LONG waiting_thread_count;
+        /* TODO: @todo Should this be a 32/64bit var instead of a BOOL to enable
+         *             alignment and atomicity? 
+         */
         BOOL broadcast_in_progress;
 #else
 #   error Unsupported platform.

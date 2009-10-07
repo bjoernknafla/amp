@@ -80,6 +80,8 @@ int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
     
     
     
+    /* Assuming that less threads exist than max possible semaphore count.
+     */
     cond->waking_waiting_threads_count_control_sem = CreateSemaphore(NULL, /* No inheritance to child processes */
                                                                      0, /* Initially no threads can pass */
                                                                      LONG_MAX, /* Max semaphore count */
@@ -246,7 +248,51 @@ int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
 {
     assert(NULL != cond);
     
+    EnterCriticalSection(&cond->wake_waiting_threads_critsec);
+    LONG const waiting_thread_count =  cond->waiting_thread_count;
     
+    if (0 < waiting_thread_count) {
+        
+        cond->broadcast_in_progress = TRUE;
+        /* Releasing the sem here and waiting on it should update the memory of 
+         * the waiting threads to see that a broadcast is in progress.
+         */
+        LONG prev_sem_count = 0;
+        /* Assuming that less threads exist than max possible semaphore count.
+         * TODO: @todo Decide if to spin here if the assumption doesn't hold
+         *             true in the future?
+         */
+        assert(waiting_thread_count <= LONG_MAX 
+               && "Assuming that less threads exist than max possible semaphore count.");
+        BOOL const release_retval = ReleaseSemaphore(cond->waking_waiting_threads_count_control_sem,
+                                                     waiting_thread_count,
+                                                     &prev_sem_count /* No interest in the previous sem count. */
+                                                     );
+        assert(prev_sem_count == waiting_thread_count);
+        assert(TRUE == release_retval);
+        if (FALSE == release_retval) {
+            cond->broadcast_in_progress = FALSE;
+            LeaveCriticalSection(&cond->wake_waiting_thread_critsec);
+            
+            return EINVAL;
+        }
+        
+        BOOL const wait_retval = WaitForSingleObject(cond->waking_waiting_threads_count_control_sem,
+                                                     INFINITE);
+        assert(TRUE == wait_retval);
+        if (FALSE == wait_retval) {
+            cond->broadcast_in_progress = FALSE;
+            LeaveCriticalSection(&cond->wake_waiting_thread_critsec);
+            return EINVAL;
+        }
+        
+        cond->broadcast_in_progress = FALSE;
+        
+    }
+    
+    LeaveCriticalSection(&cond->wake_waiting_thread_critsec);
+    
+    return AMP_SUCCESS;
 }
 
 
@@ -255,6 +301,38 @@ int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
 {
     assert(NULL != cond);
 
+    EnterCriticalSection(&cond->wake_waiting_threads_critsec);
+    BOOL at_least_one_waiting_thread = (0l != cond->waiting_thread_count);
+    
+    if (at_least_one_waiting_thread) {
+        LONG prev_sem_count = 0;
+        /* Assuming that less threads exist than max possible semaphore count.
+         * TODO: @todo Decide if to spin here if the assumption doesn't hold
+         *             true in the future?
+         */
+        BOOL const release_retval = ReleaseSemaphore(cond->waking_waiting_threads_count_control_sem, 
+                                                     1, 
+                                                     &prev_sem_count /* No interest in the previous sem count. */
+                                                     );
+        assert(prev_sem_count > 0);
+        assert(TRUE == release_retval);
+        if (FALSE == release_retval) {
+            LeaveCriticalSection(&cond->wake_waiting_thread_critsec);
+            return EINVAL;
+        }
+        
+        BOOL const wait_retval = WaitForSingleObject(cond->waking_waiting_threads_count_control_sem,
+                                                     INFINITE);
+        assert(TRUE == wait_retval);
+        if (FALSE == wait_retval) {
+            LeaveCriticalSection(&cond->wake_waiting_thread_critsec);
+            return EINVAL;
+        }
+    }
+    
+    LeaveCriticalSection(&cond->wake_waiting_thread_critsec);
+    
+    return AMP_SUCCESS;
 }
 
 
@@ -316,6 +394,10 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
     }
     
     
+    /* Assuming that less threads exist than max possible semaphore count.
+     * TODO: @todo Decide if to spin here if the assumption doesn't hold
+     *             true in the future?
+     */
     DWORD const sem_wait_retval = WaitForSingleSemaphore(cond->waking_waiting_threads_count_control_sem, 
                            INFINITE);
     assert(WAIT_OBJECT_0 == sem_wait_retval);
