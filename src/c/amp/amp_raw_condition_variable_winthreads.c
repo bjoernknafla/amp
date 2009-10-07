@@ -174,6 +174,13 @@ int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
     cond->waiting_thread_count = 0l;
     cond->broadcast_in_progress = FALSE;
     
+    
+    /* Preliminary tests that waiting_thread_count and broadcast_in_progress
+     * are correctly aligned to allow atomic access to them.
+     */
+    assert(0x0 == ((&cond->waiting_thread_count) & 0xf));
+    assert(0x0 ==((&cond->broadcast_in_progress) & 0xf));
+    
     return AMP_SUCCESS;
 }
 
@@ -438,7 +445,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
 
     BOOl broadcast_in_progress = FALSE;
     LONG count = 0;
-    EnterCriticalSection(&);
+    EnterCriticalSection(&cond->access_waiting_threads_count_critsec);
     {
         count = --(cond->waiting_thread_count);
         
@@ -447,7 +454,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
          */
         broadcast_in_progress = cond->broadcast_in_progress;
     }
-    LeaveCriticalSection(&);
+    LeaveCriticalSection(&cond->access_waiting_threads_count_critsec);
     
     BOOL all_waiting_threads_awake = TRUE;
     if (TRUE == broadcast_in_progress && count > 0) {
