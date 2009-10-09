@@ -65,11 +65,32 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
         return EINVAL;
     }
     
-    sem->semaphore = dispatch_semaphore_create(init_count);
-    
+    /**
+     * TODO: @todo Use the create func with an init count the moment Apple fixes
+     *             the sem creation with an init count so that waiting on it and 
+     *             then calling release won't crash if no number of signals 
+     *             matching the waits have been called somewhere (needn't be 
+     *             before the wait but before the release).
+     */
+    /* sem->semaphore = dispatch_semaphore_create(init_count); */
+    sem->semaphore = dispatch_semaphore_create(0l);
+
     if (NULL == sem->semaphore) {
         return ENOMEM;
     }
+    
+    /**
+     * TODO: @todo Remove the for loop the moment Apple fixes the sem creation
+     *             with an init count so that waiting on it and then calling
+     *             release won't crash if no number of signals matching
+     *             the waits have been called somewhere (needn't be before the 
+     *             wait but before the release).
+     */
+    for (long i = 0; i < init_count; ++i) {
+        long const signal_retval = dispatch_semaphore_signal(sem->semaphore);
+        (void) signal_retval;
+    }
+    
     
     return AMP_SUCCESS;
 }

@@ -79,7 +79,6 @@ extern "C" {
 
     /* Forward declaration */
     struct amp_raw_mutex_s;
-    typedef struct amp_raw_mutex_s *amp_raw_mutex_t;
     
     /**
      * Don't copy and don't move, pointer can be copied and moved but ownership
@@ -92,8 +91,8 @@ extern "C" {
 #elif defined(AMP_USE_WINVISTA_CONDITION_VARIABLES)
         CONDITION_VARIABLE cond;
 #elif defined(AMP_USE_WINTHREADS)
-        CRITICAL_SECTION wake_waiting_threads_critsec;
         CRITICAL_SECTION access_waiting_threads_count_critsec;
+        HANDLE wake_waiting_threads_mutex;
         HANDLE waking_waiting_threads_count_control_sem;
         HANDLE finished_waking_waiting_threads_event;
         LONG waiting_thread_count;
@@ -170,7 +169,7 @@ extern "C" {
      * The thread calling signal can but needn't own the lock on the associated
      * mutex.
      *
-     * @return AMP_SUCCESS on successful broadcasting.
+     * @return AMP_SUCCESS on successful signaling.
      *         Error codes might be returned to signal errors while
      *         broadcasting, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
@@ -181,13 +180,24 @@ extern "C" {
     
     /**
      * The thread calling amp_raw_condition_variable_wait waits on the 
-     * conditiona variable until awaken by a signal or broadcast. When awaking
-     * the associated mutex is already locked. The thread should then re-check 
+     * conditiona variable until awaken by a signal or broadcast. While waiting
+     * the mutex is unlocked. When awaking
+     * the associated mutex is re-locked. The thread should then re-check 
      * that the predicate or state condition it waited on via the condition
      * variable is true or should wait on the condition variable again 
      * otherwise.
      * The thread calling must own the lock on the mutex assocaited with the
      * condition variable.
+     *
+     * @attention Only call if the mutex is locked by the calling thread,
+     *            otherwise behavior is undefined.
+     *
+     * @attention A signal or broadcast can be missed when
+     *            signal or broadcast are called without owning the mutex
+     *            when the signal or broadcast is issued before the wait
+     *            registered itself to wait on the condition variable.
+     *            This doesn't hapen if signal or broadcast are called while
+     *            owning the mutex.
      *
      * @return AMP_SUCCESS after the calling thread has been awoken by a signal 
      *         or broadcast and has already locked the associated mutex.
@@ -201,7 +211,7 @@ extern "C" {
      *         thread.
      */
     int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
-                                        amp_raw_mutex_t mutex);
+                                        struct amp_raw_mutex_s *mutex);
     
     
 

@@ -61,12 +61,12 @@
 
 
 int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                                     amp_raw_semaphore_count_t init_count)
+                           amp_raw_semaphore_count_t init_count)
 {
     assert(NULL != sem);
     
-    if (((amp_raw_semaphore_count_t)0 > init_count) ||
-        (AMP_RAW_SEMAPHORE_COUNT_MAX < init_count)) {
+    if (((amp_raw_semaphore_count_t)0 > init_count) 
+        || (AMP_RAW_SEMAPHORE_COUNT_MAX < init_count)) {
         
         /* TODO: @todo Decide if to assert or no to assert. */
         assert( ((amp_raw_semaphore_count_t)0 <= init_count 
