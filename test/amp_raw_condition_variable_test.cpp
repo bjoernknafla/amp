@@ -217,8 +217,8 @@ SUITE(amp_raw_condition_variable)
             CHECK_EQUAL(AMP_SUCCESS, rv);
             
             // Give the waiting thread a greater chance to get the mutex.
-            rv = amp_raw_thread_yield();
-            CHECK_EQUAL(AMP_SUCCESS, rv);
+            // rv = amp_raw_thread_yield();
+            // CHECK_EQUAL(AMP_SUCCESS, rv);
             
         }
         
@@ -339,7 +339,7 @@ SUITE(amp_raw_condition_variable)
                 assert(AMP_SUCCESS == retval);
             }
             
-            static std::size_t const thread_count = max_thread_count;
+            static std::size_t const thread_count = avg_thread_count;
             
             struct threads_common_context_s threads_common_context;
             struct thread_context_s *thread_contexts;
@@ -449,9 +449,9 @@ SUITE(amp_raw_condition_variable)
             
                     }
                     
-                    if (i + 1 == awake_threads_count) {
+                    if (i + 1 <= awake_threads_count) {
                         // As many threads have set their state to be awake as
-                        // the signal loop should have awakened.
+                        // the signal loop should have awakened (or even more).
                         waiting_thread_is_awake = true;
                     }
                 
