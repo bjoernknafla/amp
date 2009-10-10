@@ -420,6 +420,7 @@ SUITE(amp_raw_condition_variable)
         // been consumed and the semaphore count isn't greater than zero
         // while the mutex-holding signal method waits on the semaphore
         // to know that the signal has been received and one thread awoke.
+        std::size_t signal_count = thread_count / 2;
         for (std::size_t i = thread_count/2; i < thread_count; ++i) {
             
             // Give the waiting thread a greater chance to start waiting.
@@ -431,9 +432,11 @@ SUITE(amp_raw_condition_variable)
             // signal.
             bool waiting_thread_is_awake = false;
             while (! waiting_thread_is_awake) {
-                
+
                 retval = amp_raw_condition_variable_signal(&threads_common_context.cond);
                 CHECK_EQUAL(AMP_SUCCESS, retval);
+                
+                ++signal_count;
                 
                 retval = amp_raw_mutex_lock(&threads_common_context.mutex);
                 CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -448,6 +451,10 @@ SUITE(amp_raw_condition_variable)
                         }
             
                     }
+                    
+                    // Check that not more threads have been woken up than
+                    // signals have been send.
+                    CHECK(awake_threads_count <= signal_count);
                     
                     if (i + 1 <= awake_threads_count) {
                         // As many threads have set their state to be awake as
@@ -464,8 +471,6 @@ SUITE(amp_raw_condition_variable)
                 CHECK_EQUAL(AMP_SUCCESS, retval);
                 
             }
-            
-            
             
         }
         
