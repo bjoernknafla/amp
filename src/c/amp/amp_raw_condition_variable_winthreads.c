@@ -43,8 +43,16 @@
  * See http://www.opengroup.org/onlinepubs/000095399/functions/pthread_cond_timedwait.html
  * for more infos about the POSIX threads condition variable specification.
  *
+ * Many thanks to Anthony Williams and Dimitriy V'jukov (names in order of 
+ * discussion contacts) for their interest and time to discuss the
+ * condition variable implementation, and their invaluable and awesome feedback
+ * that opened my eyes and made this code more correct and faster. All remaining
+ * errors in the code are mine.
+ * 
  * TODO: @todo Check if SEH (Windows structured exception handling) should be
  *             added.
+ *
+ * TODO: @todo Exchange the inner mutex against a critical section again.
  */
 
 

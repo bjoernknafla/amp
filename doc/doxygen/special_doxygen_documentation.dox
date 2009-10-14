@@ -55,12 +55,30 @@
  *    of compiling @c amp_raw_semaphore_pthreads.c use 
  *    @c amp_raw_semaphore_posix_1003_b1.c to build for Pthreads but use the
  *    POSIX 1003 1b semaphores.
+ *
+ * -  Define @c AMP_USE_PTHREADS and @c AMP_USE_LIBDISPATCH_SEMAPHORES and only
+ *    compile generic C source files, C files ending in @c _pthreads.c, but instead
+ *    of compiling @c amp_raw_semaphore_pthreads.c use 
+ *    @c amp_raw_semaphore_libdispatch.c to build for Pthreads but use Apple's
+ *    libdispatch semaphores.
  *   
  * -  Define @c AMP_USE_WINTHREADS and only compile generic C files and C source
  *    files ending in @c _winthreads.c to build for Windows threads.
  *
+ * -  Define @c AMP_USE_WINTHREADS and @c AMP_USE_WINVISTA_CONDITION_VARIABLES and only
+ *    compile generic C source files, C files ending in @c _winthreads.c, but instead
+ *    of compiling @c amp_raw_condition_variable_winthreads.c use 
+ *    @c amp_raw_condition_variable_winvista.c to build for Windows threads but use the
+ *    Windows Vista backend for its build in condition variable support.
+ *
  *
  * @section references References
+ *
+ * Many thanks to Anthony Williams and Dimitriy V'jukov (names in order of 
+ * discussion contacts) for their interest and time to discuss the
+ * condition variable implementation, and their invaluable and awesome feedback
+ * that opened my eyes and made this code more correct and faster. All remaining
+ * errors in the code are mine.
  *
  *  -  David R. Butenhof, Programming POSIX Threads, Addison-Wesley, 1997
  *  -  Bil Lewis and Danile J. Berg, Multithreaded Programming with Pthreads, 
