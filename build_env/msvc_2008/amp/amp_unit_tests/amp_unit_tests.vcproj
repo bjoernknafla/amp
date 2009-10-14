@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;C:\Dokumente und Einstellungen\Bjoern Knafla\Eigene Dateien\Projects\amp\test&quot;;&quot;C:\Dokumente und Einstellungen\Bjoern Knafla\Eigene Dateien\Projects\amp\src\c&quot;;&quot;C:\Dokumente und Einstellungen\Bjoern Knafla\Eigene Dateien\Projects\ForeignProjects\unittest-cpp\UnitTest++\src&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;AMP_USE_WINTHREADS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;AMP_USE_WINTHREADS;_WIN32_WINNT=0x0403"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
@@ -180,6 +180,50 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_condition_variable_pthreads.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_condition_variable_winthreads.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_condition_variable_winvista.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\c\amp\amp_raw_mutex_pthreads.c"
 				>
 				<FileConfiguration
@@ -192,10 +236,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\..\test\amp_raw_mutex_test.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\src\c\amp\amp_raw_mutex_winthreads.c"
 				>
 				<FileConfiguration
@@ -205,6 +245,18 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
 						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_semaphore_libdispatch.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -233,10 +285,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\..\test\amp_raw_semaphore_test.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\src\c\amp\amp_raw_semaphore_winthreads.c"
 				>
 				<FileConfiguration
@@ -260,10 +308,6 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\..\test\amp_raw_thread_local_slot_test.cpp"
-				>
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\c\amp\amp_raw_thread_local_slot_winthreads.c"
@@ -291,10 +335,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\..\test\amp_raw_thread_test.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\src\c\amp\amp_raw_thread_winthreads.c"
 				>
 				<FileConfiguration
@@ -304,18 +344,6 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
 						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\amp_unit_tests.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -341,10 +369,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="..\..\..\..\test\unit_tests_main.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -356,7 +380,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_internal_winthreads_critical_section_config.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\c\amp\amp_raw.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_condition_variable.h"
 				>
 			</File>
 			<File
@@ -425,6 +457,46 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+		</Filter>
+		<Filter
+			Name="Tests"
+			>
+			<File
+				RelativePath="..\..\..\..\test\amp_raw_condition_variable_test.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\test\amp_raw_mutex_test.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\test\amp_raw_semaphore_test.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\test\amp_raw_thread_local_slot_test.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\test\amp_raw_thread_test.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\amp_unit_tests.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\test\unit_tests_main.cpp"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

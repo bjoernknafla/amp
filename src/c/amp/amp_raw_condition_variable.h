@@ -63,7 +63,7 @@
 #   include <windows.h>
 #elif defined(AMP_USE_WINTHREADS)
 #   define WIN32_LEAN_AND_MEAN /* Only include streamlined windows header. */
-#   if !define(_WIN32_WINNT) || (_WIN32_WINNT < 0x0403) /* To support CRITICAL_SECTION */
+#   if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0403) /* To support CRITICAL_SECTION */
 #       error Windows version not supported.
 #   endif
 #   include <windows.h>

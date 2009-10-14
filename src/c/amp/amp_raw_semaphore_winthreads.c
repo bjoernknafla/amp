@@ -160,6 +160,12 @@ int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
         DWORD const last_error = GetLastError();
         
         switch (last_error) {
+            case ERROR_INVALID_HANDLE:
+             /* TODO: @todo Check if this error can really happen. */
+                assert(false 
+                       && "The handle is invalid.");
+                retval = EINVAL;
+                break;
             /*case ERROR_TOO_MANY_SEMAPHORE:
                 retval = EAGAIN;
                 break;*/
@@ -228,6 +234,12 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
         DWORD const last_error = GetLastError();
         
         switch (last_error) {
+            case ERROR_INVALID_HANDLE:
+             /* TODO: @todo Check if this error can really happen. */
+                assert(false 
+                       && "The handle is invalid.");
+                retval = EINVAL;
+                break;
                 /*case ERROR_TOO_MANY_SEMAPHORE:
                  retval = EAGAIN;
                  break;*/
@@ -299,6 +311,12 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
         DWORD const last_error = GetLastError();
         
         switch (last_error) {
+            case ERROR_INVALID_HANDLE:
+             /* TODO: @todo Check if this error can really happen. */
+                assert(false 
+                       && "The handle is invalid.");
+                retval = EINVAL;
+                break;
                 /*case ERROR_TOO_MANY_SEMAPHORE:
                  retval = EAGAIN;
                  break;*/

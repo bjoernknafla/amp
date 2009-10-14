@@ -178,6 +178,9 @@ SUITE(amp_raw_condition_variable)
         retval = amp_raw_condition_variable_init(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
+        retval = amp_raw_semaphore_init(&mwc.ready_for_signal_sem, 0);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+
         // This signal should be lost - no waiting thread.
         retval = amp_raw_condition_variable_signal(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -569,6 +572,9 @@ SUITE(amp_raw_condition_variable)
         retval = amp_raw_condition_variable_init(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
+        retval = amp_raw_semaphore_init(&mwc.ready_for_signal_sem, 0);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+
         // This broadcast should be lost - no waiting thread.
         retval = amp_raw_condition_variable_broadcast(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);

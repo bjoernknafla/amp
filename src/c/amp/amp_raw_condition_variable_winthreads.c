@@ -54,8 +54,20 @@
 /* Include LONG_MAX */
 #include <limits.h>
 
+/* Include assert */
+#include <assert.h>
+
+/* Include errno, etc. */
+#include <errno.h>
+
+
 
 #include "amp_internal_winthreads_critical_section_config.h"
+
+/* Include AMP_SUCCESS */
+#include "amp_stddef.h"
+
+#include "amp_raw_mutex.h"
 
 
 
@@ -70,7 +82,7 @@ int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
     
 
     
-    retval = InitializeCriticalSectionAndSpinCount(&cond->access_waiting_threads_count_critsec,
+    int retval = InitializeCriticalSectionAndSpinCount(&cond->access_waiting_threads_count_critsec,
                                                    AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT | AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000);
     
     if (FALSE == retval) {
@@ -208,9 +220,11 @@ int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
     
     /* Preliminary tests that waiting_thread_count and broadcast_in_progress
      * are correctly aligned to allow atomic access to them.
+     *
+     * TODO: @todo Re-enable alignment test assertions.
      */
-    assert(0x0 == ((&cond->waiting_thread_count) & 0xf));
-    assert(0x0 ==((&cond->broadcast_in_progress) & 0xf));
+    /* assert(0x0 == ((uintptr_t)(&cond->waiting_thread_count) & 0xf)); */
+    /* assert(0x0 ==((uintptr_t)(&cond->broadcast_in_progress) & 0xf)); */
     
     return AMP_SUCCESS;
 }
@@ -332,11 +346,11 @@ int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
                                                      &prev_sem_count /* No interest in the previous sem count. */
                                                      );
 #if !defined(NDEBUG)
-        assert(prev_sem_count == waiting_thread_count);
+        assert(prev_sem_count == 0);
         assert(TRUE == release_retval);
         if (FALSE == release_retval) {
             cond->broadcast_in_progress = FALSE;
-            BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_thread_mutex);
+            BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_threads_mutex);
             /* Release won't return with an error as the mutex is owned by this 
              * thread
              */
@@ -346,13 +360,13 @@ int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
         }
 #endif
         
-        BOOL const wait_retval = WaitForSingleObject(cond->waking_waiting_threads_count_control_sem,
+        DWORD const wait_retval = WaitForSingleObject(cond->finished_waking_waiting_threads_event,
                                                      INFINITE);
 #if !defined(NDEBUG)
-        assert(TRUE == wait_retval);
-        if (FALSE == wait_retval) {
+        assert(WAIT_OBJECT_0 == wait_retval);
+        if (WAIT_OBJECT_0 != wait_retval) {
             cond->broadcast_in_progress = FALSE;
-            BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_thread_mutex);
+            BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_threads_mutex);
             /* Release won't return with an error as the mutex is owned by this 
              * thread
              */
@@ -365,7 +379,7 @@ int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
         
     }
     
-    BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_thread_mutex);
+    BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_threads_mutex);
     /* Release won't return with an error as the mutex is owned by this 
      * thread
      */
@@ -404,10 +418,10 @@ int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
                                                      &prev_sem_count /* No interest in the previous sem count. */
                                                      );
 #if !defined(NDEBUG)
-        assert(prev_sem_count > 0);
+        assert(prev_sem_count == 0);
         assert(TRUE == release_retval);
         if (FALSE == release_retval) {
-            BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_thread_mutex);
+            BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_threads_mutex);
             /* Release won't return with an error as the mutex is owned by this 
              * thread
              */
@@ -417,12 +431,12 @@ int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
         }
 #endif
         
-        BOOL const wait_retval = WaitForSingleObject(cond->waking_waiting_threads_count_control_sem,
+        DWORD const wait_retval = WaitForSingleObject(cond->finished_waking_waiting_threads_event,
                                                      INFINITE);
 #if !defined(NDEBUG)
-        assert(TRUE == wait_retval);
-        if (FALSE == wait_retval) {
-            BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_thread_mutex);
+        assert(WAIT_OBJECT_0 == wait_retval);
+        if (WAIT_OBJECT_0 != wait_retval) {
+            BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_threads_mutex);
             /* Release won't return with an error as the mutex is owned by this 
              * thread
              */
@@ -433,7 +447,7 @@ int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
 #endif
     }
     
-    BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_thread_mutex);
+    BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_threads_mutex);
     /* Release won't return with an error as the mutex is owned by this 
      * thread
      */
@@ -445,7 +459,7 @@ int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
 
 
 int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
-                                    amp_raw_mutex_t mutex)
+                                    struct amp_raw_mutex_s *mutex)
 {
     /*
      * TODO: @todo Rewrite this function to prevent duplication of error 
@@ -471,7 +485,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
                                                   INFINITE);
 #if !defined(NDEBUG)
     assert(WAIT_OBJECT_0 == lock_retval);
-    if (lock_retval != WAIT_OBJECT_0) {
+    if (WAIT_OBJECT_0 != lock_retval) {
         /* Possible errors: mutex was abandoned or wasn't correctly initialized
          */
         
@@ -512,7 +526,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
             --(cond->waiting_thread_count);
         }
         /* LeaveCriticalSection(&cond->wake_waiting_threads_critsec); */
-        BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_thread_mutex);
+        BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_threads_mutex);
         /* Release won't return with an error as the mutex is owned by this 
          * thread
          */
@@ -527,7 +541,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
      * TODO: @todo Decide if to spin here if the assumption doesn't hold
      *             true in the future?
      */
-    DWORD const signal_and_wait_retval = SignalObjectAndWait(cond->wake_waiting_thread_mutex,
+    DWORD const signal_and_wait_retval = SignalObjectAndWait(cond->wake_waiting_threads_mutex,
                                                              cond->waking_waiting_threads_count_control_sem, 
                                                              INFINITE,
                                                              FALSE /* Non io alertable */
@@ -547,7 +561,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
         {
             --(cond->waiting_thread_count);
         }
-        BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_thread_mutex);
+        BOOL const release_mutex_retval = ReleaseMutex(cond->wake_waiting_threads_mutex);
         assert(TRUE == release_mutex_retval);
         
         int retval = amp_raw_mutex_lock(mutex);
@@ -603,7 +617,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
      *             member field is also needed.
      */
 
-    BOOl broadcast_in_progress = FALSE;
+    BOOL broadcast_in_progress = FALSE;
     LONG count = 0;
     EnterCriticalSection(&cond->access_waiting_threads_count_critsec);
     {
@@ -659,7 +673,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
      * Current mutex implementation should assert in debug mode and not
      * return any error in non-debug mode.
      */
-    int retval = amp_raw_mutex_lock(mutex);
+    retval = amp_raw_mutex_lock(mutex);
     /* Error would surface earlier */
     assert(EINVAL != retval && "Mutex is invalid.");
     /* Error would surface earlier */
