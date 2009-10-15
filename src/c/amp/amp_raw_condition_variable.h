@@ -92,7 +92,7 @@ extern "C" {
         CONDITION_VARIABLE cond;
 #elif defined(AMP_USE_WINTHREADS)
         CRITICAL_SECTION access_waiting_threads_count_critsec;
-        HANDLE wake_waiting_threads_mutex;
+        CRITICAL_SECTION wake_waiting_threads_critsec;
         HANDLE waking_waiting_threads_count_control_sem;
         HANDLE finished_waking_waiting_threads_event;
         LONG waiting_thread_count;

@@ -27,6 +27,15 @@ Please file issues with the code at: [http://github.com/bjoernknafla/amp/issues/
 grow before it is really usable.
 
 
+### Acknowledgements ###
+
+Many thanks to Anthony Williams and Dimitriy V'jukov (names in order of 
+discussion contacts) for their interest and time to discuss the
+condition variable implementation, and their invaluable and awesome feedback
+that opened my eyes and made this code more correct and faster. All remaining
+errors in the code are mine.
+
+
 ### Author(s) and Contact ###
 
 You have got questions, need to critisize me, or just want to say hello? I am 
@@ -78,12 +87,6 @@ To build *amp* you have got the following options:
     Windows Vista backend for its build in condition variable support.
 
 ### References ###
-
-Many thanks to Anthony Williams and Dimitriy V'jukov (names in order of 
-discussion contacts) for their interest and time to discuss the
-condition variable implementation, and their invaluable and awesome feedback
-that opened my eyes and made this code more correct and faster. All remaining
-errors in the code are mine.
 
  *  David R. Butenhof, Programming POSIX Threads, Addison-Wesley, 1997
  *  Bil Lewis and Danile J. Berg, Multithreaded Programming with Pthreads, 
