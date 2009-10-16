@@ -1,0 +1,15 @@
+//
+//  amp.xcconfig
+//  amp
+//
+//  Created by Björn Knafla on 16.10.09.
+//  Copyright 2009 Bjoern Knafla Parallelization + AI + Gamedev Consulting. All rights reserved.
+//
+
+#include "compiler_warnings"
+
+ALWAYS_SEARCH_USER_PATHS = NO
+
+AMP_HEADER_PATHS = "$(SRCROOT)/../../../src/c/" "$(SRCROOT)/../../../src/cpp/"
+
+HEADER_SEARCH_PATHS = $(AMP_HEADER_PATHS)

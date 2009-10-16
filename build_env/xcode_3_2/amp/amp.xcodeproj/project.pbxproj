@@ -93,6 +93,8 @@
 		32F240E410713F88009ABE70 /* amp_raw_condition_variable_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_raw_condition_variable_test.cpp; sourceTree = "<group>"; };
 		32F60DE810623C1E00CA43D5 /* amp_raw_mutex_winthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_mutex_winthreads.c; path = ../../../src/c/amp/amp_raw_mutex_winthreads.c; sourceTree = "<group>"; };
 		32F60DF21062910E00CA43D5 /* amp_raw_semaphore_winthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_semaphore_winthreads.c; path = ../../../src/c/amp/amp_raw_semaphore_winthreads.c; sourceTree = "<group>"; };
+		32FB64971088B95000CA3E06 /* amp_unit_tests.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = amp_unit_tests.xcconfig; sourceTree = "<group>"; };
+		32FB64991088B9AA00CA3E06 /* amp.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = amp.xcconfig; sourceTree = "<group>"; };
 		8DD76FB20486AB0100D96B5E /* amp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = amp; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6A0FF2C0290799A04C91782 /* amp.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = amp.1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -196,6 +198,8 @@
 			children = (
 				325928911058706E00D5379D /* UnitTest++.xcconfig */,
 				325928921058706E00D5379D /* compiler_warnings.xcconfig */,
+				32FB64971088B95000CA3E06 /* amp_unit_tests.xcconfig */,
+				32FB64991088B9AA00CA3E06 /* amp.xcconfig */,
 			);
 			name = "Configuration files";
 			sourceTree = "<group>";
@@ -397,18 +401,13 @@
 		};
 		1DEB928A08733DD80010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 325928921058706E00D5379D /* compiler_warnings.xcconfig */;
+			baseConfigurationReference = 32FB64991088B9AA00CA3E06 /* amp.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/../../../src/c\"",
-					"\"$(SRCROOT)/../../../src/cpp\"",
-				);
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.6;
@@ -417,17 +416,12 @@
 		};
 		1DEB928B08733DD80010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 325928921058706E00D5379D /* compiler_warnings.xcconfig */;
+			baseConfigurationReference = 32FB64991088B9AA00CA3E06 /* amp.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					"\"$(SRCROOT)/../../../src/c\"",
-					"\"$(SRCROOT)/../../../src/cpp\"",
-				);
 				PREBINDING = NO;
 				SDKROOT = macosx10.6;
 			};
@@ -435,24 +429,14 @@
 		};
 		325928BD1058759500D5379D /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 325928911058706E00D5379D /* UnitTest++.xcconfig */;
+			baseConfigurationReference = 32FB64971088B95000CA3E06 /* amp_unit_tests.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				HEADER_SEARCH_PATHS = (
-					"\"$(UNITTESTCPP_HEADER_PATH)\"",
-					"\"$(SRCROOT)/../../../src/c\"",
-					"\"$(SRCROOT)/../../../src/cpp\"",
-				);
 				INSTALL_PATH = /usr/local/bin;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(UNITTESTCPP_LIBRARY_PATH)\"",
-				);
 				PREBINDING = NO;
 				PRODUCT_NAME = amp_unit_tests;
 			};
@@ -460,23 +444,13 @@
 		};
 		325928BE1058759500D5379D /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 325928911058706E00D5379D /* UnitTest++.xcconfig */;
+			baseConfigurationReference = 32FB64971088B95000CA3E06 /* amp_unit_tests.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
-				HEADER_SEARCH_PATHS = (
-					"\"$(UNITTESTCPP_HEADER_PATH)\"",
-					"\"$(SRCROOT)/../../../src/c\"",
-					"\"$(SRCROOT)/../../../src/cpp\"",
-				);
 				INSTALL_PATH = /usr/local/bin;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(UNITTESTCPP_LIBRARY_PATH)\"",
-				);
 				PREBINDING = NO;
 				PRODUCT_NAME = amp_unit_tests;
 				ZERO_LINK = NO;

@@ -1,0 +1,17 @@
+//
+//  amp_unit_tests.xcconfig
+//  amp
+//
+//  Created by Björn Knafla on 16.10.09.
+//  Copyright 2009 Bjoern Knafla Parallelization + AI + Gamedev Consulting. All rights reserved.
+//
+
+#include "UnitTest++"
+#include "amp"
+
+GCC_PREPROCESSOR_DEFINITIONS = AMP_USE_LIBDISPATCH_SEMAPHORES AMP_USE_PTHREADS
+// AMP_USE_LIBDISPATCH_SEMAPHORES
+
+
+HEADER_SEARCH_PATHS = $(AMP_HEADER_PATHS) $(UNITTESTCPP_HEADER_PATH)
+LIBRARY_SEARCH_PATHS = $(inherited) "$(UNITTESTCPP_LIBRARY_PATH)"
