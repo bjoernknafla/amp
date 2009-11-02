@@ -1,0 +1,12 @@
+//
+//  amp_raw_framework.xcconfig
+//  amp
+//
+//  Created by Björn Knafla on 02.11.09.
+//  Copyright 2009 Bjoern Knafla Parallelization + AI + Gamedev Consulting. All rights reserved.
+//
+
+#include "amp"
+
+GCC_PREPROCESSOR_DEFINITIONS = AMP_USE_LIBDISPATCH_SEMAPHORES AMP_USE_PTHREADS
+INSTALL_PATH = @executable_path/../Frameworks

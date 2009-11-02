@@ -9,7 +9,7 @@
 //
 
     
-UNITTESTCPP_ROOT_PATH = /Users/bknafla/Projects/ForeignProjects/unittest-cpp/UnitTest++/
+UNITTESTCPP_ROOT_PATH = "/Users/bknafla/Projects/ForeignProjects/unittest-cpp/UnitTest++/"
 UNITTESTCPP_HEADER_PATH = "$(UNITTESTCPP_ROOT_PATH)/src/"
 UNITTESTCPP_LIBRARY_PATH = "$(UNITTESTCPP_ROOT_PATH)"   
 
