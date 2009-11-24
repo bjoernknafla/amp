@@ -103,6 +103,56 @@ SUITE(amp_thread_group)
         };
         
         
+        struct amp_thread_group_s {
+          
+            struct amp_thread_group_context_s *context;
+        };
+        
+        
+        int amp_thread_group_create(&thread_group,
+                                    &thread_group_context,
+                                    thread_count,
+                                    &context_stream,
+                                    &func_stream)
+        {
+            
+        }
+        
+        
+        int amp_thread_group_destroy(&thread_group)
+        {
+            
+        }
+        
+        
+        
+        int amp_thread_group_launch_all(&thread_group)
+        {
+            
+        }
+        
+        
+        int amp_thread_group_join_all(&thread_group)
+        {
+            
+        }
+        
+        
+        int amp_thread_group_get_context(&thread_group, &ctxt)
+        {
+            
+        }
+        
+        
+        int amp_thread_group_get_streams(&thread_group,
+                                     &c_stream,
+                                     &f_stream)
+        {
+            
+        }
+        
+        
+        
         int const fortytwo = 42;
         
         void set_int_context_to_fortytwo(void *ctxt)
