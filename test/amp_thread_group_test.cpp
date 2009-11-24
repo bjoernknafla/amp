@@ -11,7 +11,9 @@
 
 #include <stddef.h>
 
+#include <amp/amp_stddef.h>
 #include <amp/amp_raw_thread.h>
+#include <amp/amp_byte_range.h>
 
 
 
@@ -20,62 +22,51 @@ SUITE(amp_thread_group)
     namespace {
         
         
-        struct amp_raw_data_stream {
-            void *data;
-            size_t item_type_size_in_bytes;
-            size_t offset_in_bytes;
-            size_t stride_in_bytes;
-            size_t item_iteration_stride;
-            size_t item_count;
-            size_t stream_size_in_bytes;
-        };
+
         
-#error Why use offsets?????
+        typedef int (*amp_alloc_func)(void *allocator_context, 
+                                      void **pointer, 
+                                      size_t bytes_to_allocate);
         
+        typedef int (*amp_dealloc_func)(void *allocator_context,
+                                       void *pointer);
         
-        AMP_BOOL amp_raw_data_stream_is_valid(struct amp_raw_data_stream *stream)
+                     
+        int amp_malloc(void *allocator_context,
+                       void **pointer,
+                       size_t bytes_to_allocate)
         {
-            if (NULL == stream) {
-                return AMP_FALSE;
+            (void)allocator_context;
+            
+            assert(NULL != pointer);
+
+            if (NULL == pointer) {
+                return EINVAL;
             }
             
-            size_t item_size = stream->item_type_size_in_bytes;
-            size_t offset = stream->offset_in_bytes;
-            size_t stride = stream->stride_in_bytes;
-            size_t item_iter_stride = stream->item_iteration_stride;
-            size_t item_count = stream->item_count;
-            size_t stream_size = stream->stream_size_in_bytes;
+            *pointer = malloc(bytes_to_allocate);
             
-            AMP_BYTE *byte_stream_begin = (AMP_BYTE *)stream->data;
-            
-            AMP_BYTE *byte_item_end = byte_stream_begin + offset + ((item_count - 1) * item_iter_stride * stride) + item_size;
-            
-            if (byte_item_end > (byte_stream_begin + stream_size_in_bytes)) {
-                return AMP_FALSE;
+            if (NULL == *pointer) {
+                return errno;
             }
             
-            return AMP_TRUE;
+            return AMP_SUCCESS;
         }
+                     
+                     
         
-        int amp_raw_data_stream_get_item(struct amp_raw_data_stream *stream,
-                                         size_t item_index,
-                                         void **item)
+        int amp_free(void *allocator_context,
+                     void *pointer)
         {
-            assert(amp_raw_data_stream_is_valid(stream));
-            assert(NULL != item);
-            assert(item_index < stream->item_count);
+            (void)allocator_context;
             
-            AMP_BYTE *byte_stream_begin = (AMP_BYTE *)stream.data;
+            free(pointer);
             
-            AMP_BYTE *bytes = byte_stream_begin + offset_in_bytes + (item_index * item_iteration_stride * stride_in_bytes );
-            
-            assert(bytes < (((AMP_BYTE *)stream->data) + stream_size_in_bytes));
-            
-            *item = bytes;
+            return AMP_SUCCESS;
         }
         
         
-        
+        /*
         typedef void* (*amp_alloc_func)(void *allocator_context, 
                                         size_t bytes_to_allocate);
         
@@ -83,31 +74,33 @@ SUITE(amp_thread_group)
                                          void *pointer);
         
         
+         
+         void* amp_malloc(void *dummy_allocator_context, 
+         size_t bytes_to_allocate)
+         {
+         (void)allocator_context;
+         
+         return malloc(bytes_to_allocate);
+         }
+         
+         
+         void amp_free(void *dummy_allocator_context,
+         void *pointer)
+         {
+         (void)dummy_allocator_context;
+         
+         free(pointer);
+         }
+         
+         */
+         
+         
         
         struct amp_thread_group_context_s {
             amp_alloc_func alloc;
             amp_dealloc_func dealloc;
             void *allocator_context;
         };
-        
-        
-        
-        void* amp_malloc(void *dummy_allocator_context, 
-                         size_t bytes_to_allocate)
-        {
-            (void)allocator_context;
-            
-            return malloc(bytes_to_allocate);
-        }
-        
-        
-        void amp_free(void *dummy_allocator_context,
-                      void *pointer)
-        {
-            (void)dummy_allocator_context;
-            
-            free(pointer);
-        }
         
         
         int const fortytwo = 42;
@@ -124,7 +117,7 @@ SUITE(amp_thread_group)
     TEST(create_destroy_amp_thread_group)
     {
         
-        amp_thread_group_t thread_group;
+        struct amp_thread_group_t thread_group;
         
         struct amp_thread_group_context_s thread_group_context;
         thread_group_context.alloc = amp_malloc;
@@ -134,25 +127,27 @@ SUITE(amp_thread_group)
         size_t const thread_count = 16;
         std::vector<int> context_vector(thread_count, 0);
         
-        struct amp_raw_data_stream_s context_stream;
-        context_stream.items = &context_vector[0];
-        context_stream.item_type_size_in_bytes =sizeof(typename context_vector::value_type);
-        context_stream.items_offset = 0;
-        context_stream.items_stride = 1;
-        context_stream.item_count = thread_count;
+        struct amp_byte_range_s context_stream;
+        int retval = amp_byte_range_init_with_item_count(&contet_stream,
+                                                         &context_vector[0],
+                                                         thread_count,
+                                                         sizeof(typename context_vector::value_type));
+        assert(AMP_SUCCESS == retval);
         
-        struct amp_raw_data_stream_s func_stream;
-        func_stream.items = set_int_context_to_fortytwo;
-        func_stream.item_type_size_in_bytes = sizeof(dummy_func);
-        func_stream.items_offset = 0;
-        func_stream.items_stride = 0; // Means, only the first func will be used
-        func_stream.item_count = 1;
+        struct amp_byte_range_s func_stream;
+        retval = amp_byte_range_init(&func_stream,
+                                     &set_int_context_to_fortytwo,
+                                     &set_int_context_to_fortytwo + 1,
+                                     0,
+                                     sizeof(set_int_context_to_fortytwo));
+        assert(AMP_SUCCESS == retval);
+
         
-        int retval = amp_thread_group_create(&thread_group,
-                                             &thread_group_context,
-                                             thread_count,
-                                             &context_stream,
-                                             &func_stream);
+        retval = amp_thread_group_create(&thread_group,
+                                         &thread_group_context,
+                                         thread_count,
+                                         &context_stream,
+                                         &func_stream);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -164,8 +159,8 @@ SUITE(amp_thread_group)
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
-        struct amp_raw_data_stream_s *c_stream = NULL;
-        struct amp_raw_data_stream_s *f_stream = NULL;
+        struct amp_byte_range_s *c_stream = NULL;
+        struct amp_byte_range_s *f_stream = NULL;
         struct amp_thread_group_context_s *ctxt = NULL;
         
         retval = amp_thread_group_get_context(&thread_group, &ctxt);

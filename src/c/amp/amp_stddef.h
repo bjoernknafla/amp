@@ -40,13 +40,42 @@
 #ifndef AMP_amp_stddef_H
 #define AMP_amp_stddef_H
 
-#define AMP_SUCCESS 0
-/* #define AMP_FAILURE -1 // Might collide with c std and posix error codes... */
-
-#define AMP_BOOL int
-#define AMP_TRUE 1
-#define AMP_FALSE 0
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 
+
+#define AMP_SUCCESS ((int)0)
+
+#if !defined(AMP_BOOL)
+#   define AMP_BOOL int
+#endif
+
+#define AMP_TRUE ((AMP_BOOL)1)
+#define AMP_FALSE ((AMP_BOOL)0)
+
+
+#if !defined(AMP_BYTE)
+/**
+ * Byte sized unsigned integral type.
+ *
+ * The C standard doesn't define that a char must have 8 bits. 
+ * If this assumption doesn't hold true define AMP_BYTE to the platforms byte
+ * sized type and amp will adapt your definition.
+ */
+#   define AMP_BYTE unsigned char
+#endif
+
+
+typedef AMP_BOOL amp_bool_t;
+typedef AMP_BYTE amp_byte_t;
+
+    
+#if defined(__cplusplus)
+} /* extern"C" */
+#endif
+
+    
 #endif /* #ifndef AMP_amp_stddef_H */
 

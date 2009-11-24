@@ -46,14 +46,12 @@
  * @attention Never reyl on undefined behavior - as it can vary between versions
  *            of @em amp and the used backend (Pthreads, Windows threads, etc.).
  *
- * TODO: @todo Add windows threads backends.
  *
  * TODO: @todo Add include for all non-raw amp headers.
  *
  * TODO: @todo Add Apple OS X 10.6 libdispatch backends for amp_raw_ semaphore
  *             and mutex.
  *
- * TODO: @todo Include amp_raw_condition_variable.h
  *
  * TODO: @todo When adding the non-raw data types and connect them to the raw
  *             ones it might make sense to add the work opaque to the raw
@@ -69,7 +67,8 @@
 
 
 #include <amp/amp_stddef.h>
-/* #include <amp/amp/raw_condition_variable.h> */
+#include <amp/amp_byte_range.h>
+#include <amp/amp_raw_condition_variable.h>
 #include <amp/amp_raw_mutex.h>
 #include <amp/amp_raw_semaphore.h>
 #include <amp/amp_raw_thread.h>

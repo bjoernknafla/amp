@@ -294,7 +294,8 @@ SUITE(amp_raw_condition_variable)
         
         
         
-        struct one_cond_wait_thread_context_fixture {
+        class one_cond_wait_thread_context_fixture {
+        public:
             one_cond_wait_thread_context_fixture()
             :   threads_common_context()
             ,   thread_contexts(NULL)
@@ -324,7 +325,7 @@ SUITE(amp_raw_condition_variable)
                 }
             }
             
-            ~one_cond_wait_thread_context_fixture()
+            virtual ~one_cond_wait_thread_context_fixture()
             {
                 delete[] thread_contexts;
                 
@@ -345,6 +346,11 @@ SUITE(amp_raw_condition_variable)
             
             struct one_cond_wait_threads_common_context_s threads_common_context;
             struct one_cond_wait_thread_context_s *thread_contexts;
+            
+            
+        private:
+            one_cond_wait_thread_context_fixture(one_cond_wait_thread_context_fixture const&); // = delete
+            one_cond_wait_thread_context_fixture& operator=(one_cond_wait_thread_context_fixture const&); // =delete
         };
         
         
@@ -701,7 +707,8 @@ SUITE(amp_raw_condition_variable)
         
         
         
-        struct multi_cond_wait_thread_context_fixture {
+        class multi_cond_wait_thread_context_fixture {
+        public:
             multi_cond_wait_thread_context_fixture()
             :   threads_common_context()
             ,   thread_contexts(NULL)
@@ -734,7 +741,7 @@ SUITE(amp_raw_condition_variable)
                 }
             }
             
-            ~multi_cond_wait_thread_context_fixture()
+            virtual ~multi_cond_wait_thread_context_fixture()
             {
                 
                 for (std::size_t i = 0; i < thread_count; ++i) {
@@ -758,6 +765,10 @@ SUITE(amp_raw_condition_variable)
             
             struct multi_cond_wait_threads_common_context_s threads_common_context;
             struct multi_cond_wait_thread_context_s *thread_contexts;
+            
+        private:
+            multi_cond_wait_thread_context_fixture(multi_cond_wait_thread_context_fixture const&); // =delete
+            multi_cond_wait_thread_context_fixture& operator=(multi_cond_wait_thread_context_fixture const&); // =delete
         };
         
         
@@ -837,7 +848,7 @@ SUITE(amp_raw_condition_variable)
         {
             for (std::size_t i = 0; i < thread_count; ++i) {
                 // CHECK_EQUAL(state_waiting_flag, thread_contexts[i].state);
-                CHECK_EQUAL(1, thread_contexts[i].current_wait_cycle);
+                CHECK_EQUAL(static_cast<std::size_t>(1), thread_contexts[i].current_wait_cycle);
             }
         }
         // retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
@@ -907,7 +918,7 @@ SUITE(amp_raw_condition_variable)
         
         for (std::size_t i = 0; i < thread_count; ++i) {
             CHECK_EQUAL(state_awake_after_waiting_flag, thread_contexts[i].state);
-            CHECK_EQUAL(1, thread_contexts[i].current_wait_cycle);
+            CHECK_EQUAL(static_cast<std::size_t>(1), thread_contexts[i].current_wait_cycle);
         }
         
         
