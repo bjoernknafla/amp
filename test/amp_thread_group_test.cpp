@@ -109,13 +109,23 @@ SUITE(amp_thread_group)
         };
         
         
-        int amp_thread_group_create(&thread_group,
-                                    &thread_group_context,
-                                    thread_count,
-                                    &context_stream,
-                                    &func_stream)
+        /**
+         *
+         * thread_contexts and thread_functions ranges must be at least 
+         * thread_count times advanceable.
+         */
+        int amp_thread_group_create(struct amp_thread_group_s *thread_group,
+                                    struct amp_thread_group_context_s *group_context,
+                                    size_t thread_count,
+                                    struct amp_byte_range_s *thread_contexts,
+                                    struct amp_byte_range_s *thread_functions)
         {
-            
+            assert(NULL != thread_group);
+            assert(NULL != group_context);
+            assert(NULL != thread_contexts);
+            assert(NULL != thread_functions);
+            assert(thread_count <= amp_byte_range_item_count(thread_contexts));
+            assert(thread_count <= amp_byte_range_item_count(thread_functions));
         }
         
         

@@ -553,6 +553,95 @@ SUITE(amp_byte_range)
     
     
     
+    TEST(empty_range_with_end_gap_advanceable_count)
+    {
+        size_t const ia_size = 10;
+        int ia[ia_size] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        
+        struct amp_byte_range_s range;
+        int retval = amp_byte_range_init(&range, &ia[0], ((AMP_BYTE *)&ia[0]) + 1, sizeof(int), sizeof(int));
+        CHECK_EQUAL(AMP_SUCCESS, retval); 
+        
+        CHECK_EQUAL(static_cast<size_t>(0), amp_byte_range_advanceable_count(&range));
+        CHECK_EQUAL(AMP_FALSE, amp_byte_range_is_infinitely_advanceable(&range));
+    }
+    
+    
+    
+    TEST(empty_range_without_end_gap_advanceable_count)
+    {
+        size_t const ia_size = 10;
+        int ia[ia_size] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        
+        struct amp_byte_range_s range;
+        int retval = amp_byte_range_init(&range, &ia[0], &ia[0], 0, sizeof(int));
+        CHECK_EQUAL(AMP_SUCCESS, retval); 
+        
+        CHECK_EQUAL(static_cast<size_t>(0), amp_byte_range_advanceable_count(&range));
+        CHECK_EQUAL(AMP_FALSE, amp_byte_range_is_infinitely_advanceable(&range));
+    }
+    
+    
+    
+    TEST(multi_item_range_with_end_gap_non_infinite_advanceable_count)
+    {
+        size_t const ia_size = 10;
+        int ia[ia_size] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        
+        struct amp_byte_range_s range;
+        int retval = amp_byte_range_init(&range, &ia[0], ((AMP_BYTE *)&ia[3]) + 1, sizeof(int), sizeof(int));
+        CHECK_EQUAL(AMP_SUCCESS, retval); 
+        
+        CHECK_EQUAL(static_cast<size_t>(3), amp_byte_range_advanceable_count(&range));
+        CHECK_EQUAL(AMP_FALSE, amp_byte_range_is_infinitely_advanceable(&range));
+    }
+    
+    
+    
+    TEST(multi_item_range_without_end_gap_non_infinite_advanceable_count)
+    {
+        size_t const ia_size = 10;
+        int ia[ia_size] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        
+        struct amp_byte_range_s range;
+        int retval = amp_byte_range_init(&range, &ia[0], &ia[3], sizeof(int), sizeof(int));
+        CHECK_EQUAL(AMP_SUCCESS, retval); 
+        
+        CHECK_EQUAL(static_cast<size_t>(3), amp_byte_range_advanceable_count(&range));
+        CHECK_EQUAL(AMP_FALSE, amp_byte_range_is_infinitely_advanceable(&range));
+    }
+    
+    
+    
+    TEST(multi_item_range_with_end_gap_infinite_advanceable_count)
+    {
+        size_t const ia_size = 10;
+        int ia[ia_size] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        
+        struct amp_byte_range_s range;
+        int retval = amp_byte_range_init(&range, &ia[0], ((AMP_BYTE *)&ia[3]) + 1, 0, sizeof(int));
+        CHECK_EQUAL(AMP_SUCCESS, retval); 
+        
+        CHECK_EQUAL(~(static_cast<size_t>(0)), amp_byte_range_advanceable_count(&range));
+        CHECK_EQUAL(AMP_TRUE, amp_byte_range_is_infinitely_advanceable(&range));
+    }
+    
+    
+    
+    TEST(multi_item_range_without_end_gap_infinite_advanceable_count)
+    {
+        size_t const ia_size = 10;
+        int ia[ia_size] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        
+        struct amp_byte_range_s range;
+        int retval = amp_byte_range_init(&range, &ia[0], &ia[3], 0, sizeof(int));
+        CHECK_EQUAL(AMP_SUCCESS, retval); 
+        
+        CHECK_EQUAL(~(static_cast<size_t>(0)), amp_byte_range_advanceable_count(&range));
+        CHECK_EQUAL(AMP_TRUE, amp_byte_range_is_infinitely_advanceable(&range));
+    }
+    
+    
 } // SUITE(amp_data_slice)
 
 
