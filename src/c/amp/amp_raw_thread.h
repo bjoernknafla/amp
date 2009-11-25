@@ -168,7 +168,7 @@ extern "C" {
      *
      * @return AMP_SUCCESS after succesfully joining with the thread.
      *         Other error codes might be returned to signal errors while
-     *         launching, too. These are programming errors and mustn't 
+     *         joining, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
      *         EDEADLK If a deadlock condition was detected or the calling

@@ -8,7 +8,17 @@
  */
 
 /**
- * Range of items inside a byte stream.
+ * Description of a range of items inside a byte stream that can be 
+ * iterated over once from the beginning to the end of the range.
+ *
+ * The range only sees bytes and its only knowledge of the items in the byte
+ * stream are defined by the user as the item type size in bytes and the 
+ * distance in bytes from the beginning of one item to the next.
+ *
+ * A range itself doesn't alter or modify the data stream it points to but a
+ * range user can modify the elements of the stream accessed via 
+ * amp_byte_stream_get_front.
+ *
  * Mostly a helper structure for amp_thread_group.
  *
  * See Andrei Alexandrescu's slides from Boostcon 2009, "Iterators Must Go", http://www.boostcon.com/site-media/var/sphene/sphwiki/attachment/2009/05/08/iterators-must-go.pdf
@@ -19,6 +29,7 @@
  * TODO: @todo Add a way to split ranges to enable parallel work on range parts.
  * TODO: @todo Decide if a step size of 0 on init should check that at most one
  *             item is contained in the range?
+ * TODO: @todo Add a unit test for the range copy function.
  */
 
 #ifndef AMP_amp_byte_range_H
@@ -106,6 +117,16 @@ extern "C" {
                                             size_t item_type_size);
     
     
+    /**
+     * Copies the configuration from source to target.
+     *
+     * source and target mustn't point to invalid ranges and mustn't be NULL.
+     *
+     * TODO: @todo Write a unit test for amp_byte_range_copy_from_to.
+     */
+    void amp_byte_range_copy_from_to(struct amp_byte_range_s const *source,
+                                    struct amp_byte_range_s *target);
+    
     
     /**
      * Returns @c AMP_TRUE if the range doesn't contain accessible data items,
@@ -113,7 +134,7 @@ extern "C" {
      *
      * @attention range mustn't be NULL, otherwise behavior is undefined.
      */
-    AMP_BOOL amp_byte_range_is_empty(struct amp_byte_range_s *range);
+    AMP_BOOL amp_byte_range_is_empty(struct amp_byte_range_s const *range);
     
     
     /**
@@ -128,7 +149,7 @@ extern "C" {
      *
      * @attention range mustn't be NULL, otherwise behavior is undefined.
      */
-    void* amp_byte_range_get_front(struct amp_byte_range_s *range);
+    void* amp_byte_range_get_front(struct amp_byte_range_s const *range);
     
     
     /**
@@ -150,7 +171,7 @@ extern "C" {
      * step_size_from_item_to_item of @c 0) then it returns SIZE_MAX. To
      * find out if it really produces infinite return 
      */
-    size_t amp_byte_range_advanceable_count(struct amp_byte_range_s *range);
+    size_t amp_byte_range_advanceable_count(struct amp_byte_range_s const *range);
     
     
     
@@ -158,7 +179,7 @@ extern "C" {
      * Returns AMP_TRUE if the range can't be emptied by advancing the front,
      * otherwise AMP_FALSE is returned.
      */
-    AMP_BOOL amp_byte_range_is_infinitely_advanceable(struct amp_byte_range_s *range);
+    AMP_BOOL amp_byte_range_is_infinitely_advanceable(struct amp_byte_range_s const *range);
     
     
     

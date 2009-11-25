@@ -71,7 +71,23 @@ int amp_byte_range_init_with_item_count(struct amp_byte_range_s *range,
 
 
 
-AMP_BOOL amp_byte_range_is_empty(struct amp_byte_range_s *range)
+void amp_byte_range_copy_from_to(struct amp_byte_range_s const *source,
+                                 struct amp_byte_range_s *target)
+{
+    /* TODO: @todo Rewrite with memcpy. */
+    
+    assert(NULL != source);
+    assert(NULL != target);
+    
+    target->begin = source->begin;
+    target->item_type_size = source->item_type_size;
+    target->step_size_to_next_item = source->step_size_to_next_item;
+    target->end = source->end;
+}
+
+
+
+AMP_BOOL amp_byte_range_is_empty(struct amp_byte_range_s const *range)
 {
     assert(NULL != range);
     
@@ -80,7 +96,7 @@ AMP_BOOL amp_byte_range_is_empty(struct amp_byte_range_s *range)
 
 
 
-void* amp_byte_range_get_front(struct amp_byte_range_s *range)
+void* amp_byte_range_get_front(struct amp_byte_range_s const *range)
 {
     assert(NULL != range);
     assert(AMP_FALSE == amp_byte_range_is_empty(range));
@@ -100,7 +116,7 @@ void amp_byte_range_advance_front(struct amp_byte_range_s *range)
 
 
 
-size_t amp_byte_range_advanceable_count(struct amp_byte_range_s *range)
+size_t amp_byte_range_advanceable_count(struct amp_byte_range_s const *range)
 {
     assert(NULL != range);
     
@@ -134,7 +150,7 @@ size_t amp_byte_range_advanceable_count(struct amp_byte_range_s *range)
  * Returns AMP_TRUE if the range can't be emptied by advancing the front,
  * otherwise AMP_FALSE is returned.
  */
-AMP_BOOL amp_byte_range_is_infinitely_advanceable(struct amp_byte_range_s *range)
+AMP_BOOL amp_byte_range_is_infinitely_advanceable(struct amp_byte_range_s const *range)
 {
     assert(NULL != range);
     

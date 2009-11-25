@@ -29,6 +29,7 @@
 		325928C3105875BB00D5379D /* amp_raw_semaphore_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928AA1058714000D5379D /* amp_raw_semaphore_test.cpp */; };
 		325928C4105875BC00D5379D /* amp_raw_mutex_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928AC1058714000D5379D /* amp_raw_mutex_test.cpp */; };
 		325928CD105875DB00D5379D /* libUnitTest++.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 325928CC105875DB00D5379D /* libUnitTest++.a */; };
+		32746D4410BDBF2900534B9A /* amp_thread_group_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 322409F410B46D170051F7D0 /* amp_thread_group_test.cpp */; };
 		32C186D5109F341C001852EE /* amp_raw_thread_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A21058711E00D5379D /* amp_raw_thread_pthreads.c */; };
 		32C186D6109F341E001852EE /* amp_raw_thread_local_slot_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A11058711E00D5379D /* amp_raw_thread_local_slot_pthreads.c */; };
 		32C186D7109F3424001852EE /* amp_raw_semaphore_libdispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B63E10769507009B33E6 /* amp_raw_semaphore_libdispatch.c */; };
@@ -446,6 +447,7 @@
 				32100A4B10B85F2900971F59 /* amp_stddef_test.cpp in Sources */,
 				32102C0F10B8653900971F59 /* amp_byte_range_test.cpp in Sources */,
 				32FFC24410BC716100C42ED3 /* amp_byte_range.c in Sources */,
+				32746D4410BDBF2900534B9A /* amp_thread_group_test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
