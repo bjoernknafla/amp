@@ -30,51 +30,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @file
- *
- * Base type and preprocessor symbol definitions.
- */
+#include "amp_memory.h"
+
+#include <stdlib.h>
 
 
-#ifndef AMP_amp_stddef_H
-#define AMP_amp_stddef_H
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+void* amp_malloc(void *dummy_allocator_context, 
+                 size_t bytes_to_allocate)
+{
+    (void)dummy_allocator_context;
     
-
-#define AMP_SUCCESS ((int)0)
-
-#if !defined(AMP_BOOL)
-#   define AMP_BOOL int
-#endif
-
-#define AMP_TRUE ((AMP_BOOL)1)
-#define AMP_FALSE ((AMP_BOOL)0)
+    return malloc(bytes_to_allocate);
+}
 
 
-#if !defined(AMP_BYTE)
-/**
- * Byte sized unsigned integral type.
- *
- * The C standard doesn't define that a char must have 8 bits. 
- * If this assumption doesn't hold true define AMP_BYTE to the platforms byte
- * sized type and amp will adapt your definition.
- */
-#   define AMP_BYTE unsigned char
-#endif
-
-
-typedef AMP_BOOL amp_bool_t;
-typedef AMP_BYTE amp_byte_t;
-
+void amp_free(void *dummy_allocator_context,
+              void *pointer)
+{
+    (void)dummy_allocator_context;
     
-#if defined(__cplusplus)
-} /* extern"C" */
-#endif
+    free(pointer);
+}
 
-    
-#endif /* #ifndef AMP_amp_stddef_H */
 

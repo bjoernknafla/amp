@@ -73,7 +73,8 @@
 
 
 #include <amp/amp_stddef.h>
-#include <amp/amp_byte_range.h>
+#include <amp/amp_memory.h>
+#include <amp/amp_thread_group.h>
 
 
 
