@@ -30,6 +30,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @file
+ *
+ * Group of amp threads to launch and join with all contained threads without
+ * the need to handle individual threads.
+ *
+ * TODO: @todo Don't store the functions and context - amp thread is already
+ *             doing this and memory usage should be minimized.
+ *
+ * TODO: @todo Decide if to store the context pointer or to require that the
+ *             user provides it for destroying the thread group again.
+ */
 #ifndef AMP_amp_thread_group_H
 #define AMP_amp_thread_group_H
 
@@ -71,6 +83,9 @@ extern "C" {
      * thread_contexts and thread_functions ranges must be at least 
      * thread_count times advanceable.
      *
+     * No entry of thread_functions must be NULL, otherwise behavior is 
+     * undefined.
+     *
      * TODO: @todo Add error handling.
      * TODO: @todo Decide if to allow @c 0 as a thread count.
      */
@@ -81,7 +96,11 @@ extern "C" {
                                 amp_thread_func_t thread_functions[]);
     
     
-    
+    /**
+     *
+     *
+     * thread_functions mustn't be NULL, otherwise behavior is undefined.
+     */
     int amp_thread_group_create_with_single_func(amp_thread_group_t *thread_group,
                                                  struct amp_thread_group_context_s *group_context,
                                                  size_t thread_count,
@@ -97,7 +116,8 @@ extern "C" {
      * because joining can block and the amp user must know what she is
      * doing and explicitly decide how to handle shutdown.
      */
-    int amp_thread_group_destroy(amp_thread_group_t thread_group);
+    int amp_thread_group_destroy(amp_thread_group_t thread_group,
+                                 struct amp_thread_group_context_s *group_context);
     
     
     
@@ -169,9 +189,10 @@ extern "C" {
      *
      * TODO: @todo Decide if really necessary.
      */
+    /*
     int amp_thread_group_get_context(amp_thread_group_t thread_group, 
                                      struct amp_thread_group_context_s **context);
-    
+    */
     
     /**
      *

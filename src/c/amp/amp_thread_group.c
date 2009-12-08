@@ -30,6 +30,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @file
+ *
+ * Implementation of amp thread group.
+ */
+
 #include "amp_thread_group.h"
 
 #include <assert.h>
@@ -37,28 +43,30 @@
 
 
 #include "amp_stddef.h"
+#include "amp_internal_raw_thread.h"
 
 
 
-struct amp_thread_group_thread_s {
-    struct amp_raw_thread_s thread;
-    void *thread_context;
-    amp_raw_thread_func_t thread_func;
-};
 
 
 struct amp_thread_group_s {
-    struct amp_thread_group_thread_s *threads;
+    struct amp_raw_thread_s *threads;
     size_t thread_count;
     size_t joinable_count;
-    struct amp_thread_group_context_s *context;
+    /* struct amp_thread_group_context_s *context;*/
 };
 
 
-static int amp_thread_group_create_without_funcs(struct amp_thread_group_s **thread_group,
-                                                 struct amp_thread_group_context_s *group_context,
-                                                 size_t thread_count,
-                                                 void* thread_contexts[])
+
+#error Adapt to use amp internal raw thread helper functions so I don't waste memory!!!
+
+/**
+ * Allocates the necessary memory and stores context and threac count info
+ * in the thread group but doesn't initialize the threads for launching.
+ */
+static int amp_internal_thread_group_create(struct amp_thread_group_s **thread_group,
+                                            struct amp_thread_group_context_s *group_context,
+                                            size_t thread_count)
 {
     /* TODO: @todo Decide if only to allocate one big area of memory to put
      *             the group thread structs and the group itself into.
@@ -93,9 +101,9 @@ static int amp_thread_group_create_without_funcs(struct amp_thread_group_s **thr
     }
     
     /* Allocate memory for the groups threads. */
-    struct amp_thread_group_thread_s* threads = 
-    (struct amp_thread_group_thread_s*)alloc(allocator_context,
-                                             sizeof(struct amp_thread_group_thread_s) * thread_count);
+    struct amp_raw_thread_s* threads = 
+        (struct amp_raw_thread_s*)alloc(allocator_context,
+                                        sizeof(struct amp_raw_thread_s) * thread_count);
     assert(NULL != threads);
     if (NULL == threads) {
         
@@ -105,16 +113,10 @@ static int amp_thread_group_create_without_funcs(struct amp_thread_group_s **thr
     }
     
     
-    /* Set the groups threads contexts. */
-    for (size_t i = 0; i < thread_count; ++i) {        
-        threads[i].thread_context = thread_contexts[i];
-    }
-    
-    
     group->threads = threads;
     group->thread_count = thread_count;
     group->joinable_count = 0;
-    group->context = group_context;
+    /* group->context = group_context; */
     
     *thread_group = group;
     
@@ -135,17 +137,29 @@ int amp_thread_group_create(struct amp_thread_group_s **thread_group,
         return EINVAL;
     }
     
-    int retval = amp_thread_group_create_without_funcs(thread_group,
-                                                       group_context,
-                                                       thread_count,
-                                                       thread_contexts);
+    int retval = amp_internal_thread_group_create(thread_group,
+                                                  group_context,
+                                                  thread_count);
     
     if (AMP_SUCCESS == retval) {
         
         struct amp_thread_group_s *group = *thread_group;
+        struct amp_thread_group_s *threads = group->threads;
         
         for (size_t i = 0; i < thread_count; ++i) {
-            group->threads[i].thread_func = thread_functions[i];
+            int const rv = amp_internal_raw_thread_init(threads[i], 
+                                                        thread_contexts[i], 
+                                                        thread_functions[i]);
+            assert(AMP_SUCCESS == rv);
+            if (AMP_SUCCESS != rv) {
+                
+                int const rvd = amp_thread_group_destroy(*thread_group,
+                                                         group_context);
+                *thread_group = NULL;
+                assert(AMP_SUCCESS == rvd);
+                
+                return rv;
+            }
         }
     }
     
@@ -175,9 +189,22 @@ int amp_thread_group_create_with_single_func(amp_thread_group_t *thread_group,
     if (AMP_SUCCESS == retval) {
         
         struct amp_thread_group_s *group = *thread_group;
+        struct amp_thread_group_s *threads = group->threads;
         
         for (size_t i = 0; i < thread_count; ++i) {
-            group->threads[i].thread_func = thread_function;
+            int const rv = amp_internal_raw_thread_init(threads[i], 
+                                                        thread_contexts[i], 
+                                                        thread_function);
+            assert(AMP_SUCCESS == rv);
+            if (AMP_SUCCESS != rv) {
+                
+                int const rvd = amp_thread_group_destroy(*thread_group,
+                                                         group_context);
+                *thread_group = NULL;
+                assert(AMP_SUCCESS == rvd);
+                
+                return rv;
+            }
         }
     }
     
@@ -187,12 +214,14 @@ int amp_thread_group_create_with_single_func(amp_thread_group_t *thread_group,
 
 
 
-int amp_thread_group_destroy(struct amp_thread_group_s *thread_group)
+int amp_thread_group_destroy(struct amp_thread_group_s *thread_group,
+                             struct amp_thread_group_context_s *thread_group_context)
 {
     assert(NULL != thread_group);
+    assert(NULL != thread_group_context);
     assert(0 == thread_group->joinable_count);
     
-    if (NULL == thread_group) {
+    if (NULL == thread_group || NULL == thread_group_context) {
         return EINVAL;
     }
     
@@ -200,8 +229,8 @@ int amp_thread_group_destroy(struct amp_thread_group_s *thread_group)
         return EBUSY;
     }
     
-    amp_dealloc_func_t dealloc = thread_group->context->dealloc_func;
-    void *allocator_context = thread_group->context->allocator_context;
+    amp_dealloc_func_t dealloc = thread_group_context->dealloc_func;
+    void *allocator_context = thread_group_context->allocator_context;
     
     dealloc(allocator_context, thread_group->threads);
     dealloc(allocator_context, thread_group);
@@ -260,7 +289,7 @@ int amp_thread_group_launch_all(struct amp_thread_group_s *thread_group,
         return EINVAL;
     }
     
-    struct amp_thread_group_thread_s *threads = thread_group->threads;
+    struct amp_raw_thread_s *threads = thread_group->threads;
     size_t joinable_count = thread_group->joinable_count;
     size_t const thread_count = thread_group->thread_count;
     
@@ -268,9 +297,7 @@ int amp_thread_group_launch_all(struct amp_thread_group_s *thread_group,
     while (   (joinable_count < thread_count)
            && (AMP_SUCCESS == retval)) {
         
-        retval = amp_raw_thread_launch(&(threads[joinable_count].thread), 
-                                         threads[joinable_count].thread_context, 
-                                         threads[joinable_count].thread_func);
+        retval = amp_internal_raw_thread_launch_initialized(&(threads[joinable_count]));
         
         if (AMP_SUCCESS == retval) {
             ++joinable_count;
@@ -323,6 +350,7 @@ int amp_thread_group_join_all(struct amp_thread_group_s *thread_group,
 }
 
 
+/* TODO: @todo Remove old and dead code.
 int amp_thread_group_get_context(struct amp_thread_group_s *thread_group, 
                                  struct amp_thread_group_context_s **context)
 {
@@ -337,7 +365,7 @@ int amp_thread_group_get_context(struct amp_thread_group_s *thread_group,
     
     return AMP_SUCCESS;
 }
-
+*/
 
 
 int amp_thread_group_get_joinable_thread_count(amp_thread_group_t thread_group,

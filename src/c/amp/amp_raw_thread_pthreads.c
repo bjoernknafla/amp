@@ -34,6 +34,8 @@
  * @file
  *
  * Shallow wrapper around Pthreads threads.
+ *
+ * TODO: @todo Decide if to use Pthreads yield instead of POSIX yield.
  */
 
 
@@ -52,45 +54,11 @@
 #include <sched.h>
 
 
+#include "amp_internal_raw_thread.h"
 
 
-/**
- * Token for amp_raw_thread_s->state symbolizes thread hasn't launched.
- */
-#define AMP_RAW_THREAD_PRELAUNCH_STATE 0x0bebe42
-
-/**
- * Token for amp_raw_thread_s->state symbolizes thread has launched.
- */
-#define AMP_RAW_THREAD_LAUNCHED_STATE 0xbeeb42
-
-/**
- * Token for amp_raw_thread_s->state symbolizes thread has joined.
- */
-#define AMP_RAW_THREAD_JOINED_STATE 0xebbe42
 
 
-/**
- * A platforms thread function that internally calls the user set 
- * amp_raw_thread_func_t function.
- * Purely internal function.
- */
-void* native_thread_adapter_func(void *thread);
-void* native_thread_adapter_func(void *thread)
-{
-    struct amp_raw_thread_s *thread_context = (struct amp_raw_thread_s *)thread;
-    
-    /*
-     * Check if this the thread the argument indicates it should be.
-     * The thread id can't be tested here as it is only stored after launching
-     * - creating the thread.
-     */
-     /* assert(0 != pthread_equal(thread_context->native_thread_description.thread , pthread_self()));*/
-    
-    thread_context->thread_func(thread_context->thread_func_context);
-        
-    return NULL;
-}
 
 
 
@@ -98,27 +66,17 @@ int amp_raw_thread_launch(amp_raw_thread_t *thread,
                            void *thread_func_context, 
                            amp_raw_thread_func_t thread_func)
 {
-    assert(NULL != thread);
-    assert(NULL != thread_func);
-    
-    if (NULL == thread || NULL == thread_func) {
-        return EINVAL;
+    int retval = amp_internal_raw_thread_init(thread,
+                                              thread_func_context,
+                                              thread_func);
+    assert(AMP_SUCCESS == retval);
+    if (AMP_SUCCESS != retval)
+    {
+        return retval;
     }
     
-    thread->thread_func = thread_func;
-    thread->thread_func_context = thread_func_context;
-    thread->state = AMP_RAW_THREAD_PRELAUNCH_STATE;
     
-    int const retval = pthread_create(&(thread->native_thread_description.thread), 
-                                      NULL, /* Default thread creation attribs. */
-                                      native_thread_adapter_func, 
-                                      thread);
-    assert(EINVAL != retval && "Thread attributes are invalid.");
-    assert((0 == retval || EAGAIN == retval) && "Unexpected error.");
-    
-    if (0 == retval) {
-        thread->state = AMP_RAW_THREAD_LAUNCHED_STATE;
-    }
+    retval = amp_internal_raw_thread_launch_initialized(thread);
     
     return retval;
 }
@@ -128,13 +86,13 @@ int amp_raw_thread_launch(amp_raw_thread_t *thread,
 int amp_raw_thread_join(amp_raw_thread_t *thread)
 {
     assert(0 != thread);
-    assert(AMP_RAW_THREAD_LAUNCHED_STATE == thread->state);
+    assert(AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE == thread->state);
     
-    if (AMP_RAW_THREAD_LAUNCHED_STATE != thread->state) {
+    if (AMP_RAW_INTERNAL_THREAD_LAUNCHED_STATE != thread->state) {
         /* If thread hasn't been launched it could be already joined or is 
          * invalid.
          */
-        if (AMP_RAW_THREAD_JOINED_STATE == thread->state) {
+        if (AMP_INTERNAL_RAW_THREAD_JOINED_STATE == thread->state) {
             /* Thread has already joined. */
             return EINVAL;
         } else {
@@ -155,7 +113,7 @@ int amp_raw_thread_join(amp_raw_thread_t *thread)
     
     if (0 == retval) {
         /* Successful join.*/
-        thread->state = AMP_RAW_THREAD_JOINED_STATE;
+        thread->state = AMP_INTERNAL_RAW_THREAD_JOINED_STATE;
     }
     
     return retval;
@@ -180,7 +138,7 @@ amp_raw_thread_id_t amp_raw_thread_get_id(amp_raw_thread_t *thread)
 {
     assert(NULL != thread);
     
-    if (AMP_RAW_THREAD_LAUNCHED_STATE != thread->state) {
+    if (AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE != thread->state) {
         return 0;
     }
     
