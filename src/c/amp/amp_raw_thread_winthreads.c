@@ -42,6 +42,9 @@
 #include "amp_raw_thread.h"
 
 
+#include "amp_internal_raw_thread.h"
+
+
 /* Include assert */
 #include <assert.h>
 
@@ -57,108 +60,6 @@
 /* Include AMP_SUCCESS */
 #include "amp_stddef.h"
 
-
-
-/**
- * Token for amp_raw_thread_s->state symbolizes thread hasn't launched.
- */
-#define AMP_RAW_THREAD_PRELAUNCH_STATE 0x0bebe42
-
-/**
- * Token for amp_raw_thread_s->state symbolizes thread has launched.
- */
-#define AMP_RAW_THREAD_LAUNCHED_STATE 0xbeeb42
-
-/**
- * Token for amp_raw_thread_s->state symbolizes thread has joined.
- */
-#define AMP_RAW_THREAD_JOINED_STATE 0xebbe42
-
-
-/**
- * A platforms thread function that internally calls the user set 
- * amp_raw_thread_func_t function.
- * Purely internal function.
- * Native code (not managed code).
- */
-unsigned int __stdcall native_thread_adapter_func(void *thread);
-unsigned int __stdcall native_thread_adapter_func(void *thread)
-{
-    struct amp_raw_thread_s *thread_context = (struct amp_raw_thread_s *)thread;
-    
-    /*
-     * Check if this the thread the argument indicates it should be.
-     * The thread id can't be tested here as it is only stored after launching
-     * - creating the thread.
-     */
-    /* assert(0 != pthread_equal(thread_context->native_thread_description.thread , pthread_self()));*/
-    
-    thread_context->thread_func(thread_context->thread_func_context);
-    
-    /* Return meaningless return code. */
-    return 0;
-}
-
-
-
-int amp_raw_thread_launch(amp_raw_thread_t *thread, 
-                          void *thread_func_context, 
-                          amp_raw_thread_func_t thread_func)
-{
-    assert(NULL != thread);
-    assert(NULL != thread_func);
-    
-    if (NULL == thread || NULL == thread_func) {
-        return EINVAL;
-    }
-    
-    thread->thread_func = thread_func;
-    thread->thread_func_context = thread_func_context;
-    thread->state = AMP_RAW_THREAD_PRELAUNCH_STATE;
-    
-
-    /* Thread creation for native code. */
-    unsigned int inter_process_thread_id = 0;
-    uintptr_t thread_handle = _beginthreadex(NULL, /* Non-inheritable security attribs. */
-                                             0,  /* Default thread stack size. */
-                                             native_thread_adapter_func, 
-                                             thread, 
-                                             0, /* Start thread running. */
-                                             &inter_process_thread_id);
-    int retval = AMP_SUCCESS;
-    if (0 != thread_handle) {
-        /* Thread launched successfully. */
-        thread->native_thread_description.thread_handle = (HANDLE) thread_handle;
-        thread->native_thread_description.thread_id = (DWORD) inter_process_thread_id;
-        thread->state = AMP_RAW_THREAD_LAUNCHED_STATE;
-        
-        retval = AMP_SUCCESS;
-    } else {
-        /* Error while launching thread. */
-        
-        int const error_code = errno;
-        
-        switch (error_code) {
-            case EAGAIN:
-                retval = EAGAIN;
-                break;
-            case EINVAL:
-                assert(false && "Unexpected error.");
-                break;
-            case EACCES:
-                retval = EAGAIN;
-                break;
-            default:
-                assert(false && "Unknown error.");
-                retval = EINVAL;
-        }
-    }
-    
-    assert(AMP_SUCCESS == retval || EAGAIN == retval && "Unexpected error.");
-
-    
-    return retval;
-}
 
 
 /**

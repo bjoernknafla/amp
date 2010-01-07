@@ -58,37 +58,12 @@
 
 
 
-
-
-
-
-int amp_raw_thread_launch(amp_raw_thread_t *thread, 
-                           void *thread_func_context, 
-                           amp_raw_thread_func_t thread_func)
-{
-    int retval = amp_internal_raw_thread_init(thread,
-                                              thread_func_context,
-                                              thread_func);
-    assert(AMP_SUCCESS == retval);
-    if (AMP_SUCCESS != retval)
-    {
-        return retval;
-    }
-    
-    
-    retval = amp_internal_raw_thread_launch_initialized(thread);
-    
-    return retval;
-}
-
-
-
 int amp_raw_thread_join(amp_raw_thread_t *thread)
 {
     assert(0 != thread);
     assert(AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE == thread->state);
     
-    if (AMP_RAW_INTERNAL_THREAD_LAUNCHED_STATE != thread->state) {
+    if (AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE != thread->state) {
         /* If thread hasn't been launched it could be already joined or is 
          * invalid.
          */

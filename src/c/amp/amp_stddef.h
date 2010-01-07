@@ -40,6 +40,11 @@
 #ifndef AMP_amp_stddef_H
 #define AMP_amp_stddef_H
 
+
+#include <stddef.h>
+
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -47,6 +52,8 @@ extern "C" {
 
 #define AMP_SUCCESS ((int)0)
 
+    
+    
 #if !defined(AMP_BOOL)
 #   define AMP_BOOL int
 #endif
@@ -54,7 +61,12 @@ extern "C" {
 #define AMP_TRUE ((AMP_BOOL)1)
 #define AMP_FALSE ((AMP_BOOL)0)
 
+    
+    
+#define AMP_SIZE_MAX (~((size_t)0))
+    
 
+    
 #if !defined(AMP_BYTE)
 /**
  * Byte sized unsigned integral type.
@@ -70,6 +82,9 @@ extern "C" {
 typedef AMP_BOOL amp_bool_t;
 typedef AMP_BYTE amp_byte_t;
 
+    
+typedef void (*amp_thread_func_t)(void *context);
+    
     
 #if defined(__cplusplus)
 } /* extern"C" */

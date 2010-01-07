@@ -58,8 +58,6 @@ struct amp_thread_group_s {
 
 
 
-#error Adapt to use amp internal raw thread helper functions so I don't waste memory!!!
-
 /**
  * Allocates the necessary memory and stores context and threac count info
  * in the thread group but doesn't initialize the threads for launching.
@@ -76,11 +74,9 @@ static int amp_internal_thread_group_create(struct amp_thread_group_s **thread_g
     assert(NULL != group_context);
     assert(NULL != group_context->alloc_func);
     assert(NULL != group_context->dealloc_func);
-    assert(NULL != thread_contexts);
     
-    if (   (NULL == thread_group) 
-        || (NULL == group_context) 
-        || (NULL == thread_contexts)) {
+    if ((NULL == thread_group) 
+        || (NULL == group_context)) {
         
         return EINVAL;
     }
@@ -125,15 +121,19 @@ static int amp_internal_thread_group_create(struct amp_thread_group_s **thread_g
 
 
 
-int amp_thread_group_create(struct amp_thread_group_s **thread_group,
+int amp_thread_group_create(amp_thread_group_t *thread_group,
                             struct amp_thread_group_context_s *group_context,
                             size_t thread_count,
-                            void* thread_contexts[],
-                            amp_thread_func_t thread_functions[])
+                            void *thread_context_enumerator,
+                            amp_enumerator_next_func_t thread_context_enumerator_func,
+                            void *thread_func_enumerator,
+                            amp_enumerator_next_func_func_t thread_func_enumerator_func)
 {
-    assert(NULL != thread_functions);
+    assert(NULL != thread_context_enumerator_func);
+    assert(NULL != thread_func_enumerator_func);
     
-    if (NULL == thread_functions) {
+    if (NULL == thread_context_enumerator_func 
+        || NULL == thread_func_enumerator_func) {
         return EINVAL;
     }
     
@@ -144,12 +144,18 @@ int amp_thread_group_create(struct amp_thread_group_s **thread_group,
     if (AMP_SUCCESS == retval) {
         
         struct amp_thread_group_s *group = *thread_group;
-        struct amp_thread_group_s *threads = group->threads;
+        struct amp_raw_thread_s *threads = group->threads;
         
         for (size_t i = 0; i < thread_count; ++i) {
-            int const rv = amp_internal_raw_thread_init(threads[i], 
-                                                        thread_contexts[i], 
-                                                        thread_functions[i]);
+            
+            void *thread_context = thread_context_enumerator_func(thread_context_enumerator);
+            amp_thread_func_t thread_func = thread_func_enumerator_func(thread_func_enumerator);
+            
+            assert(NULL != thread_func && "Thread functions must not be NULL.");
+            
+            int const rv = amp_internal_raw_thread_init(&threads[i], 
+                                                        thread_context, 
+                                                        thread_func);
             assert(AMP_SUCCESS == rv);
             if (AMP_SUCCESS != rv) {
                 
@@ -172,28 +178,33 @@ int amp_thread_group_create(struct amp_thread_group_s **thread_group,
 int amp_thread_group_create_with_single_func(amp_thread_group_t *thread_group,
                                              struct amp_thread_group_context_s *group_context,
                                              size_t thread_count,
-                                             void *thread_contexts[],
+                                             void *thread_context_enumerator,
+                                             amp_enumerator_next_func_t thread_context_enumerator_func,
                                              amp_thread_func_t thread_function)
 {
+    assert(NULL != thread_context_enumerator_func);
     assert(NULL != thread_function);
     
-    if (NULL == thread_function) {
+    if (NULL == thread_context_enumerator_func
+        || NULL == thread_function) {
         return EINVAL;
     }
     
-    int retval = amp_thread_group_create_without_funcs(thread_group,
+    int retval = amp_internal_thread_group_create(thread_group,
                                                        group_context,
-                                                       thread_count,
-                                                       thread_contexts);
+                                                       thread_count);
     
     if (AMP_SUCCESS == retval) {
         
         struct amp_thread_group_s *group = *thread_group;
-        struct amp_thread_group_s *threads = group->threads;
+        struct amp_raw_thread_s *threads = group->threads;
         
         for (size_t i = 0; i < thread_count; ++i) {
-            int const rv = amp_internal_raw_thread_init(threads[i], 
-                                                        thread_contexts[i], 
+            
+            void *thread_context = thread_context_enumerator_func(thread_context_enumerator);
+            
+            int const rv = amp_internal_raw_thread_init(&threads[i], 
+                                                        thread_context, 
                                                         thread_function);
             assert(AMP_SUCCESS == rv);
             if (AMP_SUCCESS != rv) {
@@ -323,7 +334,7 @@ int amp_thread_group_join_all(struct amp_thread_group_s *thread_group,
         return EINVAL;
     }
     
-    struct amp_thread_group_thread_s *threads = thread_group->threads;
+    struct amp_raw_thread_s *threads = thread_group->threads;
     size_t const joinable_count = thread_group->joinable_count;
     size_t joined_count = 0;
     
@@ -332,7 +343,7 @@ int amp_thread_group_join_all(struct amp_thread_group_s *thread_group,
            && (AMP_SUCCESS == retval)) {
         
         /* Launching from left to right, joining from right to left. */
-        retval = amp_raw_thread_join(&(threads[joinable_count - 1 - joined_count].thread));
+        retval = amp_raw_thread_join(&(threads[joinable_count - 1 - joined_count]));
         
         if (AMP_SUCCESS == retval) {
             ++joined_count;    

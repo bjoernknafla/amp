@@ -71,15 +71,7 @@ extern "C" {
 #define AMP_INTERNAL_RAW_THREAD_JOINED_STATE 0xebbe42
 
 
-    
-    /**
-     * A platforms thread function that internally calls the user set 
-     * amp_raw_thread_func_t function.
-     * Purely internal function.
-     */
-    void* amp_internal_native_thread_adapter_func(void *thread);
-    
-    
+
     
     /**
      * @attention Don't call for launched and not yet joined threads.

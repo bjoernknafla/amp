@@ -40,7 +40,13 @@
 #include "amp_stddef.h"
 
 
-
+/**
+ * A Pthreads thread function that internally calls the user set 
+ * amp_raw_thread_func_t function.
+ *
+ * Purely internal function.
+ */
+void* amp_internal_native_thread_adapter_func(void *thread);
 void* amp_internal_native_thread_adapter_func(void *thread)
 {
     struct amp_raw_thread_s *thread_context = (struct amp_raw_thread_s *)thread;
@@ -55,26 +61,6 @@ void* amp_internal_native_thread_adapter_func(void *thread)
     thread_context->thread_func(thread_context->thread_func_context);
     
     return NULL;
-}
-
-
-
-int amp_internal_raw_thread_init(struct amp_raw_thread_s *thread,
-                                 void* func_context,
-                                 amp_raw_thread_func_t func)
-{
-    assert(NULL != thread);
-    assert(NULL != func);
-    
-    if (NULL == thread || NULL == func) {
-        return EINVAL;
-    }
-    
-    thread->thread_func = func;
-    thread->thread_func_context = func_context;
-    thread->state = AMP_INTERNAL_RAW_THREAD_PRELAUNCH_STATE;
-    
-    return AMP_SUCCESS;
 }
 
 
@@ -105,3 +91,5 @@ int amp_internal_raw_thread_launch_initialized(struct amp_raw_thread_s *thread)
     
     return retval;
 }
+
+

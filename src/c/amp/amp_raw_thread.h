@@ -47,6 +47,10 @@
 #define AMP_amp_raw_thread_H
 
 
+#include <amp/amp_stddef.h>
+
+
+
 #if defined(AMP_USE_PTHREADS)
 #   include <pthread.h>
 #   include <stdint.h>
@@ -81,7 +85,8 @@ extern "C" {
      * Type of the user function to run on the thread.
      * @param context user data passed into the function.
      */
-    typedef void (*amp_raw_thread_func_t)(void *context);
+    //typedef void (*amp_raw_thread_func_t)(void *context);
+    typedef amp_thread_func_t amp_raw_thread_func_t;
     
     /**
      * Treat this type as opaque as its internals will change from version to

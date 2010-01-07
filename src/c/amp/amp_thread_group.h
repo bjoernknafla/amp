@@ -45,30 +45,59 @@
 #ifndef AMP_amp_thread_group_H
 #define AMP_amp_thread_group_H
 
+
+#include <stddef.h>
+
+/* TODO: @todo Replace with amp_thread.h the moment it exists. */
+#include <amp/amp_raw_thread.h>
+#include <amp/amp_memory.h>
+#include <amp/amp_stddef.h>
+
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
     
-    
-    
-#include <stddef.h>
-    
-/* TODO: @todo Replace with amp_thread.h the moment it exists. */
-#include <amp/amp_raw_thread.h>
-#include <amp/amp_memory.h>
-    
-    
-    
+    /**
+     * Opaque type representing an amp thread group.
+     */
     typedef struct amp_thread_group_s *amp_thread_group_t;
     
-    /* TODO: @todo Remove the moment amp_thread.h exists. */
-    typedef amp_raw_thread_func_t amp_thread_func_t;
-    
+    /**
+     * Context for the amp_thread_group functions to access user specifyable 
+     * alloc and dealloc functionality, e.g. get memory from a specific memory 
+     * pool.
+     */
     struct amp_thread_group_context_s {
         amp_alloc_func_t alloc_func;
         amp_dealloc_func_t dealloc_func;
         void *allocator_context;
     };
+    
+    
+    
+    /**
+     * Function interface to implement by the user which takes an also user
+     * supplied context pointer or enumerator pointer and then returns an
+     * available item and advances to the next item or returns NULL and doesn't
+     * advance if no further items can be enumerated in the enumerator.
+     *
+     * See amp_raw_byte_range_next as an example.
+     */
+    typedef void* (*amp_enumerator_next_func_t)(void *enumerator);
+    
+    /**
+     * Function interface to implement by the user which takes an also user
+     * supplied context pointer or enumerator pointer and then returns an
+     * available amp_thread_func_t function and advances to the next function or 
+     * returns NULL and doesn't advance if no further functions can be 
+     * enumerated in the enumerator.
+     *
+     * See amp_raw_byte_range_next_func as an example.
+     */
+    typedef amp_thread_func_t (*amp_enumerator_next_func_func_t)(void *enumerator);
+    
     
     
     /**
@@ -79,9 +108,19 @@ extern "C" {
      * used throughout the lifetime of the thread group and mustn't be
      * destroyed until the thread group has been destroyed.
      * 
+     * thread_context_enumerator is a user supplied data structure which can
+     * be used in combination with enumerator_func to iteratre over thread
+     * context data at least thread_count times. The accessed thread contexts
+     * are associated with threads from the thread group.
+     * See amp_thread_group_test.cpp for a usage example and amp_raw_byte_range
+     * for an example of an enumerator type.
      *
-     * thread_contexts and thread_functions ranges must be at least 
-     * thread_count times advanceable.
+     * thread_func_enumerator is a user supplied data structure which can be
+     * used in combination with func_enumerator_func to iterate over thread
+     * functions at least thread_count times. The accessed thread functions are
+     * associated with the threads from the thread group.
+     * See amp_thread_group_test.cpp for a usage example and amp_raw_byte_range
+     * for an example of an enumerator type.
      *
      * No entry of thread_functions must be NULL, otherwise behavior is 
      * undefined.
@@ -92,8 +131,10 @@ extern "C" {
     int amp_thread_group_create(amp_thread_group_t *thread_group,
                                 struct amp_thread_group_context_s *group_context,
                                 size_t thread_count,
-                                void *thread_contexts[],
-                                amp_thread_func_t thread_functions[]);
+                                void *thread_context_enumerator,
+                                amp_enumerator_next_func_t thread_context_enumerator_func,
+                                void *thread_func_enumerator,
+                                amp_enumerator_next_func_func_t thread_func_enumerator_func);
     
     
     /**
@@ -104,7 +145,8 @@ extern "C" {
     int amp_thread_group_create_with_single_func(amp_thread_group_t *thread_group,
                                                  struct amp_thread_group_context_s *group_context,
                                                  size_t thread_count,
-                                                 void *thread_contexts[],
+                                                 void *thread_context_enumerator,
+                                                 amp_enumerator_next_func_t thread_context_enumerator_func,
                                                  amp_thread_func_t thread_function);
     
     
