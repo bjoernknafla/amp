@@ -36,11 +36,8 @@
  * Group of amp threads to launch and join with all contained threads without
  * the need to handle individual threads.
  *
- * TODO: @todo Don't store the functions and context - amp thread is already
- *             doing this and memory usage should be minimized.
- *
- * TODO: @todo Decide if to store the context pointer or to require that the
- *             user provides it for destroying the thread group again.
+ * Never pass an invalid, e.g. non-created thread group to any of the thread
+ * group functions other than the create functions.
  */
 #ifndef AMP_amp_thread_group_H
 #define AMP_amp_thread_group_H
@@ -125,7 +122,23 @@ extern "C" {
      * No entry of thread_functions must be NULL, otherwise behavior is 
      * undefined.
      *
-     * TODO: @todo Add error handling.
+     * Behavior is undefined if thread_group represents an already 
+     * (non-destroyed) created thread group.
+     *
+     * @return AMP_SUCCESS on successful creation of thread_group. On error the
+     *         following error codes are returned:
+     *         ENOMEM if not enough memory is available.
+     *         Other error codes might be returned to signal 
+     *         errors, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL is returned if thread_group, group_context, 
+     *         thread_context_enumerator_func, or thread_func_enumerator_func
+     *         are NULL.
+     *         EINVAL is also returned if the function pointers of group_context
+     *         are NULL.
+     *         EINVAL is returned if thread_func_enumerator_func returns NULL.
+     *         
      * TODO: @todo Decide if to allow @c 0 as a thread count.
      */
     int amp_thread_group_create(amp_thread_group_t *thread_group,
@@ -138,9 +151,21 @@ extern "C" {
     
     
     /**
+     * Creates a thread group like amp_thread_group_create but uses a single
+     * function to run on each thread of the thread group.
      *
-     *
-     * thread_functions mustn't be NULL, otherwise behavior is undefined.
+     * @return AMP_SUCCESS on successful creation of thread_group. On error the
+     *         following error codes are returned:
+     *         ENOMEM if not enough memory is available.
+     *         Other error codes might be returned to signal 
+     *         errors, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL is returned if thread_group, group_context, 
+     *         thread_context_enumerator_func, or thread_function
+     *         are NULL - which is considered a programmer error.
+     *         EINVAL is also returned if the function pointers of group_context
+     *         are NULL.
      */
     int amp_thread_group_create_with_single_func(amp_thread_group_t *thread_group,
                                                  struct amp_thread_group_context_s *group_context,
@@ -152,11 +177,25 @@ extern "C" {
     
     
     /**
+     * Finalizes the thread group and frees its memory using the services 
+     * provided by group_context.
      *
      * If any thread groups threads have been launched they must be 
      * joined before destroying the group. It isn't done automatically
      * because joining can block and the amp user must know what she is
      * doing and explicitly decide how to handle shutdown.
+     *
+     * @return AMP_SUCCESS is returned on successful finalization of the thread
+     *         group and after its memory is freed. On error the following error
+     *         codes might be returned:
+     *         EBUSY is returned if not all launched threads of the group have
+     *         been joined.
+     *         Other error codes might be returned to signal 
+     *         errors, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL is returned if thread_group, group_context, or the
+     *         function pointers in group_context are NULL.
      */
     int amp_thread_group_destroy(amp_thread_group_t thread_group,
                                  struct amp_thread_group_context_s *group_context);
@@ -164,7 +203,6 @@ extern "C" {
     
     
     /**
-     * 
      * Launches the contained threads one after the other and stops if
      * thread launching fails. The number of threads launched is returned
      * in joinable if the pointer is not NULL.
@@ -185,17 +223,17 @@ extern "C" {
      *    <li> Order the thread contexts and functions so that even if not 
      *         all threads of the group could be launched the launched
      *         threads are able to work with each other and don't need the
-     *         non-launched thread (functions).
+     *         non-launched threads (functions).
      *    </li>
-     *    <li> Re-run launch all as long until joinable indicates that
+     *    <li> Re-run launch as often unitl joinable indicates that
      *         all threads of the thread group have been launched and
      *         can therefore be joined.
      *         Be careful with join all counts between launch all calls as
-     *         launch all will try to launch non-launched and already joined 
-     *         threads.
+     *         launch all will try to launch non-launched and also already 
+     *         joined threads.
      *    </li>
      * </ol>
-     * In both cases it makes sense to code the thread functions so the
+     * In all cases it makes sense to code the thread functions so the
      * launch process runs through two stages (launch threads into "orbit"
      * and after all necessary thread functions signalled that they are in 
      * orbit let them start their work). Each thread function uses a 
@@ -203,6 +241,16 @@ extern "C" {
      * been launched. The condition variable predicate can then signal 
      * that the function should proceed or that it should shut down, e.g. if
      * not all necessary threads could have been launched.
+     *
+     * @return AMP_SUCCESS on successful launch of all launcheable threads of
+     *         the thread group.
+     *         EAGAIN is returned if the system lacks the resources for thread
+     *         creation and launching.
+     *         Other error codes might be returned to signal 
+     *         errors, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL is returned if the thread_group is NULL or invalid.
      */
     int amp_thread_group_launch_all(amp_thread_group_t thread_group,
                                     size_t *joinable_thread_count);
@@ -210,35 +258,38 @@ extern "C" {
     
     
     /**
-     *
-     * If joinable_thread_count isn't NULL the number of remaining joinable
-     * threads is assigned to it. If it isn't 0 then only the thread joins
-     * down from the joinable threads before to before first non-joinable thread
-     * have been joined.
+     * Joins with all joinable threads of the thread group.
      *
      * Threads are launched from left to right and joined from right to left.
+     * On the first thread that can't be joined the joining stops and the 
+     * error code of the internal amp_raw_thread_join function is returned. If
+     * joinable_thread_count isn't NULL the number of remaining un-joined
+     * threads "left" from the non-joinable thread is returned in it.
+     *
+     * @return AMP_SUCCESS if all joinable threads have been joined with.
+     *         Other error codes might be returned to signal 
+     *         errors, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL is returned if thread_group is NULL.
+     *         EDEADLK, EINVAL, ESRCH might be returned by the internally called
+     *         amp_raw_thread_join on error.
      */
     int amp_thread_group_join_all(amp_thread_group_t thread_group,
                                   size_t *joinable_thread_count);
     
     
-    
     /**
-     * Returns the group context.
+     * Returns the number of joinable threads in the variable 
+     * joinable_thread_count points to.
      *
-     * Remember, the group context memory isn't managed by the thread group and
-     * the context memory isn't freed on destroying the thread group.
-     *
-     * TODO: @todo Decide if really necessary.
-     */
-    /*
-    int amp_thread_group_get_context(amp_thread_group_t thread_group, 
-                                     struct amp_thread_group_context_s **context);
-    */
-    
-    /**
-     *
-     * TODO: @todo Unit test amp_thread_group_get_joinable_thread_count.
+     * @return AMP_SUCCESS if the joinable thread count could be determined
+     *         successfully. Other error codes might be returned to signal 
+     *         errors, too. These are programming errors and mustn't 
+     *         occur in release code. When @em amp is compiled without NDEBUG
+     *         set it might assert that these programming errors don't happen.
+     *         EINVAL is returned if thread_group or joinable_thread_count are 
+     *         NULL.
      */
     int amp_thread_group_get_joinable_thread_count(amp_thread_group_t thread_group,
                                                    size_t *joinable_thread_count);

@@ -365,23 +365,6 @@ int amp_thread_group_join_all(struct amp_thread_group_s *thread_group,
 }
 
 
-/* TODO: @todo Remove old and dead code.
-int amp_thread_group_get_context(struct amp_thread_group_s *thread_group, 
-                                 struct amp_thread_group_context_s **context)
-{
-    assert(NULL != thread_group);
-    assert(NULL != context);
-    
-    if (NULL == thread_group || NULL == context) {
-        return EINVAL;
-    }
-    
-    *context = thread_group->context;
-    
-    return AMP_SUCCESS;
-}
-*/
-
 
 int amp_thread_group_get_joinable_thread_count(amp_thread_group_t thread_group,
                                                size_t *joinable_thread_count)
