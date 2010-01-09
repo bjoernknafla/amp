@@ -41,6 +41,7 @@
 #include <amp/amp_stddef.h>
 #include <amp/amp_thread_group.h>
 #include <amp/amp_memory.h>
+#include <amp/amp_raw_byte_range.h>
 
 
 
@@ -83,8 +84,7 @@ SUITE(amp_thread_group)
             
             *(context->item_to_set) = item_value_to_use * fortytwo;
         }
-        
-        
+    
     } // anonymous namespace
     
     
@@ -101,7 +101,8 @@ SUITE(amp_thread_group)
         size_t const thread_count = 16;
         std::vector<int> values_to_write_vector(thread_count, 0);
         
-        std::vector<thread_context_s> context_vector(thread_count);
+        typedef std::vector<thread_context_s> context_vector_type;
+        context_vector_type context_vector(thread_count);
         for (size_t i = 0; i < thread_count; ++i) {
             context_vector[i].item_to_set = &values_to_write_vector[i];
             context_vector[i].item_value_to_use_for_set = i;
@@ -118,11 +119,27 @@ SUITE(amp_thread_group)
         }
         
         
-        int retval = amp_thread_group_create_with_single_func(&thread_group,
-                                                              &thread_group_context,
-                                                              thread_count,
-                                                              &context_vector[0],
-                                                              set_context_defined_value);
+        struct amp_raw_byte_range_s context_range;
+        int retval = amp_raw_byte_range_init_with_item_count(&context_range,
+                                                             &context_vector[0], 
+                                                             thread_count,
+                                                             sizeof(context_vector_type::value_type));
+        assert(AMP_SUCCESS == retval);
+        
+        struct amp_raw_byte_range_s function_range;
+        retval = amp_raw_byte_range_init_with_item_count(&function_range,
+                                                         &thread_function_vector[0],
+                                                         thread_count,
+                                                         sizeof(amp_raw_thread_func_t));
+        assert(AMP_SUCCESS == retval);
+        
+        retval = amp_thread_group_create(&thread_group,
+                                         &thread_group_context,
+                                         thread_count,
+                                         &context_range,
+                                         amp_raw_byte_range_next,
+                                         &function_range,
+                                         amp_raw_byte_range_next_func);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -156,20 +173,24 @@ SUITE(amp_thread_group)
         CHECK_EQUAL(static_cast<size_t>(0), number_of_joinable_threads);
         
         
-        struct amp_thread_group_context_s *ctxt = NULL;
+        // struct amp_thread_group_context_s *ctxt = NULL;
         
-        retval = amp_thread_group_get_context(thread_group, &ctxt);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
-        CHECK_EQUAL(ctxt, &thread_group_context);
+        // retval = amp_thread_group_get_context(thread_group, &ctxt);
+        // CHECK_EQUAL(AMP_SUCCESS, retval);
+        // CHECK_EQUAL(ctxt, &thread_group_context);
         
         
-        retval = amp_thread_group_destroy(thread_group);
+        retval = amp_thread_group_destroy(thread_group,
+                                          &thread_group_context);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         for (size_t i = 0; i < thread_count; ++i) {
-            CHECK_EQUAL(i, values_to_write_vector[i]); 
+            if (i < (thread_count / 2)) {
+                CHECK_EQUAL(static_cast<int>(i), values_to_write_vector[i]); 
+            } else {
+                CHECK_EQUAL(static_cast<int>(i) * fortytwo, values_to_write_vector[i]); 
+            }
         }
-        
     }
     
     
@@ -185,13 +206,22 @@ SUITE(amp_thread_group)
         thread_group_context.allocator_context = NULL;
         
         size_t const thread_count = 16;
-        std::vector<int> context_vector(thread_count, 0);
+        typedef std::vector<int> context_vector_type;
+        context_vector_type context_vector(thread_count, 0);
     
-        int retval = amp_thread_group_create_with_single_func(&thread_group,
-                                                              &thread_group_context,
-                                                              thread_count,
-                                                              &context_vector[0],
-                                                              set_int_context_to_fortytwo);
+        struct amp_raw_byte_range_s context_range;
+        int retval = amp_raw_byte_range_init_with_item_count(&context_range,
+                                                             &context_vector[0], 
+                                                             thread_count,
+                                                             sizeof(context_vector_type::value_type));
+        assert(AMP_SUCCESS == retval);
+        
+        retval = amp_thread_group_create_with_single_func(&thread_group,
+                                                          &thread_group_context,
+                                                          thread_count,
+                                                          &context_range,
+                                                          amp_raw_byte_range_next,
+                                                          set_int_context_to_fortytwo);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -216,7 +246,7 @@ SUITE(amp_thread_group)
         size_t number_of_joinable_threads_after_join_all = 0;
         retval = amp_thread_group_join_all(thread_group, &number_of_joinable_threads_after_join_all);
         CHECK_EQUAL(AMP_SUCCESS, retval);
-        CHECK_EQUAL(0, number_of_joinable_threads_after_join_all);
+        CHECK_EQUAL(static_cast<size_t>(0), number_of_joinable_threads_after_join_all);
         
         
         number_of_joinable_threads = 0;
@@ -225,22 +255,19 @@ SUITE(amp_thread_group)
         CHECK_EQUAL(static_cast<size_t>(0), number_of_joinable_threads);
         
         
-        struct amp_thread_group_context_s *ctxt = NULL;
+        // struct amp_thread_group_context_s *ctxt = NULL;
         
-        retval = amp_thread_group_get_context(thread_group, &ctxt);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
-        CHECK_EQUAL(ctxt, &thread_group_context);
+        // retval = amp_thread_group_get_context(thread_group, &ctxt);
+        // CHECK_EQUAL(AMP_SUCCESS, retval);
+        // CHECK_EQUAL(ctxt, &thread_group_context);
         
         
-        retval = amp_thread_group_destroy(thread_group);
+        retval = amp_thread_group_destroy(thread_group,
+                                          &thread_group_context);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         for (size_t i = 0; i < thread_count; ++i) {
-            if (i < (thread_count / 2)) {
-                CHECK_EQUAL(i, context_vector[i]); 
-            } else {
-                CHECK_EQUAL(i * fortytwo, context_vector[i]); 
-            }
+            CHECK_EQUAL(fortytwo, context_vector[i]); 
         }
         
     }

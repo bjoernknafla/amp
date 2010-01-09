@@ -111,7 +111,7 @@ static int amp_internal_thread_group_create(struct amp_thread_group_s **thread_g
     
     group->threads = threads;
     group->thread_count = thread_count;
-    group->joinable_count = 0;
+    group->joinable_count = (size_t)0;
     /* group->context = group_context; */
     
     *thread_group = group;
@@ -310,9 +310,11 @@ int amp_thread_group_launch_all(struct amp_thread_group_s *thread_group,
         
         retval = amp_internal_raw_thread_launch_initialized(&(threads[joinable_count]));
         
-        if (AMP_SUCCESS == retval) {
-            ++joinable_count;
+        if (AMP_SUCCESS != retval) {
+            break;
         }
+        
+        ++joinable_count;
     }
     
     thread_group->joinable_count = joinable_count;
@@ -345,9 +347,11 @@ int amp_thread_group_join_all(struct amp_thread_group_s *thread_group,
         /* Launching from left to right, joining from right to left. */
         retval = amp_raw_thread_join(&(threads[joinable_count - 1 - joined_count]));
         
-        if (AMP_SUCCESS == retval) {
-            ++joined_count;    
+        if (AMP_SUCCESS != retval) {
+            break;
         }
+        
+        ++joined_count;
     }
     
     thread_group->joinable_count -= joined_count;
