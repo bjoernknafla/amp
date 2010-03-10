@@ -1,0 +1,19 @@
+//
+//  amp_platform_check.xcconfig
+//  amp
+//
+//  Created by Björn Knafla on 24.02.10.
+//  Copyright 2010 Bjoern Knafla Parallelization + AI + Gamedev Consulting. All rights reserved.
+//
+
+#include "amp"
+
+GCC_PREPROCESSOR_DEFINITIONS = AMP_USE_LIBDISPATCH_SEMAPHORES AMP_USE_PTHREADS
+// AMP_USE_LIBDISPATCH_SEMAPHORES
+
+
+HEADER_SEARCH_PATHS = $(AMP_HEADER_PATHS)
+LIBRARY_SEARCH_PATHS = $(inherited)
+
+GCC_INLINES_ARE_PRIVATE_EXTERN = NO
+GCC_SYMBOLS_PRIVATE_EXTERN = NO

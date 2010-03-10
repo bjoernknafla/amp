@@ -33,47 +33,56 @@
 /**
  * @file
  *
- * Main header file includes all raw amp headers. Raw headers are dependent
- * on platform specific headers and therefore include them. Non-raw headers
- * aren't platform dependent and don't include any platform-specific headers.
+ * On an unknown platform its concurrency can't be queried.
  *
- * See amp.h and README.markdown for more infos.
- *
- * @attention Don't use amp functions other than the init functions on a
- *            non-initialized data structure.
- * @attention Don't call any amp init function on an already initialized (and
- *            non-finalized) data structure.
- * @attention Never reyl on undefined behavior - as it can vary between versions
- *            of @em amp and the used backend (Pthreads, Windows threads, etc.).
- *
- *
- * TODO: @todo Add include for all non-raw amp headers.
- *
- * TODO: @todo Add Apple OS X 10.6 libdispatch backends for amp_raw_ semaphore
- *             and mutex.
- *
- *
- * TODO: @todo When adding the non-raw data types and connect them to the raw
- *             ones it might make sense to add the work opaque to the raw
- *             data structures.
- *
- * TODO: @todo In winthreads sources store the result of GetLastError in an 
- *             otherwise unused variable to allow inspection of the error code
- *             from the debugger.
+ * amp_platform_destroy and most of the query functions for amp_platform
+ * are implemented in amp_internal_platform.c.
  */
 
-#ifndef AMP_amp_raw_H
-#define AMP_amp_raw_H
+#include "amp_platform.h"
 
 
-#include <amp/amp_stddef.h>
-#include <amp/amp_platform.h>
-#include <amp/amp_raw_byte_range.h>
-#include <amp/amp_raw_condition_variable.h>
-#include <amp/amp_raw_mutex.h>
-#include <amp/amp_raw_semaphore.h>
-#include <amp/amp_raw_thread.h>
-#include <amp/amp_raw_thread_local_slot.h>
+#include <errno.h>
+#include <assert.h>
 
 
-#endif /* AMP_amp_raw_H */
+#include "amp_stddef.h"
+#include "amp_internal_platform.h"
+
+
+
+int amp_platform_create(struct amp_platform_s** descr,
+                        void* allocator_context,
+                        amp_alloc_func_t alloc_func,
+                        amp_dealloc_func_t dealloc_func)
+{
+    assert(NULL != descr);
+    assert(NULL != alloc_func);
+    assert(NULL != dealloc_func);
+    
+    if (NULL == descr
+        || NULL == alloc_func
+        || NULL == dealloc_func) {
+        
+        return EINVAL;
+    }
+    
+    struct amp_platform_s* temp = alloc_func(allocator_context, 
+                                             sizeof(struct amp_platform_s));
+    
+    if (NULL == temp) {
+        return ENOMEM;
+    }
+    
+    
+    temp->core_count = 0;
+    temp->active_core_count = 0;
+    temp->hwthread_count = 0;
+    temp->active_hwthread_count = 0;
+    
+    *descr = temp;
+    
+    return AMP_SUCCESS;
+}
+
+
