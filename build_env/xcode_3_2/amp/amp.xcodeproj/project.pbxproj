@@ -158,7 +158,7 @@
 		32A4A16B113548DC00D29CD2 /* amp_platform_check */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = amp_platform_check; sourceTree = BUILT_PRODUCTS_DIR; };
 		32A4A1B911354B0B00D29CD2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		32A4A26111358CF500D29CD2 /* amp_platform_windows_min_host_sdk_winserver2003_or_winxp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_platform_windows_min_host_sdk_winserver2003_or_winxp.c; sourceTree = "<group>"; };
-		32A4A26B1135DD5A00D29CD2 /* amp_platform_win_getlogicalprocessorinformation.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_platform_win_getlogicalprocessorinformation.c; sourceTree = "<group>"; };
+		32A4A26B1135DD5A00D29CD2 /* amp_platform_windows_min_host_sdk_winserver2003_or_winxp_sp3_or_winxp_pro_x64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_platform_windows_min_host_sdk_winserver2003_or_winxp_sp3_or_winxp_pro_x64.c; sourceTree = "<group>"; };
 		32B9B63E10769507009B33E6 /* amp_raw_semaphore_libdispatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_semaphore_libdispatch.c; path = ../../../src/c/amp/amp_raw_semaphore_libdispatch.c; sourceTree = "<group>"; };
 		32B9B65410769ACB009B33E6 /* amp_raw_condition_variable_winvista.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_condition_variable_winvista.c; path = ../../../src/c/amp/amp_raw_condition_variable_winvista.c; sourceTree = "<group>"; };
 		32C186AD109F30DE001852EE /* amp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "amp-Info.plist"; sourceTree = "<group>"; };
@@ -366,7 +366,7 @@
 				328885EE11348144000AFA62 /* amp_platform_cocoa.m */,
 				3296B3D51132FACE00B6664B /* amp_platform_windows_min_host_sdk_win2000.c */,
 				32A4A26111358CF500D29CD2 /* amp_platform_windows_min_host_sdk_winserver2003_or_winxp.c */,
-				32A4A26B1135DD5A00D29CD2 /* amp_platform_win_getlogicalprocessorinformation.c */,
+				32A4A26B1135DD5A00D29CD2 /* amp_platform_windows_min_host_sdk_winserver2003_or_winxp_sp3_or_winxp_pro_x64.c */,
 				3296B3DA11333E5E00B6664B /* amp_platform_unknown.c */,
 				325928991058711E00D5379D /* amp_stddef.h */,
 				3231EC9110BEE31200C61517 /* amp_thread_group.h */,

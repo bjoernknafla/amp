@@ -73,13 +73,11 @@
 
 #if _WIN32_WINNT < 0x0501
 #   error Compile amp_platform_windows_min_host_sdk_win2000.c for support of the target operating system.
-#elif _WIN32_WINNT >= 0x0601 /* TODO: @todo Check version number for Windows Server 2008 R2 */
-#   error Compile amp_platform_windows_min_host_sdk_.c for better support of the target operating system.
 #endif
 
 
 
-typedef BOOL (WINAPI *IsWow64ProcessFun)(HANDLE, PBOOL);
+typedef BOOL (WINAPI *IsWow64ProcessFunc)(HANDLE, PBOOL);
 
 
 /**
@@ -95,11 +93,11 @@ static AMP_BOOL amp_internal_is_running_win32_process_inside_wow64(void)
 {
     BOOL is_wow64 = FALSE;
     
-    IsWow64ProcessFun is_wow64_process_fun = (IsWow64ProcessFun) GetProcAddress(GetModuleHandle(TEXT("kernel32")),"IsWow64Process");
+    IsWow64ProcessFunc is_wow64_process_func = (IsWow64ProcessFunc) GetProcAddress(GetModuleHandle(TEXT("kernel32")),"IsWow64Process");
     
-    if (NULL != is_wow64_process_fun) {
+    if (NULL != is_wow64_process_func) {
         
-        BOOL const no_error = is_wow64_process_fun(GetCurrentProcess(), &is_wow64);
+        BOOL const no_error = is_wow64_process_func(GetCurrentProcess(), &is_wow64);
         
         if (FALSE == no_error) {
             
@@ -162,7 +160,8 @@ int amp_platform_create(struct amp_platform_s** descr,
         return EINVAL;
     }
     
-    struct amp_platform_s* temp = alloc_func(allocator_context, sizeof(struct amp_platform_s));
+    struct amp_platform_s* temp = (struct amp_platform_s*)alloc_func(allocator_context, 
+                                                                     sizeof(struct amp_platform_s));
     
     if (NULL == temp) {
         return ENOMEM;

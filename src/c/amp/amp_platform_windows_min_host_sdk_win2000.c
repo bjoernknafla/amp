@@ -73,12 +73,6 @@
 
 
 
-#if _WIN32_WINNT >= 0x0601 /* TODO: @todo Check version number for Windows Server 2008 R2 */
-#   error Compile amp_platform_windows_min_host_sdk_.c for better support of the target operating system.
-#endif
-
-
-
 typedef void (WINAPI *GetNativeSystemInfoFunc)(LPSYSTEM_INFO);
 
 
@@ -122,7 +116,8 @@ int amp_platform_create(struct amp_platform_s** descr,
         return EINVAL;
     }
     
-    struct amp_platform_s* temp = alloc_func(allocator_context, sizeof(struct amp_platform_s));
+    struct amp_platform_s* temp = (struct amp_platform_s*)alloc_func(allocator_context, 
+                                                                     sizeof(struct amp_platform_s));
     
     if (NULL == temp) {
         return ENOMEM;

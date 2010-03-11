@@ -96,7 +96,8 @@ int amp_platform_create(struct amp_platform_s** descr,
         return EINVAL;
     }
     
-    struct amp_platform_s* temp = alloc_func(allocator_context, sizeof(struct amp_platform_s));
+    struct amp_platform_s* temp = (struct amp_platform_s*)alloc_func(allocator_context,
+                                                                     sizeof(struct amp_platform_s));
     
     if (NULL == temp) {
         return ENOMEM;

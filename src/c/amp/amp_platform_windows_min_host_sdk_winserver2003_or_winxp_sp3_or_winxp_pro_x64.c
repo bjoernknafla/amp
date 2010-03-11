@@ -60,10 +60,17 @@
 #include <windows.h>
 
 
+#include <assert.h>
+#include <errno.h>
+
+
+#include "amp_stddef.h"
+#include "amp_internal_platform.h"
+
+
+
 #if _WIN32_WINNT < 0x0501
-#   error Compile amp_platform_win_getsysteminfo.c for support of the target operating system.
-#elif _WIN32_WINNT >= 0x0601 /* TODO: @todo Check version number for Windows Server 2008 R2 */
-#   error Compile amp_platform_win_getlogicalprocessorinformationex.c for better support of the target operating system.
+#   error Compile amp_platform_windows_min_host_sdk_win2000.c for support of the target operating system.
 #endif
 
 
@@ -153,11 +160,13 @@ static DWORD amp_internal_win_version_greater_or_equal(AMP_BOOL* result,
 }
 
 
+
 typedef enum AMP_INTERNAL_WIN_TYPE {
     AMP_INTERNAL_WORKSTATION_WIN_TYPE = VER_NT_WORKSTATION,
     AMP_INTERNAL_DOMAIN_CONTROLLER_WIN_TYPE = VER_NT_DOMAIN_CONTROLLER,
     AMP_INTERNAL_SERVER_WIN_TYPE = VER_NT_SERVER
 } AMP_INTERNAL_WIN_TYPE;
+
 
 
 /**
@@ -256,8 +265,8 @@ static DWORD amp_internal_win_version_greater_or_equal_and_type_equal(AMP_BOOL* 
 /**
  * Returns the number of bits set to one in bitmask.
  */
-int amp_internal_count_set_bits_of_ulong(ULONG bitmask);
-int amp_internal_count_set_bits_of_ulong(ULONG bitmask)
+static int amp_internal_count_set_bits_of_ulong(ULONG bitmask);
+static int amp_internal_count_set_bits_of_ulong(ULONG bitmask)
 {
     /* Code based on Henry S. Warren, Jr., Hacker's Delight, Addison-Wesley, 2003, 
      * p. 70.
@@ -293,14 +302,11 @@ int amp_internal_count_set_bits_of_ulong(ULONG bitmask)
 
 
 
-AMP_BOOL amp_platform_can_detect_core_count(void)
-{
-    return AMP_TRUE;
-}
 
 
 
-AMP_BOOL amp_platform_can_detect_hwthread_count(void)
+static AMP_BOOL amp_platform_can_detect_hwthread_count(void);
+static AMP_BOOL amp_platform_can_detect_hwthread_count(void)
 {
     /* Prior to Windows Vista no differentiation of simultaneous multithreading
      * (SMT).
@@ -323,48 +329,105 @@ AMP_BOOL amp_platform_can_detect_hwthread_count(void)
 
 
 
-//size_t amp_platform_get_core_count_online(void)
-int amp_platform_get_core_count_online(size_t* result)
-{
+
+typedef BOOL (WINAPI *GetLogicalProcessorInformationFunc)(__out    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION, __inout  PDWORD);
+
+
+static int amp_internal_platform_get_logical_processor_information(struct amp_platform_s* platform,
+                                                    void* allocator_context,
+                                                    amp_alloc_func_t alloc_func,
+                                                    amp_dealloc_func_t dealloc_func);
+static int amp_internal_platform_get_logical_processor_information(struct amp_platform_s* platform)
+{    
+    assert(NULL != platform);
+    assert(NULL != alloc_func);
+    assert(NULL != dealloc_func);
     
     
+    GetLogicalProcessorInformationFunc get_logical_processor_information_func = (GetLogicalProcessorInformationFunc) GetProcAddress(GetModuleHandle(TEXT("kernel32")),"GetLogicalProcessorInformation");
     
-    
-    SYSTEM_LOGICAL_PROCESSOR_INFORMATION sysinfo_buffer[???];
-    DWORD sysinfo_buffer_size = ???;
-    
-    BOOL const query_successful = GetLogicalProcessorInformation(&sysinfo_buffer,
-                                                                 &sysinfo_buffer_size);
-    
-    if (FALSE == query_successful) {
+    if (NULL == get_logical_processor_information_func) {
         
-        /* Retrieve last error to ease diagnstics when debugging. */
-        DWORD const last_error = GetLastError();
+        /* Target computer doesn't run needed windows version. */
         
-        /* In debug mode assert to inform the dev about a problem. */
-        assert(0);
-        
-        return 0;
+        return ENOSYS;
     }
     
+    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION sysinfo_buffer = NULL;
+    DWORD sysinfo_buffer_size = 0;
     
+    BOOL query_successful = get_logical_processor_information_func(NULL,
+                                                                   &sysinfo_buffer_size);
+    DWORD const get_size_error_code = GetLastError();
+    
+    if (FALSE != query_successful 
+        || ERROR_INSUFFICIENT_BUFFER != get_size_error_code
+        || 0 == sysinfo_buffer_size) {
+        
+        assert(FALSE == query_successful 
+               && "Query with size 0 expected to fail and return needed buffer size.");
+        
+        assert(ERROR_INSUFFICIENT_BUFFER == get_size_error_code 
+               && "Query with size 0 expected to fail and return needed buffer size.");
+        
+        assert(0 != sysinfo_buffer_size 
+               && "Query with size 0 expected to fail and return needed buffer size.");
+        
+        
+        return EAGAIN;
+    }
+    
+    sysinfo_buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)alloc_func(allocator_context,
+                                                                       sysinfo_buffer_size);
+    if (NULL == sysinfo_buffer) {
+        
+        return ENOMEM;
+    }
+    
+    query_successful = get_logical_processor_information_func(sysinfo_buffer, 
+                                                              &sysinfo_buffer_size);
+    if (FALSE == query_successful) {
+        
+        /* Query to easily access error code when debugging. */
+        DWORD const last_error = GetLastError();
+        
+        assert(TRUE == query_successful);
+        
+        dealloc_func(allocator_context, sysinfo_buffer);
+        
+        return EAGAIN;
+    }
+        
+    
+    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION sysinfo = sysinfo_buffer;
+    
+    for (size_t i = 0; i < sysinfo_buffer_size; i = i + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION)) {
+        
+        switch (sysinfo->Relationship) {
+            case RelationNumaNode:
+                break;
+            case RelationProcessorCore:
+                break;
+                
+            default:
+                /* Ignore unneeded info. */
+                break;
+        }
+        
+        
+        ++sysinfo;
+    }
+    
+    dealloc_func(allocator_context, sysinfo_buffer);
+        
+#error Re-adjust the queried values if the windows version can not differentiate between cores and hwthreads.
+    
+    
+#error Assign queried infos to platform struct.
+    
+    return AMP_SUCCESS;    
 }
 
 
-// Rename to get_physical_core_count?
-size_t amp_platform_get_core_count_max(void)
-{
-}
-
-
-
-size_t amp_platform_get_hwthread_count_online(void)
-{
-}
-
-
-
-size_t amp_platform_get_hwthread_count_max(void)
-{
-}
+#error fall back on other methods if GetLogicalProcessorInformation does not work.
 
