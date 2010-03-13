@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Bjoern Knafla
+ * Copyright (c) 2009-2010, Bjoern Knafla
  * http://www.bjoernknafla.com/
  * All rights reserved.
  *
@@ -35,7 +35,20 @@
  *
  * Platform hardware detection via Windows GetLogicalProcessorInformation
  * for at least Windows Server 2003 or Windows Vista, 
- * Windows XP Professional x64 Edition, Windows XP with SP3.
+ * Windows XP Professional x64 Edition, Windows XP with SP3. 
+ *
+ * Unable to detect active cores or hardware threads, can only detect installed
+ * cores and hardware threads. On Windows earlier than Windows Vista cores and
+ * hardware threads can not be differentiated.
+ * 
+ * @ATTENTION The implementation of GetLogicalProcessorInformation can only 
+ *            handle a fixed number of cores or hardware threads - on platforms
+ *            that support more cores or hardware threads it (and therefore the
+ *            amp_platform query functions) only return informations about the 
+ *            processor group of the processor the calling thread executes on at 
+ *            the time of the call. Use amp_platform_windows_min_host_sdk_winserver2008_r2_or_windows7.c 
+ *            for newer Windows platforms to support querying many core
+ *            processor hardware.
  *
  * amp_platform_destroy and most of the query functions for amp_platform
  * are implemented in amp_internal_platform.c.
@@ -51,6 +64,9 @@
  * See http://msdn.microsoft.com/en-us/library/ms724833(VS.85).aspx
  *
  * See http://msdn.microsoft.com/en-us/library/ms725494(VS.85).aspx
+ *
+ *
+ * TODO: @todo Find out if pre Windows Vista reports hardware threads or cores?
  */
 
 #include "amp_platform.h"
@@ -265,8 +281,8 @@ static DWORD amp_internal_win_version_greater_or_equal_and_type_equal(AMP_BOOL* 
 /**
  * Returns the number of bits set to one in bitmask.
  */
-static int amp_internal_count_set_bits_of_ulong(ULONG bitmask);
-static int amp_internal_count_set_bits_of_ulong(ULONG bitmask)
+static int amp_internal_count_set_bits_of_ulong_ptr(ULONG_PTR bitmask);
+static int amp_internal_count_set_bits_of_ulong_ptr(ULONG_PTR bitmask)
 {
     /* Code based on Henry S. Warren, Jr., Hacker's Delight, Addison-Wesley, 2003, 
      * p. 70.
@@ -287,7 +303,7 @@ static int amp_internal_count_set_bits_of_ulong(ULONG bitmask)
     */
     
     DWORD const ulong_size = sizeof(ULONG)* CHAR_BIT;
-    ULONG const rightmost_bit = (ULONG)1;
+    ULONG_PTR const rightmost_bit = (ULONG_PTR)1;
     int counter = 0;
     
     
@@ -302,42 +318,50 @@ static int amp_internal_count_set_bits_of_ulong(ULONG bitmask)
 
 
 
+typedef BOOL (WINAPI *GetLogicalProcessorInformationFunc)(__out    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION, __inout  PDWORD);
 
 
 
-static AMP_BOOL amp_platform_can_detect_hwthread_count(void);
-static AMP_BOOL amp_platform_can_detect_hwthread_count(void)
+static AMP_BOOL amp_internal_platform_can_differentiate_core_and_hwthread_count(void);
+static AMP_BOOL amp_internal_platform_can_differentiate_core_and_hwthread_count(void)
 {
     /* Prior to Windows Vista no differentiation of simultaneous multithreading
      * (SMT).
-     * TODO: @todo How to detect the OS version at runtime?
+     *
+     * Function is based on documentation for GetLogicalProcessorInformation.
+     *
      * TODO: @todo Does GetNativeSystemInfo return SMT infos? Then the 
      *             difference between it and GetLogicalProcessorInformation
      *             could be used to determine the number of cores and the
      *             number of hardware threads.
      */
     
+    AMP_BOOL can_differentiate = AMP_FALSE;
     
+    GetLogicalProcessorInformationFunc get_logical_processor_information_func = (GetLogicalProcessorInformationFunc) GetProcAddress(GetModuleHandle(TEXT("kernel32")),"GetLogicalProcessorInformation");
     
-    os version >= 6.0 && has GetLogicalProcessorInformation
-   
-    
-    certain os versions can not detect difference of online and physical core count
-    
-#error Implement
+    if (NULL != get_logical_processor_information_func) {
+        
+        int const error_code = amp_internal_win_version_greater_or_equal(can_differentiate,
+                                                                         6,
+                                                                         0,
+                                                                         0,
+                                                                         0);
+    }
+
+    return can_differentiate;
 }
 
-
-
-
-typedef BOOL (WINAPI *GetLogicalProcessorInformationFunc)(__out    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION, __inout  PDWORD);
 
 
 static int amp_internal_platform_get_logical_processor_information(struct amp_platform_s* platform,
                                                     void* allocator_context,
                                                     amp_alloc_func_t alloc_func,
                                                     amp_dealloc_func_t dealloc_func);
-static int amp_internal_platform_get_logical_processor_information(struct amp_platform_s* platform)
+static int amp_internal_platform_get_logical_processor_information(struct amp_platform_s* platform,
+                                                                   void* allocator_context,
+                                                                   amp_alloc_func_t alloc_func,
+                                                                   amp_dealloc_func_t dealloc_func)
 {    
     assert(NULL != platform);
     assert(NULL != alloc_func);
@@ -399,35 +423,124 @@ static int amp_internal_platform_get_logical_processor_information(struct amp_pl
     }
         
     
+    int core_count = 0;
+    int hwthread_count = 0;
+    
+    
     PSYSTEM_LOGICAL_PROCESSOR_INFORMATION sysinfo = sysinfo_buffer;
     
     for (size_t i = 0; i < sysinfo_buffer_size; i = i + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION)) {
         
         switch (sysinfo->Relationship) {
-            case RelationNumaNode:
-                break;
             case RelationProcessorCore:
-                break;
                 
+                if (1 == sysinfo->ProcessorCore.Flag) {
+                    
+                    if (TRUE == amp_internal_platform_can_differentiate_core_and_hwthread_count()) {
+                        
+                        /* TODO: @todo Check if a flag of 1 counts one core and 
+                         * its hardware threads or only hardware threads and
+                         * the core is counter by an entry with a flag of 0.
+                         */
+                        ++core_count;
+                        
+                        hwthread_count += amp_internal_count_set_bits_of_ulong_ptr(sysinfo->ProcessorMask);
+                        
+                    } else {
+                        
+                        /* TODO: @todo Check if pre-Windows Vista cores or
+                         * hardware threads are reported.
+                         */
+                        hwthread_count += amp_internal_count_set_bits_of_ulong_ptr(sysinfo->ProcessorMask);
+                        
+                    }
+                
+                } else {
+                    
+                    core_count += amp_internal_count_set_bits_of_ulong_ptr(sysinfo->ProcessorMask);
+                    
+                }
+                break;
             default:
                 /* Ignore unneeded info. */
                 break;
         }
-        
         
         ++sysinfo;
     }
     
     dealloc_func(allocator_context, sysinfo_buffer);
         
-#error Re-adjust the queried values if the windows version can not differentiate between cores and hwthreads.
+    platform->core_count = (size_t)core_count;
+    platform->active_core_count = 0;
+    platform->hwthread_count = (size_t)hwthread_count;
+    platform->active_hwthread_count = 0;
     
-    
-#error Assign queried infos to platform struct.
     
     return AMP_SUCCESS;    
 }
 
 
 #error fall back on other methods if GetLogicalProcessorInformation does not work.
+
+
+
+int amp_platform_create(struct amp_platform_s** descr,
+                        void* allocator_context,
+                        amp_alloc_func_t alloc_func,
+                        amp_dealloc_func_t dealloc_func)
+{
+    assert(NULL != descr);
+    assert(NULL != alloc_func);
+    assert(NULL != dealloc_func);
+    
+    if (NULL == descr
+        || NULL == alloc_func
+        || NULL == dealloc_func) {
+        
+        return EINVAL;
+    }
+    
+    struct amp_platform_s* temp = (struct amp_platform_s*)alloc_func(allocator_context, 
+                                                                     sizeof(struct amp_platform_s));
+    
+    if (NULL == temp) {
+        return ENOMEM;
+    }
+    
+    temp->core_count = 0;
+    temp->active_core_count = 0;
+    temp->hwthread_count = 0;
+    temp->active_hwthread_count = 0;
+    
+    
+    int error_code = amp_internal_platform_get_logical_processor_information(temp,
+                                                                            allocator_context,
+                                                                             alloc_func,
+                                                                             dealloc_func);
+    
+    if (AMP_SUCCESS != error_code) {
+        
+        
+        /* TODO: @todo Fall back to other way of querying the platform 
+         */
+        
+        
+        dealloc_func(allocator_context, temp);
+        
+        
+        /* TODO: @todo Check that no non-documented error codes are returned. 
+         */
+        return error_code;
+        
+    }
+    
+    
+    
+    
+    *descr = temp;
+    
+    return AMP_SUCCESS;
+}
+
 

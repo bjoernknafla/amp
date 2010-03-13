@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Bjoern Knafla
+ * Copyright (c) 2009-2010, Bjoern Knafla
  * http://www.bjoernknafla.com/
  * All rights reserved.
  *
@@ -38,6 +38,12 @@
  *
  * Never pass an invalid, e.g. non-created thread group to any of the thread
  * group functions other than the create functions.
+ *
+ * Creation and destruction of threads, and especially a thread_group is 
+ * expensive and shouldn't be done in a tight loop. The amp_thread_group is 
+ * targeted at simplifying writing of unit and stress tests that need groups of 
+ * threads and for building thread or job pools that keep their threads alive 
+ * for quite some time.
  */
 #ifndef AMP_amp_thread_group_H
 #define AMP_amp_thread_group_H

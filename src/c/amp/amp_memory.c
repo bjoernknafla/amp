@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Bjoern Knafla
+ * Copyright (c) 2009-2010, Bjoern Knafla
  * http://www.bjoernknafla.com/
  * All rights reserved.
  *

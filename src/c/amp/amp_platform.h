@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Bjoern Knafla
+ * Copyright (c) 2009-2010, Bjoern Knafla
  * http://www.bjoernknafla.com/
  * All rights reserved.
  *
@@ -52,6 +52,8 @@
  *                                                         size_t core_type_for_package_type_id);
  *             size_t amp_platform_get_hwthread_count(size_t package_type_id, 
  *                                                    size_t core_type_for_package_type_id);
+ * TODO: @todo Add source file using GetLogicalProcessorInformationEx to query
+ *             the platform on Windows Vista or later Windows versions.
  *
  */
 
