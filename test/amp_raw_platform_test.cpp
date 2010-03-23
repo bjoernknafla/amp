@@ -134,7 +134,7 @@ SUITE(amp_raw_platform)
     {
         size_t const count_init_value = 666;
         size_t count_that_must_not_be_touched_on_error = count_init_value;
-        int const error_code = amp_raw_platform_get_core_count(&platform, &count_that_must_not_be_touched_on_error);
+        int const error_code = amp_raw_platform_get_installed_core_count(&platform, &count_that_must_not_be_touched_on_error);
         
         if (AMP_SUCCESS != error_code) {
             CHECK(count_init_value == count_that_must_not_be_touched_on_error);
@@ -160,7 +160,7 @@ SUITE(amp_raw_platform)
     {
         size_t const count_init_value = 666;
         size_t count_that_must_not_be_touched_on_error = count_init_value;
-        int const error_code = amp_raw_platform_get_hwthread_count(&platform, &count_that_must_not_be_touched_on_error);
+        int const error_code = amp_raw_platform_get_installed_hwthread_count(&platform, &count_that_must_not_be_touched_on_error);
         
         if (AMP_SUCCESS != error_code) {
             CHECK(count_init_value == count_that_must_not_be_touched_on_error);
@@ -187,7 +187,7 @@ SUITE(amp_raw_platform)
         size_t active_count = 0;
         size_t max_count = 0;
         
-        int error_code = amp_raw_platform_get_core_count(&platform, &max_count);
+        int error_code = amp_raw_platform_get_installed_core_count(&platform, &max_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         
         error_code = amp_raw_platform_get_active_core_count(&platform, &active_count);
@@ -203,7 +203,7 @@ SUITE(amp_raw_platform)
         size_t active_count = 0;
         size_t max_count = 0;
         
-        int error_code = amp_raw_platform_get_hwthread_count(&platform, &max_count);
+        int error_code = amp_raw_platform_get_installed_hwthread_count(&platform, &max_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         
         error_code = amp_raw_platform_get_active_hwthread_count(&platform, &active_count);
@@ -227,11 +227,11 @@ SUITE(amp_raw_platform)
         assert(AMP_SUCCESS == error_code);
         
         size_t dummy_count = 0;
-        error_code = amp_raw_platform_get_core_count(&platform, &dummy_count);
+        error_code = amp_raw_platform_get_installed_core_count(&platform, &dummy_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         error_code = amp_raw_platform_get_active_core_count(&platform, &dummy_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
-        error_code = amp_raw_platform_get_hwthread_count(&platform, &dummy_count);
+        error_code = amp_raw_platform_get_installed_hwthread_count(&platform, &dummy_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         error_code = amp_raw_platform_get_active_hwthread_count(&platform, &dummy_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);

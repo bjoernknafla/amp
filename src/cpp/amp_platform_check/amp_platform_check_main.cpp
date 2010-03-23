@@ -115,14 +115,14 @@ int main(int argc, char *argv[])
 
     int error_code = AMP_SUCCESS;
     
-    error_code = amp_raw_platform_get_core_count(&platform, &core_count);
+    error_code = amp_raw_platform_get_installed_core_count(&platform, &core_count);
     exit_on_error_other_than_enosys(error_code);
     
     error_code = amp_raw_platform_get_active_core_count(&platform, 
                                                         &active_core_count);
     exit_on_error_other_than_enosys(error_code);
     
-    error_code = amp_raw_platform_get_hwthread_count(&platform, &hwthread_count);
+    error_code = amp_raw_platform_get_installed_hwthread_count(&platform, &hwthread_count);
     exit_on_error_other_than_enosys(error_code);
     
     error_code = amp_raw_platform_get_active_hwthread_count(&platform, &active_hwthread_count);

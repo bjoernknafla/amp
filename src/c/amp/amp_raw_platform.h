@@ -48,9 +48,9 @@
  *             size_t amp_raw_platform_get_package_type_count(void);
  *             size_t amp_raw_platform_get_package_count_for_type(size_t package_type_id);
  *             size_t amp_raw_platform_get_core_type_count(size_t package_type_id);
- *             size_t amp_raw_platform_get_core_count_for_type(size_t package_type_id, 
+ *             size_t amp_raw_platform_get_installed_core_count_for_type(size_t package_type_id, 
  *                                                         size_t core_type_for_package_type_id);
- *             size_t amp_raw_platform_get_hwthread_count(size_t package_type_id, 
+ *             size_t amp_raw_platform_get_installed_hwthread_count(size_t package_type_id, 
  *                                                    size_t core_type_for_package_type_id);
  * TODO: @todo Add source file using GetLogicalProcessorInformationEx to query
  *             the platform on Windows Vista or later Windows versions.
@@ -140,8 +140,8 @@ extern "C" {
      *         ENOSYS if the information can not be queried.
      *         EINVAL is returned if desc is invalid, e.g. NULL.
      */
-    int amp_raw_platform_get_core_count(struct amp_raw_platform_s* descr, 
-                                    size_t* result);
+    int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr, 
+                                                  size_t* result);
 
     /**
      * Queries the platform for the number of currently active processor cores.
@@ -166,7 +166,7 @@ extern "C" {
      * Queries the platform for the number of hardware threads - if the platform
      * support simultaneous multithreading (and supports querying this 
      * information) then the number returned might be greater than the one
-     * returned by amp_raw_platform_get_core_count.
+     * returned by amp_raw_platform_get_installed_core_count.
      *
      * descr must not be NULL.
      *
@@ -181,8 +181,8 @@ extern "C" {
      *         ENOSYS if the information can not be queried.
      *         EINVAL is returned if desc is invalid, e.g. NULL.
      */
-    int amp_raw_platform_get_hwthread_count(struct amp_raw_platform_s* descr, 
-                                        size_t* result);
+    int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* descr, 
+                                                      size_t* result);
     
     /**
      * Queries the platform for the number of currently active hardware threads 

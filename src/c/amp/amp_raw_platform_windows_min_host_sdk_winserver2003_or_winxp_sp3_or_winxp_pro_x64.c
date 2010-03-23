@@ -56,7 +56,7 @@
 
 
 
-int amp_raw_platform_get_core_count(struct amp_raw_platform_s* descr, 
+int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr, 
                                     size_t* result)
 {
     assert(NULL != descr);
@@ -121,7 +121,7 @@ int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr,
 
 
 
-int amp_raw_platform_get_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* descr, 
                                         size_t* result)
 {
     assert(NULL != descr);
