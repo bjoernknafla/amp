@@ -44,7 +44,7 @@
 #include <sstream>
 
 
-#include <amp/amp.h>
+#include <amp/amp_raw.h>
 
 
 
@@ -99,12 +99,12 @@ int main(int argc, char *argv[])
     void* allocator_context = NULL;
     
     
-    amp_platform_t platform = NULL;
+    struct amp_raw_platform_s platform;
     
-    int const error_code_create = amp_platform_create(&platform, 
-                                                      allocator_context, 
-                                                      &amp_malloc, 
-                                                      &amp_free);
+    int const error_code_create = amp_raw_platform_init(&platform, 
+                                                        allocator_context, 
+                                                        &amp_malloc, 
+                                                        &amp_free);
     exit_on_error(error_code_create);
     
     // Extract numbers from platform description.
@@ -115,22 +115,20 @@ int main(int argc, char *argv[])
 
     int error_code = AMP_SUCCESS;
     
-    error_code = amp_platform_get_core_count(platform, &core_count);
+    error_code = amp_raw_platform_get_core_count(&platform, &core_count);
     exit_on_error_other_than_enosys(error_code);
     
-    error_code = amp_platform_get_active_core_count(platform, 
-                                                    &active_core_count);
+    error_code = amp_raw_platform_get_active_core_count(&platform, 
+                                                        &active_core_count);
     exit_on_error_other_than_enosys(error_code);
     
-    error_code = amp_platform_get_hwthread_count(platform, &hwthread_count);
+    error_code = amp_raw_platform_get_hwthread_count(&platform, &hwthread_count);
     exit_on_error_other_than_enosys(error_code);
     
-    error_code = amp_platform_get_active_hwthread_count(platform, &active_hwthread_count);
+    error_code = amp_raw_platform_get_active_hwthread_count(&platform, &active_hwthread_count);
     exit_on_error_other_than_enosys(error_code);
     
-    int const error_code_destroy = amp_platform_destroy(platform, 
-                                                        allocator_context, 
-                                                        &amp_free);
+    int const error_code_destroy = amp_raw_platform_finalize(&platform);
     exit_on_error(error_code_destroy);
     
     

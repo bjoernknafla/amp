@@ -30,40 +30,41 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Internal helper types and functions that are reused by the platform
- * specific implementations for amp_platform.
- *
- * Must only be included and used by amp implementation code.
- */
+#include "amp_internal_platform_win_system_info.h"
 
-#ifndef AMP_amp_internal_platform_H
-#define AMP_amp_internal_platform_H
+#include <assert.h>
+
+#include "amp_stddef.h"
 
 
-#include <amp/amp_platform.h>
+
+typedef void (WINAPI *GetNativeSystemInfoFunc)(LPSYSTEM_INFO);
 
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
+int amp_internal_platform_win_system_info(struct* amp_internal_platform_win_info_s info)
+{
+    assert(NULL != info);
     
-    /**
-     * A count of @c 0 is interpreted as not supported.
-     */
-    struct amp_platform_s {
-        size_t core_count;
-        size_t active_core_count;
-        size_t hwthread_count;
-        size_t active_hwthread_count;
-    };
+    SYSTEM_INFO sysinfo;
+    ZeroMemory(&sysinfo, sizeof(SYSTEM_INFO));
     
+    GetNativeSystemInfoFunc get_native_system_info_func = (GetNativeSystemInfoFunc) GetProcAddress(                                                                                 GetModuleHandle(TEXT("kernel32.dll")), "GetNativeSystemInfo");
     
+    if (NULL != get_native_system_info_func) {
+        get_native_system_info_func(&sysinfo);
+    } else {
+        GetSystemInfo(&sysinfo);
+    }
     
-#if defined(__cplusplus)
-} /* extern "C" */
-#endif
+    DWORD const physical_processor_count = sysinfo.dwNumberOfProcessors;
+    
+    info->installed_core_count = (size_t)physical_processor_count;
+    info->active_core_count = 0;
+    info->installed_hwthread_count = 0;
+    info->active_hwthread_count = 0;
+    
+    return AMP_SUCCESS;
+}
 
-        
-#endif /* AMP_amp_internal_platform_H */
+

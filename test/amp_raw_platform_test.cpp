@@ -33,7 +33,7 @@
 /**
  * @file
  *
- * Unit tests for amp_platform
+ * Unit tests for amp_raw_platform
  */
 
 #include <UnitTest++.h>
@@ -46,42 +46,40 @@
 
 #include <amp/amp_stddef.h>
 #include <amp/amp_memory.h>
-#include <amp/amp_platform.h>
+#include <amp/amp_raw_platform.h>
 
 
 
 namespace {
     
-    class amp_platform_test_fixture {
+    class amp_raw_platform_test_fixture {
     public:
         
-        amp_platform_test_fixture()
-        :   platform(NULL)
+        amp_raw_platform_test_fixture()
+        :   platform()
         {
-            int const error_code = amp_platform_create(&platform,
-                                                       NULL,
-                                                       &amp_malloc,
-                                                       &amp_free);
+            int const error_code = amp_raw_platform_init(&platform,
+                                                         NULL,
+                                                         &amp_malloc,
+                                                         &amp_free);
             assert(AMP_SUCCESS == error_code);
             
         }
         
         
-        virtual ~amp_platform_test_fixture()
+        virtual ~amp_raw_platform_test_fixture()
         {
-            int const error_code = amp_platform_destroy(platform,
-                                                        NULL,
-                                                        &amp_free);
+            int const error_code = amp_raw_platform_finalize(&platform);
             
             assert(AMP_SUCCESS == error_code);
         }
         
         
-        amp_platform_t platform;
+        struct amp_raw_platform_s platform;
         
     private:
-        amp_platform_test_fixture(amp_platform_test_fixture const&); // =0
-        amp_platform_test_fixture& operator=(amp_platform_test_fixture const&); // =0
+        amp_raw_platform_test_fixture(amp_raw_platform_test_fixture const&); // =0
+        amp_raw_platform_test_fixture& operator=(amp_raw_platform_test_fixture const&); // =0
     };
     
     
@@ -129,14 +127,14 @@ namespace {
 } // anonymous namespace
 
 
-SUITE(amp_platform)
+SUITE(amp_raw_platform)
 {
 
-    TEST_FIXTURE(amp_platform_test_fixture, get_core_count_no_argument_change_on_error)
+    TEST_FIXTURE(amp_raw_platform_test_fixture, get_core_count_no_argument_change_on_error)
     {
         size_t const count_init_value = 666;
         size_t count_that_must_not_be_touched_on_error = count_init_value;
-        int const error_code = amp_platform_get_core_count(platform, &count_that_must_not_be_touched_on_error);
+        int const error_code = amp_raw_platform_get_core_count(&platform, &count_that_must_not_be_touched_on_error);
         
         if (AMP_SUCCESS != error_code) {
             CHECK(count_init_value == count_that_must_not_be_touched_on_error);
@@ -145,11 +143,11 @@ SUITE(amp_platform)
     
     
     
-    TEST_FIXTURE(amp_platform_test_fixture, get_core_active_count_no_argument_change_on_error)
+    TEST_FIXTURE(amp_raw_platform_test_fixture, get_core_active_count_no_argument_change_on_error)
     {
         size_t const count_init_value = 666;
         size_t count_that_must_not_be_touched_on_error = count_init_value;
-        int const error_code = amp_platform_get_active_core_count(platform, &count_that_must_not_be_touched_on_error);
+        int const error_code = amp_raw_platform_get_active_core_count(&platform, &count_that_must_not_be_touched_on_error);
         
         if (AMP_SUCCESS != error_code) {
             CHECK(count_init_value == count_that_must_not_be_touched_on_error);
@@ -158,11 +156,11 @@ SUITE(amp_platform)
     
     
     
-    TEST_FIXTURE(amp_platform_test_fixture, get_hwthread_count_no_argument_change_on_error)
+    TEST_FIXTURE(amp_raw_platform_test_fixture, get_hwthread_count_no_argument_change_on_error)
     {
         size_t const count_init_value = 666;
         size_t count_that_must_not_be_touched_on_error = count_init_value;
-        int const error_code = amp_platform_get_hwthread_count(platform, &count_that_must_not_be_touched_on_error);
+        int const error_code = amp_raw_platform_get_hwthread_count(&platform, &count_that_must_not_be_touched_on_error);
         
         if (AMP_SUCCESS != error_code) {
             CHECK(count_init_value == count_that_must_not_be_touched_on_error);
@@ -171,11 +169,11 @@ SUITE(amp_platform)
     
     
     
-    TEST_FIXTURE(amp_platform_test_fixture, get_active_hwthread_count_no_argument_change_on_error)
+    TEST_FIXTURE(amp_raw_platform_test_fixture, get_active_hwthread_count_no_argument_change_on_error)
     {
         size_t const count_init_value = 666;
         size_t count_that_must_not_be_touched_on_error = count_init_value;
-        int const error_code = amp_platform_get_active_hwthread_count(platform, &count_that_must_not_be_touched_on_error);
+        int const error_code = amp_raw_platform_get_active_hwthread_count(&platform, &count_that_must_not_be_touched_on_error);
         
         if (AMP_SUCCESS != error_code) {
             CHECK(count_init_value == count_that_must_not_be_touched_on_error);
@@ -184,15 +182,15 @@ SUITE(amp_platform)
     
     
     
-    TEST_FIXTURE(amp_platform_test_fixture, active_core_count_lesser_or_equal_than_max_core_count)
+    TEST_FIXTURE(amp_raw_platform_test_fixture, active_core_count_lesser_or_equal_than_max_core_count)
     {
         size_t active_count = 0;
         size_t max_count = 0;
         
-        int error_code = amp_platform_get_core_count(platform, &max_count);
+        int error_code = amp_raw_platform_get_core_count(&platform, &max_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         
-        error_code = amp_platform_get_active_core_count(platform, &active_count);
+        error_code = amp_raw_platform_get_active_core_count(&platform, &active_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         
         CHECK(active_count <= max_count);
@@ -200,15 +198,15 @@ SUITE(amp_platform)
     
     
 
-    TEST_FIXTURE(amp_platform_test_fixture, active_hwthread_count_lesser_or_equal_than_max_hwthread_count)
+    TEST_FIXTURE(amp_raw_platform_test_fixture, active_hwthread_count_lesser_or_equal_than_max_hwthread_count)
     {
         size_t active_count = 0;
         size_t max_count = 0;
         
-        int error_code = amp_platform_get_hwthread_count(platform, &max_count);
+        int error_code = amp_raw_platform_get_hwthread_count(&platform, &max_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         
-        error_code = amp_platform_get_active_hwthread_count(platform, &active_count);
+        error_code = amp_raw_platform_get_active_hwthread_count(&platform, &active_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         
         CHECK(active_count <= max_count);
@@ -218,29 +216,27 @@ SUITE(amp_platform)
     
     TEST(memory_allocation_and_deallocation)
     {
-        amp_platform_t platform = NULL;
+        struct amp_raw_platform_s platform;
         struct statistics_collecting_allocator allocator = {0, 0};
         
         
-        int error_code = amp_platform_create(&platform,
-                                             &allocator,
-                                             &statistics_collecting_alloc,
-                                             &statistics_collecting_dealloc);
+        int error_code = amp_raw_platform_init(&platform,
+                                               &allocator,
+                                               &statistics_collecting_alloc,
+                                               &statistics_collecting_dealloc);
         assert(AMP_SUCCESS == error_code);
         
         size_t dummy_count = 0;
-        error_code = amp_platform_get_core_count(platform, &dummy_count);
+        error_code = amp_raw_platform_get_core_count(&platform, &dummy_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
-        error_code = amp_platform_get_active_core_count(platform, &dummy_count);
+        error_code = amp_raw_platform_get_active_core_count(&platform, &dummy_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
-        error_code = amp_platform_get_hwthread_count(platform, &dummy_count);
+        error_code = amp_raw_platform_get_hwthread_count(&platform, &dummy_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
-        error_code = amp_platform_get_active_hwthread_count(platform, &dummy_count);
+        error_code = amp_raw_platform_get_active_hwthread_count(&platform, &dummy_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         
-        error_code = amp_platform_destroy(platform,
-                                          &allocator,
-                                          &statistics_collecting_dealloc);
+        error_code = amp_raw_platform_finalize(&platform);
         assert(AMP_SUCCESS == error_code);
         
         CHECK_EQUAL(allocator.allocated_memory, allocator.deallocated_memory);
@@ -248,7 +244,7 @@ SUITE(amp_platform)
     
     
     
-} // SUITE(amp_platform)
+} // SUITE(amp_raw_platform)
 
 
 

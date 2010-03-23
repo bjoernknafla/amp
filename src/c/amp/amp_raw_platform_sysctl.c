@@ -39,8 +39,8 @@
  * update - the use of NSProcessInfo is safer but does not support detection of
  * simultaneous multithreading (SMT - Hyper-Threading in Intel-lingo).
  *
- * amp_platform_destroy and most of the query functions for amp_platform
- * are implemented in amp_internal_platform.c.
+ * amp_raw_platform_init and amp_raw_platform_finalize are implemented in 
+ * amp_raw_platform_common.c.
  *
  * See http://developer.apple.com/mac/library/releasenotes/Performance/RN-AffinityAPI/
  *
@@ -57,7 +57,7 @@
  * See http://lists.apple.com/archives/cocoa-dev/2009/Nov/msg00687.html
  */
 
-#include "amp_platform.h"
+#include "amp_raw_platform.h"
 
 
 #include <sys/types.h>
@@ -67,7 +67,6 @@
 
 
 #include "amp_stddef.h"
-#include "amp_internal_platform.h"
 
 
 
@@ -103,36 +102,80 @@ static size_t amp_internal_query_sysctlbyname(char const* query_term)
 
 
 
-int amp_platform_create(struct amp_platform_s** descr,
-                        void* allocator_context,
-                        amp_alloc_func_t alloc_func,
-                        amp_dealloc_func_t dealloc_func)
+int amp_raw_platform_get_core_count(struct amp_raw_platform_s* descr, 
+                                    size_t* result)
 {
     assert(NULL != descr);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
     
-    if (NULL == descr
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
-        
+    if (NULL == descr) {
         return EINVAL;
     }
     
-    struct amp_platform_s* temp = (struct amp_platform_s*)alloc_func(allocator_context,
-                                                                     sizeof(struct amp_platform_s));
     
-    if (NULL == temp) {
-        return ENOMEM;
+    if (NULL != result ) {
+        
+        *result = amp_internal_query_sysctlbyname(hw_physicalcpu_max);
     }
     
-    temp->core_count = amp_internal_query_sysctlbyname(hw_physicalcpu_max);
-    temp->active_core_count = amp_internal_query_sysctlbyname(hw_physicalcpu_online);
-    temp->hwthread_count = amp_internal_query_sysctlbyname(hw_logicalcpu_max);
-    temp->active_hwthread_count = amp_internal_query_sysctlbyname(hw_logicalcpu_online);
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr, 
+                                           size_t* result)
+{
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
+        return EINVAL;
+    }
     
     
-    *descr = temp;
+    if (NULL != result ) {
+        
+        *result = amp_internal_query_sysctlbyname(hw_physicalcpu_online);
+    }
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_raw_platform_get_hwthread_count(struct amp_raw_platform_s* descr, 
+                                        size_t* result)
+{
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
+        return EINVAL;
+    }
+    
+    
+    if (NULL != result ) {
+        
+        *result = amp_internal_query_sysctlbyname(hw_logicalcpu_max);
+    }
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr, 
+                                               size_t* result)
+{
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
+        return EINVAL;
+    }
+    
+    
+    if (NULL != result ) {
+        
+        *result = amp_internal_query_sysctlbyname(hw_logicalcpu_online);
+    }
     
     return AMP_SUCCESS;
 }

@@ -30,8 +30,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @file
+ *
+ * Platform hardware detection via NSProcessInfo.
+ *
+ * Link with the Cocoa Foundation framework to use this file.
+ *
+ * amp_raw_platform_init and amp_raw_platform_finalize are implemented in 
+ * amp_raw_platform_common.c.
+ *
+ * See http://developer.apple.com/mac/library/documentation/Cocoa/Reference/Foundation/Classes/NSProcessInfo_Class/Reference/Reference.html
+ *
+ */
 
-#include "amp_internal_platform.h"
+
+#include "amp_raw_platform.h"
+
+#import <foundation/foundation.h>
 
 
 #include <assert.h>
@@ -42,79 +58,22 @@
 
 
 
-int amp_platform_destroy(struct amp_platform_s* descr, 
-                         void* allocator_context,
-                         amp_dealloc_func_t dealloc_func)
+static size_t amp_internal_platform_get_active_core_count(void);
+static size_t amp_internal_platform_get_active_core_count(void)
 {
-    assert(NULL != descr);
-    assert(NULL != dealloc_func);
-    
-    if (NULL == descr
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
-    dealloc_func(allocator_context, descr);
-    
-    return AMP_SUCCESS;
+    return (size_t) [[NSProcessInfo processInfo] activeProcessorCount];
+}
+
+
+static size_t amp_internal_platform_get_core_count(void);
+static size_t amp_internal_platform_get_core_count(void)
+{
+    return (size_t) [[NSProcessInfo processInfo] processorCount];
 }
 
 
 
-int amp_platform_get_core_count(struct amp_platform_s* descr, 
-                                size_t* result)
-{
-    assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
-    
-    int retval = AMP_SUCCESS;
-    
-    if (0 == descr->core_count) {
-        retval = ENOSYS;
-    }
-    
-    if (NULL != result && AMP_SUCCESS == retval) {
-        
-        *result = descr->core_count;
-    }
-    
-    return retval;
-}
-
-
-
-int amp_platform_get_active_core_count(struct amp_platform_s* descr, 
-                                       size_t* result)
-{
-    assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
-    
-    int retval = AMP_SUCCESS;
-    
-    if (0 == descr->active_core_count) {
-        retval = ENOSYS;
-    }
-    
-    if (NULL != result && AMP_SUCCESS == retval) {
-        
-        *result = descr->active_core_count;
-    }
-    
-    return retval;
-}
-
-
-
-int amp_platform_get_hwthread_count(struct amp_platform_s* descr, 
+int amp_raw_platform_get_core_count(struct amp_raw_platform_s* descr, 
                                     size_t* result)
 {
     assert(NULL != descr);
@@ -124,23 +83,17 @@ int amp_platform_get_hwthread_count(struct amp_platform_s* descr,
     }
     
     
-    int retval = AMP_SUCCESS;
-    
-    if (0 == descr->hwthread_count) {
-        retval = ENOSYS;
-    }
-    
-    if (NULL != result && AMP_SUCCESS == retval) {
+    if (NULL != result ) {
         
-        *result = descr->hwthread_count;
+        *result = amp_internal_platform_get_core_count();
     }
     
-    return retval;
+    return AMP_SUCCESS;
 }
 
 
 
-int amp_platform_get_active_hwthread_count(struct amp_platform_s* descr, 
+int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr, 
                                            size_t* result)
 {
     assert(NULL != descr);
@@ -150,17 +103,44 @@ int amp_platform_get_active_hwthread_count(struct amp_platform_s* descr,
     }
     
     
-    int retval = AMP_SUCCESS;
-    
-    if (0 == descr->active_hwthread_count) {
-        retval = ENOSYS;
-    }
-    
-    if (NULL != result && AMP_SUCCESS == retval) {
+    if (NULL != result ) {
         
-        *result = descr->active_hwthread_count;
+        *result = amp_internal_platform_get_active_core_count();
     }
     
-    return retval;
+    return AMP_SUCCESS;
 }
+
+
+
+int amp_raw_platform_get_hwthread_count(struct amp_raw_platform_s* descr, 
+                                        size_t* result)
+{
+    (void)result;
+    
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
+        return EINVAL;
+    }
+    
+    return ENOSYS;
+}
+
+
+
+int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr, 
+                                               size_t* result)
+{
+    (void)result;
+    
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
+        return EINVAL;
+    }
+    
+    return ENOSYS;
+}
+
 

@@ -43,8 +43,8 @@
  * unable to differentiate between all cores of the queried computer and the 
  * cores that are active/online during the detection.
  *
- * amp_platform_destroy and most of the query functions for amp_platform
- * are implemented in amp_internal_platform.c.
+ * amp_raw_platform_init and amp_raw_platform_finalize are implemented in 
+ * amp_raw_platform_common.c.
  *
  * See http://msdn.microsoft.com/en-us/library/ms724381(VS.85).aspx
  *
@@ -57,80 +57,95 @@
  * See http://msdn.microsoft.com/en-us/library/aa383745(VS.85).aspx
  */
 
-#include "amp_platform.h"
+#include "amp_raw_platform.h"
 
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-
-#include <assert.h>
 #include <errno.h>
+#include <assert.h>
 
 
 #include "amp_stddef.h"
-#include "amp_internal_platform.h"
+#include "amp_internal_platform_win_system_info.h"
+#include "amp_internal_platform_win_system_logical_processor_information.h"
 
 
 
-typedef void (WINAPI *GetNativeSystemInfoFunc)(LPSYSTEM_INFO);
-
-
-
-static size_t amp_internal_platform_get_core_count(void);
-static size_t amp_internal_platform_get_core_count(void)
+int amp_raw_platform_get_core_count(struct amp_raw_platform_s* descr, 
+                                    size_t* result)
 {
-    /* TODO: @todo Check if this returns full cores or hwthread (hyper-threads).
-     */
+    assert(NULL != descr);
     
-    SYSTEM_INFO sysinfo = {}; /* ZeroMemory(&sysinfo, sizeof(SYSTEM_INFO)) */
-    
-    GetNativeSystemInfoFunc get_native_system_info_func = (GetNativeSystemInfoFunc) GetProcAddress(                                                                                 GetModuleHandle(TEXT("kernel32.dll")), "GetNativeSystemInfo");
-    
-    if (NULL != get_native_system_info_func) {
-        get_native_system_info_func(&sysinfo);
-    } else {
-        GetSystemInfo(&sysinfo);
+    if (NULL == descr) {
+        return EINVAL;
     }
     
-    DWORD const physical_processor_count = sysinfo.dwNumberOfProcessors;
     
-    return (size_t)physical_processor_count;
+    int return_value = ENOSYS;
+    
+    if (NULL != result ) {
+        
+        struct amp_internal_platform_win_info_s info;
+        info.installed_core_count = 0;
+        info.active_core_count = 0;
+        info.installed_hwthread_count = 0;
+        info.active_hwthread_count = 0;
+        
+        return_value = amp_internal_platform_win_system_info(&info);
+        
+        if (return_value == AMP_SUCCESS) {
+            *result = info.installed_core_count;
+        }
+    }
+    
+    return return_value;
 }
 
 
 
-int amp_platform_create(struct amp_platform_s** descr,
-                        void* allocator_context,
-                        amp_alloc_func_t alloc_func,
-                        amp_dealloc_func_t dealloc_func)
+int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr, 
+                                           size_t* result)
 {
-    assert(NULL != descr);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
+    (void)result;
     
-    if (NULL == descr
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
-        
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
         return EINVAL;
     }
     
-    struct amp_platform_s* temp = (struct amp_platform_s*)alloc_func(allocator_context, 
-                                                                     sizeof(struct amp_platform_s));
+    return ENOSYS;
+}
+
+
+
+int amp_raw_platform_get_hwthread_count(struct amp_raw_platform_s* descr, 
+                                        size_t* result)
+{
+    (void)result;
     
-    if (NULL == temp) {
-        return ENOMEM;
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
+        return EINVAL;
     }
     
-    temp->core_count = amp_internal_platform_get_core_count();
-    temp->active_core_count = 0;
-    temp->hwthread_count = 0;
-    temp->active_hwthread_count = 0;
+    return ENOSYS;
+}
+
+
+
+int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr, 
+                                               size_t* result)
+{
+    (void)result;
     
-    *descr = temp;
+    assert(NULL != descr);
     
-    return AMP_SUCCESS;
+    if (NULL == descr) {
+        return EINVAL;
+    }
+    
+    return ENOSYS;
 }
 
 

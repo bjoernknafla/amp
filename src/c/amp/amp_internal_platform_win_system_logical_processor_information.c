@@ -30,63 +30,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @file
- *
- * Platform hardware detection via Windows GetLogicalProcessorInformation
- * for at least Windows Server 2003 or Windows Vista, 
- * Windows XP Professional x64 Edition, Windows XP with SP3. 
- *
- * Unable to detect active cores or hardware threads, can only detect installed
- * cores and hardware threads. On Windows earlier than Windows Vista cores and
- * hardware threads can not be differentiated.
- * 
- * @ATTENTION The implementation of GetLogicalProcessorInformation can only 
- *            handle a fixed number of cores or hardware threads - on platforms
- *            that support more cores or hardware threads it (and therefore the
- *            amp_platform query functions) only return informations about the 
- *            processor group of the processor the calling thread executes on at 
- *            the time of the call. Use amp_platform_windows_min_host_sdk_winserver2008_r2_or_windows7.c 
- *            for newer Windows platforms to support querying many core
- *            processor hardware.
- *
- * amp_platform_destroy and most of the query functions for amp_platform
- * are implemented in amp_internal_platform.c.
- *
- * See http://msdn.microsoft.com/en-us/library/ms683194(VS.85).aspx
- *
- * See http://msdn.microsoft.com/en-us/library/ms725492(VS.85).aspx
- *
- * See http://msdn.microsoft.com/en-us/library/ms725491(VS.85).aspx
- *
- * See http://msdn.microsoft.com/en-us/library/aa383745(VS.85).aspx
- *
- * See http://msdn.microsoft.com/en-us/library/ms724833(VS.85).aspx
- *
- * See http://msdn.microsoft.com/en-us/library/ms725494(VS.85).aspx
- *
- *
- * TODO: @todo Find out if pre Windows Vista reports hardware threads or cores?
- */
 
-#include "amp_platform.h"
-
+#include "amp_internal_platform_win_system_logical_processor_information.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-
 #include <assert.h>
 #include <errno.h>
 
-
 #include "amp_stddef.h"
-#include "amp_internal_platform.h"
 
 
 
 #if _WIN32_WINNT < 0x0501
-#   error Compile amp_platform_windows_min_host_sdk_win2000.c for support of the target operating system.
+#   error Target Windows OS must be at least Windows Server 2003 or WindowsXP.
 #endif
 
 
@@ -293,14 +251,14 @@ static int amp_internal_count_set_bits_of_ulong_ptr(ULONG_PTR bitmask)
      * http://msdn.microsoft.com/en-us/library/ms683194(VS.85).aspx
      *
      
-    ULONG sum = bitmask;
-    while (0 != bitmask) {
-        bitmask = bitmask >> 1;
-        sum = sum - bitmask;
-    }
-    
-    return (int)sum;
-    */
+     ULONG sum = bitmask;
+     while (0 != bitmask) {
+     bitmask = bitmask >> 1;
+     sum = sum - bitmask;
+     }
+     
+     return (int)sum;
+     */
     
     DWORD const ulong_size = sizeof(ULONG)* CHAR_BIT;
     ULONG_PTR const rightmost_bit = (ULONG_PTR)1;
@@ -348,22 +306,18 @@ static AMP_BOOL amp_internal_platform_can_differentiate_core_and_hwthread_count(
                                                                          0,
                                                                          0);
     }
-
+    
     return can_differentiate;
 }
 
 
 
-static int amp_internal_platform_get_logical_processor_information(struct amp_platform_s* platform,
-                                                    void* allocator_context,
-                                                    amp_alloc_func_t alloc_func,
-                                                    amp_dealloc_func_t dealloc_func);
-static int amp_internal_platform_get_logical_processor_information(struct amp_platform_s* platform,
+int amp_internal_platform_win_system_logical_processor_information(struct* amp_internal_platform_win_info_s info
                                                                    void* allocator_context,
                                                                    amp_alloc_func_t alloc_func,
                                                                    amp_dealloc_func_t dealloc_func)
-{    
-    assert(NULL != platform);
+{
+    assert(NULL != info);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
@@ -421,7 +375,7 @@ static int amp_internal_platform_get_logical_processor_information(struct amp_pl
         
         return EAGAIN;
     }
-        
+    
     
     int core_count = 0;
     int hwthread_count = 0;
@@ -454,7 +408,7 @@ static int amp_internal_platform_get_logical_processor_information(struct amp_pl
                         hwthread_count += amp_internal_count_set_bits_of_ulong_ptr(sysinfo->ProcessorMask);
                         
                     }
-                
+                    
                 } else {
                     
                     core_count += amp_internal_count_set_bits_of_ulong_ptr(sysinfo->ProcessorMask);
@@ -470,75 +424,12 @@ static int amp_internal_platform_get_logical_processor_information(struct amp_pl
     }
     
     dealloc_func(allocator_context, sysinfo_buffer);
-        
-    platform->core_count = (size_t)core_count;
-    platform->active_core_count = 0;
-    platform->hwthread_count = (size_t)hwthread_count;
-    platform->active_hwthread_count = 0;
     
     
-    return AMP_SUCCESS;    
-}
-
-
-#error fall back on other methods if GetLogicalProcessorInformation does not work.
-
-
-
-int amp_platform_create(struct amp_platform_s** descr,
-                        void* allocator_context,
-                        amp_alloc_func_t alloc_func,
-                        amp_dealloc_func_t dealloc_func)
-{
-    assert(NULL != descr);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
-    
-    if (NULL == descr
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
-    struct amp_platform_s* temp = (struct amp_platform_s*)alloc_func(allocator_context, 
-                                                                     sizeof(struct amp_platform_s));
-    
-    if (NULL == temp) {
-        return ENOMEM;
-    }
-    
-    temp->core_count = 0;
-    temp->active_core_count = 0;
-    temp->hwthread_count = 0;
-    temp->active_hwthread_count = 0;
-    
-    
-    int error_code = amp_internal_platform_get_logical_processor_information(temp,
-                                                                            allocator_context,
-                                                                             alloc_func,
-                                                                             dealloc_func);
-    
-    if (AMP_SUCCESS != error_code) {
-        
-        
-        /* TODO: @todo Fall back to other way of querying the platform 
-         */
-        
-        
-        dealloc_func(allocator_context, temp);
-        
-        
-        /* TODO: @todo Check that no non-documented error codes are returned. 
-         */
-        return error_code;
-        
-    }
-    
-    
-    
-    
-    *descr = temp;
+    info->installed_core_count = (size_t)core_count;;
+    info->active_core_count = 0;
+    info->installed_hwthread_count = (size_t)hwthread_count;
+    info->active_hwthread_count = 0;
     
     return AMP_SUCCESS;
 }

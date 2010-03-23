@@ -45,12 +45,12 @@
  *             platform is an UMA or NUMA architecture. Add ways to detect if
  *             specific infos can be determined or not on the platform in use.
  * TODO: @todo Decide if to implement the following functions:
- *             size_t amp_platform_get_package_type_count(void);
- *             size_t amp_platform_get_package_count_for_type(size_t package_type_id);
- *             size_t amp_platform_get_core_type_count(size_t package_type_id);
- *             size_t amp_platform_get_core_count_for_type(size_t package_type_id, 
+ *             size_t amp_raw_platform_get_package_type_count(void);
+ *             size_t amp_raw_platform_get_package_count_for_type(size_t package_type_id);
+ *             size_t amp_raw_platform_get_core_type_count(size_t package_type_id);
+ *             size_t amp_raw_platform_get_core_count_for_type(size_t package_type_id, 
  *                                                         size_t core_type_for_package_type_id);
- *             size_t amp_platform_get_hwthread_count(size_t package_type_id, 
+ *             size_t amp_raw_platform_get_hwthread_count(size_t package_type_id, 
  *                                                    size_t core_type_for_package_type_id);
  * TODO: @todo Add source file using GetLogicalProcessorInformationEx to query
  *             the platform on Windows Vista or later Windows versions.
@@ -58,8 +58,8 @@
  */
 
 
-#ifndef AMP_amp_platform_H
-#define AMP_amp_platform_H
+#ifndef AMP_amp_raw_platform_H
+#define AMP_amp_raw_platform_H
 
 
 #include <stddef.h>
@@ -77,49 +77,51 @@ extern "C" {
     /**
      * Opaque data type to enable querying platform information.
      */
-    typedef struct amp_platform_s* amp_platform_t;
+    typedef struct amp_raw_platform_s* amp_raw_platform_t;
 
+    /**
+     * Context for amp_raw_platform query functions. Treat as opaque and don't
+     * rely on its implementation as it can change from version to version.
+     */
+    struct amp_raw_platform_s {
+        void* allocator_context;
+        amp_alloc_func_t alloc_func;
+        amp_dealloc_func_t dealloc_func;
+    };
+    
     
     
     /**
-     * Creates an opaque platform description to be queried by functions like
-     * amp_platform_get_core_count.
+     * Creates a platform context to enable allocation and deallocation of
+     * memory if needed by the platform query functions (necessary for Windows 
+     * Vista and Windows7 platform detection).
      *
      * The allocator (allocator_context, alloc_func, and dealloc_func) are used
      * to allocate the memory for descr and eventually to create a temporary
      * buffer needed to query the platforms hardware informations (Windows
      * GetLogicalProcessorInformation needs a dynamic buffer).
      *
-     * If descr can not be created no memory is leaked.
+     * On error no memory is leaked.
      *
-     * amp_platform_create is potentially expensive and should not be called
-     * in tight or bottleneck-prone loops.
-     *
-     * Call amp_platform_destroy to finalize the platform description and free
-     * its memory.
+     * Call amp_raw_platform_finalize to finalize the platform description.
      *
      * @return AMP_SUCCESS on successful creation of a platform description.
-     *         ENOMEM if not enough memory is available.
      *         EINVAL is descr, alloc_func, or dealloc_func are NULL.
      */
-    int amp_platform_create(struct amp_platform_s** descr,
-                            void* allocator_context,
-                            amp_alloc_func_t alloc_func,
-                            amp_dealloc_func_t dealloc_func);
+    int amp_raw_platform_init(struct amp_raw_platform_s* descr,
+                              void* allocator_context,
+                              amp_alloc_func_t alloc_func,
+                              amp_dealloc_func_t dealloc_func);
     
     /**
-     * Destroys descr and frees its memory.
+     * Finalizes descr (invalidates it).
      *
-     * allocator_context and dealloc_func must be able to free the memory 
-     * allocated by amp_platform_create.
-     *
-     * @return AMP_SUCCESS on successful destruction of the platform 
+     * @return AMP_SUCCESS on successful finalization of the platform 
      *         description.
-     *         EINVAL if descr or dealloc_func are NULL.
+     *         EINVAL if descr is NULL.
      */
-    int amp_platform_destroy(struct amp_platform_s* descr, 
-                             void* allocator_context,
-                             amp_dealloc_func_t dealloc_func);
+    int amp_raw_platform_finalize(struct amp_raw_platform_s* descr);
+    
     
     
     /**
@@ -138,7 +140,7 @@ extern "C" {
      *         ENOSYS if the information can not be queried.
      *         EINVAL is returned if desc is invalid, e.g. NULL.
      */
-    int amp_platform_get_core_count(struct amp_platform_s* descr, 
+    int amp_raw_platform_get_core_count(struct amp_raw_platform_s* descr, 
                                     size_t* result);
 
     /**
@@ -157,14 +159,14 @@ extern "C" {
      *         ENOSYS if the information can not be queried.
      *         EINVAL is returned if desc is invalid, e.g. NULL.
      */
-    int amp_platform_get_active_core_count(struct amp_platform_s* descr, 
+    int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr, 
                                            size_t* result);
     
     /**
      * Queries the platform for the number of hardware threads - if the platform
      * support simultaneous multithreading (and supports querying this 
      * information) then the number returned might be greater than the one
-     * returned by amp_platform_get_core_count.
+     * returned by amp_raw_platform_get_core_count.
      *
      * descr must not be NULL.
      *
@@ -179,14 +181,14 @@ extern "C" {
      *         ENOSYS if the information can not be queried.
      *         EINVAL is returned if desc is invalid, e.g. NULL.
      */
-    int amp_platform_get_hwthread_count(struct amp_platform_s* descr, 
+    int amp_raw_platform_get_hwthread_count(struct amp_raw_platform_s* descr, 
                                         size_t* result);
     
     /**
      * Queries the platform for the number of currently active hardware threads 
      * - if the platform support simultaneous multithreading (and supports 
      * querying this information) then the number returned might be greater than 
-     * the one returned by amp_platform_get_active_core_count.
+     * the one returned by amp_raw_platform_get_active_core_count.
      *
      * descr must not be NULL.
      *
@@ -201,7 +203,7 @@ extern "C" {
      *         ENOSYS if the information can not be queried.
      *         EINVAL is returned if desc is invalid, e.g. NULL.
      */
-    int amp_platform_get_active_hwthread_count(struct amp_platform_s* descr, 
+    int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr, 
                                                size_t* result);
     
     
@@ -210,4 +212,4 @@ extern "C" {
 #endif
 
 
-#endif /* AMP_amp_platform_H */
+#endif /* AMP_amp_raw_platform_H */

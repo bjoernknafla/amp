@@ -75,7 +75,6 @@
 #include <amp/amp_stddef.h>
 #include <amp/amp_memory.h>
 #include <amp/amp_thread_group.h>
-#include <amp/amp_platform.h>
 
 
 #endif /* AMP_amp_H */

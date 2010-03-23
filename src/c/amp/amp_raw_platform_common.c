@@ -33,21 +33,11 @@
 /**
  * @file
  *
- * Platform hardware detection via NSProcessInfo.
- *
- * Link with the Cocoa Foundation framework to use this file.
- *
- * amp_platform_destroy and most of the query functions for amp_platform
- * are implemented in amp_internal_platform.c.
- *
- * See http://developer.apple.com/mac/library/documentation/Cocoa/Reference/Foundation/Classes/NSProcessInfo_Class/Reference/Reference.html
- *
+ * Implementation of amp_raw_platform functionality used by all platform 
+ * specific implementations.
  */
 
-
-#include "amp_platform.h"
-
-#import <foundation/foundation.h>
+#include "amp_raw_platform.h"
 
 
 #include <assert.h>
@@ -55,29 +45,12 @@
 
 
 #include "amp_stddef.h"
-#include "amp_internal_platform.h"
 
 
-
-static size_t amp_internal_platform_get_active_core_count(void);
-static size_t amp_internal_platform_get_active_core_count(void)
-{
-    return (size_t) [[NSProcessInfo processInfo] activeProcessorCount];
-}
-
-
-static size_t amp_internal_platform_get_core_count(void);
-static size_t amp_internal_platform_get_core_count(void)
-{
-    return (size_t) [[NSProcessInfo processInfo] processorCount];
-}
-
-
-
-int amp_platform_create(struct amp_platform_s** descr,
-                        void* allocator_context,
-                        amp_alloc_func_t alloc_func,
-                        amp_dealloc_func_t dealloc_func)
+int amp_raw_platform_init(struct amp_raw_platform_s* descr,
+                          void* allocator_context,
+                          amp_alloc_func_t alloc_func,
+                          amp_dealloc_func_t dealloc_func)
 {
     assert(NULL != descr);
     assert(NULL != alloc_func);
@@ -90,19 +63,26 @@ int amp_platform_create(struct amp_platform_s** descr,
         return EINVAL;
     }
     
-    struct amp_platform_s* temp = (struct amp_platform_s*)alloc_func(allocator_context,
-                                                                     sizeof(struct amp_platform_s));
+    descr->allocator_context = allocator_context;
+    descr->alloc_func = alloc_func;
+    descr->dealloc_func = dealloc_func;
     
-    if (NULL == temp) {
-        return ENOMEM;
+    return AMP_SUCCESS;
+}
+
+
+int amp_raw_platform_finalize(struct amp_raw_platform_s* descr)
+{
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
+        
+        return EINVAL;
     }
     
-    temp->core_count = amp_internal_platform_get_core_count();
-    temp->active_core_count = amp_internal_platform_get_active_core_count();
-    temp->hwthread_count = 0;
-    temp->active_hwthread_count = 0;
-    
-    *descr = temp;
+    descr->allocator_context = NULL;
+    descr->alloc_func = NULL;
+    descr->dealloc_func = NULL;
     
     return AMP_SUCCESS;
 }
