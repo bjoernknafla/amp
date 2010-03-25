@@ -32,6 +32,9 @@
 
 #include "amp_internal_platform_win_system_info.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include <assert.h>
 
 #include "amp_stddef.h"
@@ -42,7 +45,7 @@ typedef void (WINAPI *GetNativeSystemInfoFunc)(LPSYSTEM_INFO);
 
 
 
-int amp_internal_platform_win_system_info(struct* amp_internal_platform_win_info_s info)
+int amp_internal_platform_win_system_info(struct amp_internal_platform_win_info_s* info)
 {
     assert(NULL != info);
     

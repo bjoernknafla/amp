@@ -31,6 +31,8 @@
  */
 
 
+#error Untested
+
 #include "amp_raw_platform.h"
 
 
@@ -48,11 +50,6 @@
 #   error Compile amp_raw_platform_windows_min_host_sdk_win2000.c for support of the target operating system.
 #endif
 
-
-
-
-
-#error fall back on other methods if GetLogicalProcessorInformation does not work.
 
 
 

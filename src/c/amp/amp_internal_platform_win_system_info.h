@@ -82,7 +82,7 @@ extern "C" {
      *
      * On error info is not changed or even touched.
      */
-    int amp_internal_platform_win_system_info(struct* amp_internal_platform_win_info_s info);
+    int amp_internal_platform_win_system_info(struct amp_internal_platform_win_info_s* info);
     
     
     

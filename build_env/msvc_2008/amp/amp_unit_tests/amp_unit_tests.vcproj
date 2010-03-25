@@ -180,7 +180,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\..\src\c\amp\amp_raw_condition_variable_pthreads.c"
+				RelativePath="..\..\..\..\src\c\amp\amp_internal_platform_win_system_info.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_internal_platform_win_system_logical_processor_information.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -188,6 +208,95 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_internal_raw_thread_common.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_internal_raw_thread_winthreads.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_memory.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_byte_range.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -220,18 +329,15 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\c\amp\amp_raw_mutex_pthreads.c"
-				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -247,33 +353,37 @@
 						CompileAs="2"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\c\amp\amp_raw_semaphore_libdispatch.c"
-				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\c\amp\amp_raw_semaphore_posix_1003_1b.c"
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_platform_common.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\c\amp\amp_raw_semaphore_pthreads.c"
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_platform_unknown.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -281,6 +391,56 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_platform_windows_min_host_sdk_win2000.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_platform_windows_min_host_sdk_winserver2003_or_winxp_sp3_or_winxp_pro_x64.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -296,16 +456,32 @@
 						CompileAs="2"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\c\amp\amp_raw_thread_local_slot_pthreads.c"
-				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_thread_common.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -321,16 +497,12 @@
 						CompileAs="2"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\..\src\c\amp\amp_raw_thread_pthreads.c"
-				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -346,26 +518,32 @@
 						CompileAs="2"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\stdafx.cpp"
-				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_thread_group.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
+						CompileAs="2"
 					/>
 				</FileConfiguration>
 			</File>
@@ -380,11 +558,35 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_internal_platform_win_info.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_internal_platform_win_system_info.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_internal_platform_win_system_logical_processor_information.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_internal_raw_thread.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\c\amp\amp_internal_winthreads_critical_section_config.h"
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_memory.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\c\amp\amp_raw.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_byte_range.h"
 				>
 			</File>
 			<File
@@ -393,6 +595,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\c\amp\amp_raw_mutex.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\c\amp\amp_raw_platform.h"
 				>
 			</File>
 			<File
@@ -412,44 +618,8 @@
 				>
 			</File>
 			<File
-				RelativePath=".\stdafx.h"
+				RelativePath="..\..\..\..\src\c\amp\amp_thread_group.h"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\targetver.h"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -462,11 +632,19 @@
 			Name="Tests"
 			>
 			<File
+				RelativePath="..\..\..\..\test\amp_raw_byte_range_test.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\test\amp_raw_condition_variable_test.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\..\test\amp_raw_mutex_test.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\test\amp_raw_platform_test.cpp"
 				>
 			</File>
 			<File
@@ -482,20 +660,23 @@
 				>
 			</File>
 			<File
-				RelativePath=".\amp_unit_tests.cpp"
+				RelativePath="..\..\..\..\test\amp_stddef_test.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\test\amp_thread_group_test.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\test\unit_tests_main.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\..\..\test\unit_tests_main.cpp"
-				>
 			</File>
 		</Filter>
 		<File

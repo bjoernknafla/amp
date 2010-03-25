@@ -38,6 +38,8 @@
  * TODO: @todo Test on Windows Vista system.
  */
 
+#error Untested
+
 #inlude "amp_raw_condition_variable.h"
 
 

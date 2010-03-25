@@ -9,6 +9,7 @@
 
 #include "amp_internal_raw_thread.h"
 
+#include <process.h>
 
 #include <errno.h>
 #include <assert.h>
@@ -70,7 +71,7 @@ int amp_internal_raw_thread_launch_initialized(struct amp_raw_thread_s *thread)
         /* Thread launched successfully. */
         thread->native_thread_description.thread_handle = (HANDLE) thread_handle;
         thread->native_thread_description.thread_id = (DWORD) inter_process_thread_id;
-        thread->state = AMP_RAW_THREAD_LAUNCHED_STATE;
+        thread->state = AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE;
         
         retval = AMP_SUCCESS;
     } else {

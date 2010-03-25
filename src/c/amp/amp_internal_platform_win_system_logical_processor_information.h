@@ -101,7 +101,7 @@ extern "C" {
      * On error no memory is leaked.
      * On error info is not changed or even touched.
      */
-    int amp_internal_platform_win_system_logical_processor_information(struct* amp_internal_platform_win_info_s info,
+    int amp_internal_platform_win_system_logical_processor_information(struct amp_internal_platform_win_info_s* info,
                                                                        void* allocator_context,
                                                                        amp_alloc_func_t alloc_func,
                                                                        amp_dealloc_func_t dealloc_func);

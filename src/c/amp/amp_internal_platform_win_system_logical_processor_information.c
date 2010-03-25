@@ -31,6 +31,8 @@
  */
 
 
+#error Untested
+
 #include "amp_internal_platform_win_system_logical_processor_information.h"
 
 #define WIN32_LEAN_AND_MEAN
