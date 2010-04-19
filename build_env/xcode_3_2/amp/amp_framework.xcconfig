@@ -1,5 +1,5 @@
 //
-//  amp_raw_framework.xcconfig
+//  amp_framework.xcconfig
 //  amp
 //
 //  Created by Björn Knafla on 02.11.09.
@@ -8,5 +8,12 @@
 
 #include "amp"
 
+HEADER_SEARCH_PATHS = $(AMP_HEADER_PATHS)
+
 GCC_PREPROCESSOR_DEFINITIONS = AMP_USE_LIBDISPATCH_SEMAPHORES AMP_USE_PTHREADS
 INSTALL_PATH = @executable_path/../Frameworks
+
+FRAMEWORK_VERSION = A
+INFOPLIST_FILE = amp-Info.plist
+PRODUCT_NAME = amp
+

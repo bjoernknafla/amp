@@ -11,5 +11,3 @@
 ALWAYS_SEARCH_USER_PATHS = NO
 
 AMP_HEADER_PATHS = "$(SRCROOT)/../../../src/c/" "$(SRCROOT)/../../../src/cpp/"
-
-HEADER_SEARCH_PATHS = $(AMP_HEADER_PATHS)

@@ -62,28 +62,28 @@ Joint ownership of the copyright belongs to [AiGameDev.com](http://AiGameDev.com
 
 To build *amp* you have got the following options:
 
- *  Define AMP_USE_PTHREADS and only compile the generic C source files
-    and the C files ending in _pthreads.c to build for Pthreads.
+ *  Define `AMP_USE_PTHREADS` and only compile the generic C source files
+    and the C files ending in `_pthreads.c` to build for Pthreads.
     
- *  Define AMP_USE_PTHREADS and AMP_USE_POSIX_1003_1B_SEMAPHORES and only
-    compile generic C source files, C files ending in _pthreads.c, but instead
-    of compiling amp_raw_semaphore_pthreads.c use 
-    amp_raw_semaphore_posix_1003_b1.c to build for Pthreads but use the
+ *  Define `AMP_USE_PTHREADS` and `AMP_USE_POSIX_1003_1B_SEMAPHORES` and only
+    compile generic C source files, C files ending in `_pthreads.c`, but instead
+    of compiling `amp_raw_semaphore_pthreads.c` use 
+    `amp_raw_semaphore_posix_1003_b1.c` to build for Pthreads but use the
     POSIX 1003 1b semaphores.
     
- *  Define AMP_USE_PTHREADS and AMP_USE_LIBDISPATCH_SEMAPHORES and only
-    compile generic C source files, C files ending in _pthreads.c, but instead
-    of compiling amp_raw_semaphore_pthreads.c use 
-    amp_raw_semaphore_libdispatch.c to build for Pthreads but use Apple's
+ *  Define `AMP_USE_PTHREADS` and `AMP_USE_LIBDISPATCH_SEMAPHORES` and only
+    compile generic C source files, C files ending in `_pthreads.c`, but instead
+    of compiling `amp_raw_semaphore_pthreads.c` use 
+    `amp_raw_semaphore_libdispatch.c` to build for Pthreads but use Apple's
     libdispatch semaphores.    
     
- *  Define AMP_USE_WINTHREADS and only compile generic C files and C source
-    files ending in _winthreads.c to build for Windows threads.
+ *  Define `AMP_USE_WINTHREADS` and only compile generic C files and C source
+    files ending in `_winthreads.c` to build for Windows threads.
  
- *  Define AMP_USE_WINTHREADS and AMP_USE_WINVISTA_CONDITION_VARIABLES and only
-    compile generic C source files, C files ending in _winthreads.c, but instead
-    of compiling amp_raw_condition_variable_winthreads.c use 
-    amp_raw_condition_variable_winvista.c to build for Windows threads but use the
+ *  Define `AMP_USE_WINTHREADS` and `AMP_USE_WINVISTA_CONDITION_VARIABLES` and only
+    compile generic C source files, C files ending in `_winthreads.c`, but instead
+    of compiling `amp_raw_condition_variable_winthreads.c` use 
+    `amp_raw_condition_variable_winvista.c` to build for Windows threads but use the
     Windows Vista backend for its build in condition variable support.
 
 ### References ###

@@ -52,7 +52,7 @@
 		3292F49410CEE06F005E9567 /* amp_raw_byte_range.c in Sources */ = {isa = PBXBuildFile; fileRef = 3292F48F10CEE06F005E9567 /* amp_raw_byte_range.c */; };
 		3296B3CF1132F8A600B6664B /* amp_raw_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = 3296B3CE1132F8A600B6664B /* amp_raw_platform.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3298F05511594F0700A976F2 /* amp_raw_platform_sysctl.c in Sources */ = {isa = PBXBuildFile; fileRef = 3296B3D11132FAAF00B6664B /* amp_raw_platform_sysctl.c */; };
-		32A4A1741135493900D29CD2 /* amp_raw.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32C186CF109F33FB001852EE /* amp_raw.framework */; };
+		32A4A1741135493900D29CD2 /* amp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32C186CF109F33FB001852EE /* amp.framework */; };
 		32A4A1831135495700D29CD2 /* amp_platform_check_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A4A15F1135451300D29CD2 /* amp_platform_check_main.cpp */; };
 		32C186D5109F341C001852EE /* amp_raw_thread_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A21058711E00D5379D /* amp_raw_thread_pthreads.c */; };
 		32C186D6109F341E001852EE /* amp_raw_thread_local_slot_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A11058711E00D5379D /* amp_raw_thread_local_slot_pthreads.c */; };
@@ -66,7 +66,7 @@
 		32C186DF109F346E001852EE /* amp_raw_thread.h in Headers */ = {isa = PBXBuildFile; fileRef = 3259289F1058711E00D5379D /* amp_raw_thread.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		32C186E0109F346E001852EE /* amp_raw_thread_local_slot.h in Headers */ = {isa = PBXBuildFile; fileRef = 325928A01058711E00D5379D /* amp_raw_thread_local_slot.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		32C186E1109F346E001852EE /* amp_stddef.h in Headers */ = {isa = PBXBuildFile; fileRef = 325928991058711E00D5379D /* amp_stddef.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		32C186F5109F3F90001852EE /* amp_raw.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32C186CF109F33FB001852EE /* amp_raw.framework */; };
+		32C186F5109F3F90001852EE /* amp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32C186CF109F33FB001852EE /* amp.framework */; };
 		32C1883C10A18D83001852EE /* amp_raw_condition_variable_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 321EFA991070EBF000CC24FF /* amp_raw_condition_variable_pthreads.c */; };
 		32C1883D10A18D87001852EE /* amp_raw_mutex_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 3259289B1058711E00D5379D /* amp_raw_mutex_pthreads.c */; };
 		32C1883E10A18D8A001852EE /* amp_raw_semaphore_libdispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B63E10769507009B33E6 /* amp_raw_semaphore_libdispatch.c */; };
@@ -165,9 +165,8 @@
 		32B9B63E10769507009B33E6 /* amp_raw_semaphore_libdispatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_semaphore_libdispatch.c; path = ../../../src/c/amp/amp_raw_semaphore_libdispatch.c; sourceTree = "<group>"; };
 		32B9B65410769ACB009B33E6 /* amp_raw_condition_variable_winvista.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_condition_variable_winvista.c; path = ../../../src/c/amp/amp_raw_condition_variable_winvista.c; sourceTree = "<group>"; };
 		32C186AD109F30DE001852EE /* amp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "amp-Info.plist"; sourceTree = "<group>"; };
-		32C186CF109F33FB001852EE /* amp_raw.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = amp_raw.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		32C186D0109F33FB001852EE /* amp_raw-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "amp_raw-Info.plist"; sourceTree = "<group>"; };
-		32C186F0109F34C3001852EE /* amp_raw_framework.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = amp_raw_framework.xcconfig; sourceTree = "<group>"; };
+		32C186CF109F33FB001852EE /* amp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = amp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		32C186F0109F34C3001852EE /* amp_framework.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = amp_framework.xcconfig; sourceTree = "<group>"; };
 		32C1870B109F46DC001852EE /* amp_static_library.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = amp_static_library.xcconfig; sourceTree = "<group>"; };
 		32C1883710A18D1D001852EE /* libamp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libamp.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		32E0D609114C26D0000CFE70 /* amp_raw_platform_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_raw_platform_test.cpp; sourceTree = "<group>"; };
@@ -184,7 +183,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				32C186F5109F3F90001852EE /* amp_raw.framework in Frameworks */,
+				32C186F5109F3F90001852EE /* amp.framework in Frameworks */,
 				325928CD105875DB00D5379D /* libUnitTest++.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -193,7 +192,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				32A4A1741135493900D29CD2 /* amp_raw.framework in Frameworks */,
+				32A4A1741135493900D29CD2 /* amp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,7 +223,6 @@
 				3259288E1058702400D5379D /* External Frameworks and Libraries */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 				32C186AD109F30DE001852EE /* amp-Info.plist */,
-				32C186D0109F33FB001852EE /* amp_raw-Info.plist */,
 			);
 			name = amp;
 			sourceTree = "<group>";
@@ -241,7 +239,7 @@
 		1AB674ADFE9D54B511CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				32C186CF109F33FB001852EE /* amp_raw.framework */,
+				32C186CF109F33FB001852EE /* amp.framework */,
 				325928BB1058759300D5379D /* amp_unit_tests */,
 				32C1883710A18D1D001852EE /* libamp.a */,
 				32A4A16B113548DC00D29CD2 /* amp_platform_check */,
@@ -299,9 +297,9 @@
 			children = (
 				325928911058706E00D5379D /* UnitTest++.xcconfig */,
 				325928921058706E00D5379D /* compiler_warnings.xcconfig */,
-				32FB64971088B95000CA3E06 /* amp_unit_tests.xcconfig */,
 				32FB64991088B9AA00CA3E06 /* amp.xcconfig */,
-				32C186F0109F34C3001852EE /* amp_raw_framework.xcconfig */,
+				32FB64971088B95000CA3E06 /* amp_unit_tests.xcconfig */,
+				32C186F0109F34C3001852EE /* amp_framework.xcconfig */,
 				32C1870B109F46DC001852EE /* amp_static_library.xcconfig */,
 				32A4A1651135487B00D29CD2 /* amp_platform_check.xcconfig */,
 			);
@@ -502,9 +500,9 @@
 			productReference = 32A4A16B113548DC00D29CD2 /* amp_platform_check */;
 			productType = "com.apple.product-type.tool";
 		};
-		32C186CE109F33FB001852EE /* amp_raw */ = {
+		32C186CE109F33FB001852EE /* amp_framework */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 32C186D3109F33FD001852EE /* Build configuration list for PBXNativeTarget "amp_raw" */;
+			buildConfigurationList = 32C186D3109F33FD001852EE /* Build configuration list for PBXNativeTarget "amp_framework" */;
 			buildPhases = (
 				32C186CA109F33FB001852EE /* Headers */,
 				32C186CB109F33FB001852EE /* Resources */,
@@ -515,9 +513,9 @@
 			);
 			dependencies = (
 			);
-			name = amp_raw;
+			name = amp_framework;
 			productName = amp_raw;
-			productReference = 32C186CF109F33FB001852EE /* amp_raw.framework */;
+			productReference = 32C186CF109F33FB001852EE /* amp.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		32C1883610A18D1D001852EE /* amp_static_library */ = {
@@ -552,7 +550,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				32C186CE109F33FB001852EE /* amp_raw */,
+				32C186CE109F33FB001852EE /* amp_framework */,
 				325928BA1058759300D5379D /* amp_unit_tests */,
 				328DA0E410594F11003F0E1E /* Doxygen doc generation */,
 				32C1883610A18D1D001852EE /* amp_static_library */,
@@ -660,12 +658,12 @@
 /* Begin PBXTargetDependency section */
 		32A4A1711135491B00D29CD2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 32C186CE109F33FB001852EE /* amp_raw */;
+			target = 32C186CE109F33FB001852EE /* amp_framework */;
 			targetProxy = 32A4A1701135491B00D29CD2 /* PBXContainerItemProxy */;
 		};
 		32C186F3109F3F77001852EE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 32C186CE109F33FB001852EE /* amp_raw */;
+			target = 32C186CE109F33FB001852EE /* amp_framework */;
 			targetProxy = 32C186F2109F3F77001852EE /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -784,36 +782,30 @@
 		};
 		32C186D1109F33FC001852EE /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 32C186F0109F34C3001852EE /* amp_raw_framework.xcconfig */;
+			baseConfigurationReference = 32C186F0109F34C3001852EE /* amp_framework.xcconfig */;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_VERSION = A;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				INFOPLIST_FILE = "amp_raw-Info.plist";
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = amp_raw;
 			};
 			name = Debug;
 		};
 		32C186D2109F33FC001852EE /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 32C186F0109F34C3001852EE /* amp_raw_framework.xcconfig */;
+			baseConfigurationReference = 32C186F0109F34C3001852EE /* amp_framework.xcconfig */;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
-				INFOPLIST_FILE = "amp_raw-Info.plist";
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = amp_raw;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -887,7 +879,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		32C186D3109F33FD001852EE /* Build configuration list for PBXNativeTarget "amp_raw" */ = {
+		32C186D3109F33FD001852EE /* Build configuration list for PBXNativeTarget "amp_framework" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				32C186D1109F33FC001852EE /* Debug */,
