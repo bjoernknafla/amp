@@ -43,9 +43,6 @@
  * while threads are waiting on it or might signal it later on.
  * Initializing and finalizing a condition variable must only be done 
  * by a single thread, it isn't thread-safe.
- *
- * TODO: @todo Add a backend implementation using Windows Vista condition 
- *             variables.
  */
 
 #ifndef AMP_amp_raw_condition_variable_H

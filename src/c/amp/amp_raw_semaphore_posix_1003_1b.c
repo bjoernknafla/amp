@@ -78,6 +78,7 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
              && AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count) 
            && "init_count must be greater or equal to zero and lesser or equal to AMP_RAW_SEMAPHORE_COUNT_MAX.");
     
+    errno = 0;
     int const retval = sem_init(&sem->semaphore, 
                                 0, /* Don't share semaphore between processes */
                                 (unsigned int)init_count);
@@ -99,6 +100,7 @@ int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
 {
     assert(NULL != sem);
     
+    errno = 0;
     int retval = sem_destroy(&sem->semaphore);
     assert(EBUSY != errno && "Threads are still blocked on the semaphore.");
     assert((0 == retval || ENOSYS == errno)&& "Unexpected error.");
@@ -117,6 +119,7 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
 {
     assert(NULL != sem);
     
+    errno = 0;
     int retval = sem_wait(&sem->semaphore);
     assert(EINVAL != errno && "sem->semaphore is not a valid semaphore.");
     assert(EDEADLK != errno && "A deadlock was detected.");
@@ -138,6 +141,7 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
 {
     assert(NULL != sem);
     
+    errno = 0;
     int retval = sem_post(&sem->semaphore);
     assert(EINVAL != errno && "sem->semaphore is not a valid semaphore.");
     assert((0 == retval || ENOSYS == errno || EOVERFLOW == errno) 

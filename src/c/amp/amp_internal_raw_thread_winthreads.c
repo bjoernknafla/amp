@@ -60,6 +60,7 @@ int amp_internal_raw_thread_launch_initialized(struct amp_raw_thread_s *thread)
     
     /* Thread creation for native code. */
     unsigned int inter_process_thread_id = 0;
+    errno = 0;
     uintptr_t thread_handle = _beginthreadex(NULL, /* Non-inheritable security attribs. */
                                              0,  /* Default thread stack size. */
                                              native_thread_adapter_func, 
