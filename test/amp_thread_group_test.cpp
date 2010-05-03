@@ -100,9 +100,11 @@ SUITE(amp_thread_group)
         amp_thread_group_t thread_group;
         
         struct amp_thread_group_context_s thread_group_context;
-        thread_group_context.alloc_func = amp_malloc;
-        thread_group_context.dealloc_func = amp_free;
-        thread_group_context.allocator_context = NULL;
+        int retval = amp_thread_group_context_init(&thread_group_context,
+                                                   NULL,
+                                                   amp_malloc,
+                                                   amp_free);
+        assert(AMP_SUCCESS == retval);
         
         size_t const thread_count = 16;
         std::vector<int> values_to_write_vector(thread_count, 0);
@@ -126,10 +128,10 @@ SUITE(amp_thread_group)
         
         
         struct amp_raw_byte_range_s context_range;
-        int retval = amp_raw_byte_range_init_with_item_count(&context_range,
-                                                             &context_vector[0], 
-                                                             thread_count,
-                                                             sizeof(context_vector_type::value_type));
+        retval = amp_raw_byte_range_init_with_item_count(&context_range,
+                                                         &context_vector[0], 
+                                                         thread_count,
+                                                         sizeof(context_vector_type::value_type));
         assert(AMP_SUCCESS == retval);
         
         struct amp_raw_byte_range_s function_range;
@@ -207,19 +209,21 @@ SUITE(amp_thread_group)
         amp_thread_group_t thread_group;
         
         struct amp_thread_group_context_s thread_group_context;
-        thread_group_context.alloc_func = amp_malloc;
-        thread_group_context.dealloc_func = amp_free;
-        thread_group_context.allocator_context = NULL;
+        int retval = amp_thread_group_context_init(&thread_group_context,
+                                                   NULL,
+                                                   amp_malloc,
+                                                   amp_free);
+        assert(AMP_SUCCESS == retval);
         
         size_t const thread_count = 16;
         typedef std::vector<int> context_vector_type;
         context_vector_type context_vector(thread_count, 0);
     
         struct amp_raw_byte_range_s context_range;
-        int retval = amp_raw_byte_range_init_with_item_count(&context_range,
-                                                             &context_vector[0], 
-                                                             thread_count,
-                                                             sizeof(context_vector_type::value_type));
+        retval = amp_raw_byte_range_init_with_item_count(&context_range,
+                                                         &context_vector[0], 
+                                                         thread_count,
+                                                         sizeof(context_vector_type::value_type));
         assert(AMP_SUCCESS == retval);
         
         retval = amp_thread_group_create_with_single_func(&thread_group,

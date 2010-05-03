@@ -59,7 +59,7 @@ struct amp_thread_group_s {
 
 
 /**
- * Allocates the necessary memory and stores context and threac count info
+ * Allocates the necessary memory and stores context and thread count info
  * in the thread group but doesn't initialize the threads for launching.
  */
 static int amp_internal_thread_group_create(struct amp_thread_group_s **thread_group,
@@ -117,6 +117,31 @@ static int amp_internal_thread_group_create(struct amp_thread_group_s **thread_g
     *thread_group = group;
     
     return AMP_SUCCESS;    
+}
+
+
+
+int amp_thread_group_context_init(struct amp_thread_group_context_s* context,
+                                  void* allocator_context,
+                                  amp_alloc_func_t alloc_func,
+                                  amp_dealloc_func_t dealloc_func)
+{
+    assert(NULL != context);
+    assert(NULL != alloc_func);
+    assert(NULL != dealloc_func);
+    
+    if (NULL == context
+        || NULL == alloc_func
+        || NULL == dealloc_func) {
+        
+        return EINVAL;
+    }
+    
+    context->allocator_context = allocator_context;
+    context->alloc_func = alloc_func;
+    context->dealloc_func = dealloc_func;
+    
+    return AMP_SUCCESS;
 }
 
 

@@ -71,13 +71,31 @@ extern "C" {
      * Context for the amp_thread_group functions to access user specifyable 
      * alloc and dealloc functionality, e.g. get memory from a specific memory 
      * pool.
+     *
+     * Treat as an opaque data structure and use amp_thread_group_context_init
+     * to initialize it (if data structure changes the init function will change
+     * too and therefore flag locations in code where a wrong and possibly
+     * field missing initialization takes place).
      */
     struct amp_thread_group_context_s {
+        void *allocator_context;
         amp_alloc_func_t alloc_func;
         amp_dealloc_func_t dealloc_func;
-        void *allocator_context;
     };
     
+    
+    /**
+     * Configures a thread group context - always use this function to 
+     * initialize a thread group context and never access the data structure
+     * directly!
+     *
+     * Returns AMP_SUCCESS on successful initialization or EINVAL if
+     * context, alloc_func, or dealloc_func are invalid (e.g. NULL).
+     */
+    int amp_thread_group_context_init(struct amp_thread_group_context_s* context,
+                                      void* allocator_context,
+                                      amp_alloc_func_t alloc_func,
+                                      amp_dealloc_func_t dealloc_func);
     
     
     /**
