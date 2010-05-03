@@ -192,6 +192,10 @@ SUITE(amp_thread_group)
                                           &thread_group_context);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
+        retval = amp_thread_group_context_finalize(&thread_group_context);
+        assert(AMP_SUCCESS == retval);
+        
+        
         for (size_t i = 0; i < thread_count; ++i) {
             if (i < (thread_count / 2)) {
                 CHECK_EQUAL(static_cast<int>(i), values_to_write_vector[i]); 
@@ -275,6 +279,9 @@ SUITE(amp_thread_group)
         retval = amp_thread_group_destroy(thread_group,
                                           &thread_group_context);
         CHECK_EQUAL(AMP_SUCCESS, retval);
+        
+        retval = amp_thread_group_context_finalize(&thread_group_context);
+        assert(AMP_SUCCESS == retval);
         
         for (size_t i = 0; i < thread_count; ++i) {
             CHECK_EQUAL(fortytwo, context_vector[i]); 

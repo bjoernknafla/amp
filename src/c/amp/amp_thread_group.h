@@ -98,6 +98,17 @@ extern "C" {
                                       amp_dealloc_func_t dealloc_func);
     
     
+    
+    /**
+     * Invalidates the thread group context - do not use it after finalizing it
+     * or intialize it again before next use.
+     *
+     * Returns AMP_SUCCESS on successful finalization or EINVAL if context
+     * is inavlid (e.g. NULL).
+     */
+    int amp_thread_group_context_finalize(struct amp_thread_group_context_s* context);
+    
+    
     /**
      * Function interface to implement by the user which takes an also user
      * supplied context pointer or enumerator pointer and then returns an

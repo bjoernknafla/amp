@@ -146,6 +146,22 @@ int amp_thread_group_context_init(struct amp_thread_group_context_s* context,
 
 
 
+int amp_thread_group_context_finalize(struct amp_thread_group_context_s* context)
+{
+    assert(NULL != context);
+    if (NULL == context) {
+        return EINVAL;
+    }
+    
+    context->allocator_context = NULL;
+    context->alloc_func = NULL;
+    context->dealloc_func = NULL;
+    
+    return AMP_SUCCESS;
+}
+
+
+
 int amp_thread_group_create(amp_thread_group_t *thread_group,
                             struct amp_thread_group_context_s *group_context,
                             size_t thread_count,
