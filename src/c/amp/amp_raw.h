@@ -67,6 +67,7 @@
 
 
 #include <amp/amp_stddef.h>
+#include <amp/amp_raw_barrier.h>
 #include <amp/amp_raw_byte_range.h>
 #include <amp/amp_raw_condition_variable.h>
 #include <amp/amp_raw_mutex.h>
