@@ -118,6 +118,13 @@ extern "C" {
         
         struct amp_native_thread_s native_thread_description;
         
+        /**
+         * TODO: @todo The moment the amp atomic operations are ready make it
+         *             an atomically changed flag that is queryable. Currently
+         *             it can only be used by the thread that creates and
+         *             launches (both by the same thread) the amp thread in a 
+         *             reliable way.
+         */
         int state;
     };
     typedef struct amp_raw_thread_s amp_raw_thread_t;
@@ -165,8 +172,8 @@ extern "C" {
      * TODO: @todo Add restrict to the pointers and document it.
      */
     int amp_raw_thread_launch(amp_raw_thread_t *thread, 
-                               void *thread_func_context, 
-                               amp_raw_thread_func_t thread_func);
+                              void *thread_func_context, 
+                              amp_raw_thread_func_t thread_func);
     
     /**
      * Waits until the thread stops and frees its OS resources. 

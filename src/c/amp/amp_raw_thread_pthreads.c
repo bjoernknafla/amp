@@ -61,13 +61,13 @@
 int amp_raw_thread_join(amp_raw_thread_t *thread)
 {
     assert(0 != thread);
-    assert(AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE == thread->state);
+    assert(amp_internal_raw_thread_joinable_state == thread->state);
     
-    if (AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE != thread->state) {
+    if (amp_internal_raw_thread_joinable_state != thread->state) {
         /* If thread hasn't been launched it could be already joined or is 
          * invalid.
          */
-        if (AMP_INTERNAL_RAW_THREAD_JOINED_STATE == thread->state) {
+        if (amp_internal_raw_thread_joined_state == thread->state) {
             /* Thread has already joined. */
             return EINVAL;
         } else {
@@ -88,7 +88,7 @@ int amp_raw_thread_join(amp_raw_thread_t *thread)
     
     if (0 == retval) {
         /* Successful join.*/
-        thread->state = AMP_INTERNAL_RAW_THREAD_JOINED_STATE;
+        thread->state = amp_internal_raw_thread_joined_state;
     }
     
     return retval;
@@ -113,7 +113,7 @@ amp_raw_thread_id_t amp_raw_thread_get_id(amp_raw_thread_t *thread)
 {
     assert(NULL != thread);
     
-    if (AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE != thread->state) {
+    if (amp_internal_raw_thread_joinable_state != thread->state) {
         return 0;
     }
     

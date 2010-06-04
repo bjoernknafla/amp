@@ -52,7 +52,7 @@ void* amp_internal_native_thread_adapter_func(void *thread)
     struct amp_raw_thread_s *thread_context = (struct amp_raw_thread_s *)thread;
     
     /*
-     * Check if this the thread the argument indicates it should be.
+     * Check if this is the thread the argument indicates it should be.
      * The thread id can't be tested here as it is only stored after launching
      * - creating the thread.
      */
@@ -60,20 +60,26 @@ void* amp_internal_native_thread_adapter_func(void *thread)
     
     thread_context->thread_func(thread_context->thread_func_context);
     
+    /**
+     * TODO: @todo The moment amp atomic ops are available add a way to 
+     *             atomically set the thread state so it is observable by other
+     *             threads.
+     */
+    
     return NULL;
 }
 
 
 
-int amp_internal_raw_thread_launch_initialized(struct amp_raw_thread_s *thread)
+int amp_internal_raw_thread_launch_configured(struct amp_raw_thread_s *thread)
 {
     assert(NULL != thread);
     assert(NULL != thread->thread_func);
-    assert(AMP_INTERNAL_RAW_THREAD_PRELAUNCH_STATE == thread->state);
+    assert(amp_internal_raw_thread_prelaunch_state == thread->state);
     
     if (   (NULL == thread) 
         || (NULL == thread->thread_func) 
-        || (AMP_INTERNAL_RAW_THREAD_PRELAUNCH_STATE != thread->state)) {
+        || (amp_internal_raw_thread_prelaunch_state != thread->state)) {
         
         return EINVAL;
     }
@@ -86,7 +92,7 @@ int amp_internal_raw_thread_launch_initialized(struct amp_raw_thread_s *thread)
     assert((0 == retval || EAGAIN == retval) && "Unexpected error.");
     
     if (0 == retval) {
-        thread->state = AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE;
+        thread->state = amp_internal_raw_thread_joinable_state;
     }
     
     return retval;

@@ -54,38 +54,89 @@ extern "C" {
 #endif
 
     
-    
-/**
- * Token for amp_raw_thread_s->state symbolizes thread hasn't launched.
- */
-#define AMP_INTERNAL_RAW_THREAD_PRELAUNCH_STATE 0x0bebe42
-
-/**
- * Token for amp_raw_thread_s->state symbolizes thread has launched.
- */
-#define AMP_INTERNAL_RAW_THREAD_LAUNCHED_STATE 0xbeeb42
-
-/**
- * Token for amp_raw_thread_s->state symbolizes thread has joined.
- */
-#define AMP_INTERNAL_RAW_THREAD_JOINED_STATE 0xebbe42
-
-
-
-    
     /**
-     * @attention Don't call for launched and not yet joined threads.
+     * An initialized amp thread can be in the prelaunch state to configure it,
+     * in the joinable state after it has been launched but before it has been
+     * joined, or in the joined state.
+     *
+     * TODO: @todo Add possibility to detach an amp thread. Look at all 
+     *             occurences of joinable and joined states to handle the
+     *             detached state, too.
      */
-    int amp_internal_raw_thread_init(struct amp_raw_thread_s *thread,
-                                     void* func_context,
-                                     amp_raw_thread_func_t func);
+    enum amp_internal_raw_thread_state {
+        amp_internal_raw_thread_prelaunch_state = 1,
+        amp_internal_raw_thread_joinable_state,
+        /* amp_internal_raw_thread_detached_state, Not implemented yet */
+        amp_internal_raw_thread_joined_state,
+    };
+    typedef enum amp_internal_raw_thread_state amp_internal_raw_thread_state_t;
     
     
     
     /**
+     * Set the user context and user function of an amp thread.
+     *
+     * A race condition can occur if calling from different threads for the same
+     * thread object.
+     *
      * @attention Don't call for launched and not yet joined threads.
      */
-    int amp_internal_raw_thread_launch_initialized(struct amp_raw_thread_s *thread);
+    int amp_internal_raw_thread_configure(struct amp_raw_thread_s *thread,
+                                          void* func_context,
+                                          amp_raw_thread_func_t func);
+    
+    /**
+     * Sets the threads context.
+     *
+     * A race condition can occur if calling from different threads for the same
+     * thread object.
+     *
+     * @attention Don't call for launched and not yet joined threads.
+     */
+    int amp_internal_raw_thread_configure_context(struct amp_raw_thread_s *thread,
+                                                  void *context);
+    
+    
+    /**
+     * Set the thread function.
+     *
+     * A race condition can occur if calling from different threads for the same
+     * thread object.
+     *
+     * @attention Don't call for launched and not yet joined threads.
+     */
+    int amp_internal_raw_thread_configure_function(struct amp_raw_thread_s *thread,
+                                                   amp_raw_thread_func_t func);
+    
+    /**
+     * Returns the thread context in *context.
+     *
+     * The returned value can be invalid if the function is called while other
+     * functions manipulate the thread and its fields.
+     *
+     * Based on the memory model the value might not be consistent between
+     * threads.
+     */
+    int amp_internal_raw_thread_context(struct amp_raw_thread_s *thread,
+                                        void **context);
+    
+    /**
+     * Returns the thread function in *func.
+     *
+     * The returned value can be invalid if the function is called while other
+     * functions manipulate the thread and its fields.
+     *
+     * Based on the memory model the value might not be consistent between
+     * threads.
+     */
+    int amp_internal_raw_thread_function(struct amp_raw_thread_s *thread,
+                                         amp_raw_thread_func_t *func);
+    
+    
+    /**
+     * @attention Don't call for launched and not yet joined threads.
+     */
+    int amp_internal_raw_thread_launch_configured(struct amp_raw_thread_s *thread);
     
     
     

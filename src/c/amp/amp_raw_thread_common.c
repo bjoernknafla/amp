@@ -21,6 +21,7 @@
 
 
 #include <assert.h>
+#include <errno.h>
 
 
 #include "amp_internal_raw_thread.h"
@@ -32,16 +33,24 @@ int amp_raw_thread_launch(amp_raw_thread_t *thread,
                           void *thread_func_context, 
                           amp_raw_thread_func_t thread_func)
 {
-    int retval = amp_internal_raw_thread_init(thread,
-                                              thread_func_context,
-                                              thread_func);
+    assert(NULL != thread_func);
+    
+    if (NULL == thread_func) {
+        return EINVAL;
+    }
+    
+    thread->state = amp_internal_raw_thread_prelaunch_state;
+    
+    int retval = amp_internal_raw_thread_configure(thread,
+                                                   thread_func_context,
+                                                   thread_func);
     assert(AMP_SUCCESS == retval);
     if (AMP_SUCCESS != retval)
     {
         return retval;
     }
     
-    retval = amp_internal_raw_thread_launch_initialized(thread);
+    retval = amp_internal_raw_thread_launch_configured(thread);
     
     return retval;
 }
