@@ -47,7 +47,7 @@
 #define AMP_amp_raw_thread_H
 
 
-#include <amp/amp_stddef.h>
+#include <amp/amp_thread.h>
 
 
 
@@ -70,23 +70,10 @@
 extern "C" {
 #endif
 
-/*    
-#if defined(AMP_USE_PTHREADS)
-#   define AMP_RAW_THREAD_COUNT_MAX PTHREAD_THREADS_MAX
-#elif defined(AMP_USE_WINTHREADS)
-#   error Implement
-#else
-#   error Unsupported platform.
-#endif
-  */  
     
     
-    /**
-     * Type of the user function to run on the thread.
-     * @param context user data passed into the function.
-     */
-    //typedef void (*amp_raw_thread_func_t)(void *context);
-    typedef amp_thread_func_t amp_raw_thread_func_t;
+#define AMP_INVALID_THREAD_ID ((amp_thread_id_t)0)
+    
     
     /**
      * Treat this type as opaque as its internals will change from version to
@@ -106,15 +93,21 @@ extern "C" {
 #   error Unsupported platform.        
 #endif
     };
-    typedef struct amp_native_thread_s amp_native_thread_t;
     
     /**
      * Treat this type as opaque as its internals will change from version to
      * version!
      */
     struct amp_raw_thread_s {
-        amp_raw_thread_func_t thread_func;
-        void *thread_func_context;
+        amp_thread_func_t func;
+        void *func_context;
+        
+        /* Reserved to store the allocator context and dealloc function to
+         * store for automatic memory freeing when thread detaching is 
+         * implemented.
+         */
+        uintptr_t reserved0;
+        uintptr_t reserved1;
         
         struct amp_native_thread_s native_thread_description;
         
@@ -127,110 +120,22 @@ extern "C" {
          */
         int state;
     };
-    typedef struct amp_raw_thread_s amp_raw_thread_t;
     
-    
-#if defined(AMP_USE_PTHREADS)  
-    typedef uintptr_t amp_raw_thread_id_t;
-#elif defined(AMP_USE_WINTHREADS)
-    typedef DWORD amp_raw_thread_id_t;
-#else
-#   error Unsupported platform.
-#endif
     
     
     /**
-     * Calls platforms thread creation function that might call malloc 
-     * internally and launches the thread.
-     *
-     * thread must be kept alive as long as the thread exectures - until
-     * amp_raw_thread_join returned.
-     *
-     * Mental thread model: a thread is like a spaceship. After launch
-     * it needs to explicitly land - otherwise it just crashes with undefined
-     * behavior for the whole surrounding of the crash-site.
-     *
-     * Might call malloc internally to create platform internal thread 
-     * representation.
-     *
-     * If fed with already launched native thread behavior is undefined.
-     *
-     * @return AMP_SUCCESS on successful thread launch.
-     *         EAGAIN if the system is lacking resources for thread creation.
-     *         Other error codes might be returned to signal errors while
-     *         launching, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EINVAL The thread or the thread function is invalid.
-     *
-     * @attention Passing NULL for @a thread or @a thread_func results in 
-     *            undefined behavior.
-     *
-     * @attention Don't pass an already existing thread in or you won't be able
-     *            to join it which results in a resource leak.
-     *
-     * TODO: @todo Add restrict to the pointers and document it.
+     * Like amp_thread_launch but does not allocate memory for the thread
+     * other than indirectly via the platform API to launch a thread.
      */
-    int amp_raw_thread_launch(amp_raw_thread_t *thread, 
+    int amp_raw_thread_launch(amp_thread_t thread, 
                               void *thread_func_context, 
-                              amp_raw_thread_func_t thread_func);
+                              amp_thread_func_t thread_func);
     
     /**
-     * Waits until the thread stops and frees its OS resources. 
-     *
-     * If thread hasn't been launched behavior is undefined.
-     *
-     * Thread memory can be freed after successful join.
-     *
-     * @return AMP_SUCCESS after succesfully joining with the thread.
-     *         Other error codes might be returned to signal errors while
-     *         joining, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EDEADLK If a deadlock condition was detected or the calling
-     *         thread tries to join with itself.
-     *         EINVAL argument doesn't refer to a joinable thread.
-     *         ESRCH if no  system thread is associated with the argument.
-     *
-     * @attention Only pass a thread as an argument if its launching was 
-     *            successful, otherwise behavior is undefined.
-     *
-     * @attention Don't try to join a thread with itself, otherwise behavior is
-     *            undefined.
+     * Like amp_thread_join_and_destroy but does not free memory other than
+     * indirectly via the platform API to join with the thread.
      */
-    int amp_raw_thread_join(amp_raw_thread_t *thread);
-    
-    
-    
-    /**
-     * Returns the thread id of the thread calling the function.
-     * The id can be compared to other ids.
-     * When a thread is joined its thread id might be reused by a newly started
-     * thread, therefore beware of joining with this new thread if you believe
-     * that its the old thread.
-     */
-    amp_raw_thread_id_t amp_raw_thread_id(void);
-    
-    
-    /**
-     * Returns the thread id associated with the amp_raw_thread_t argument.
-     * 
-     * @attention Don't pass an non-launched or invalid thread as an argument.
-     */
-    amp_raw_thread_id_t amp_raw_thread_get_id(amp_raw_thread_t *thread);
-    
-    /**
-     * Hints the operating system that it might be benificial to context switch
-     * to another thread.
-     *
-     * Suggestion from David R. Butenhof's book 
-     * "Programming with POSIX threads", p. 316 : call before locking a mutex to 
-     * minimize the chance of a timeslice while the mutex is locked.
-     *
-     * @return AMP_SUCCESS on success, otherwise
-     *         ENOSYS is returned if not supported.
-     */
-    int amp_raw_thread_yield(void);
+    int amp_raw_thread_join(amp_thread_t thread);
     
     
     

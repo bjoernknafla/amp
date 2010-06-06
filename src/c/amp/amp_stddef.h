@@ -81,9 +81,6 @@ extern "C" {
 
 typedef AMP_BOOL amp_bool_t;
 typedef AMP_BYTE amp_byte_t;
-
-    
-typedef void (*amp_thread_func_t)(void *context);
     
     
 #if defined(__cplusplus)

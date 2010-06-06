@@ -108,7 +108,7 @@ SUITE(amp_thread_array)
             context_vector[i].item_value_to_use_for_set = i;
         }
         
-        std::vector<amp_raw_thread_func_t> thread_function_vector;
+        std::vector<amp_thread_func_t> thread_function_vector;
         for (size_t i = 0; i < thread_count; ++i) {
             if (i < (thread_count / 2)) {
                 thread_function_vector.push_back(set_context_defined_value);
@@ -188,7 +188,7 @@ SUITE(amp_thread_array)
     TEST(create_single_func_launch_join_destroy)
     {
         
-        amp_thread_array_t thread_array;
+        amp_thread_array_t thread_array = NULL;
         
         size_t const thread_count = 16;
         typedef std::vector<int> context_vector_type;

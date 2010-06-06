@@ -73,8 +73,16 @@
 
 
 #include <amp/amp_stddef.h>
+#include <amp/amp_stdint.h>
 #include <amp/amp_memory.h>
+#include <amp/amp_platform.h>
+#include <amp/amp_thread.h>
 #include <amp/amp_thread_array.h>
-
+#include <amp/amp_thread_local_slot.h>
+#include <amp/amp_once.h>
+#include <amp/amp_semaphore.h>
+#include <amp/amp_mutex.h>
+#include <amp/amp_condition_variable.h>
+#include <amp/amp_barrier.h>
 
 #endif /* AMP_amp_H */

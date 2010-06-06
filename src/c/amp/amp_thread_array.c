@@ -41,11 +41,10 @@
 #include <assert.h>
 #include <errno.h>
 
-
 #include "amp_stddef.h"
-#include "amp_internal_raw_thread.h"
-
-
+#include "amp_thread.h"
+#include "amp_raw_thread.h"
+#include "amp_internal_thread.h"
 
 
 
@@ -91,8 +90,8 @@ int amp_thread_array_create(amp_thread_array_t *thread_array,
     }
     
     /* Allocate memory for the groups threads. */
-    struct amp_raw_thread_s* threads = 
-    (struct amp_raw_thread_s*)alloc_func(allocator_context,
+    struct amp_raw_thread_s *threads = 
+    (struct amp_raw_thread_s *)alloc_func(allocator_context,
                                          sizeof(struct amp_raw_thread_s) * thread_count);
     if (NULL == threads) {
         
@@ -100,6 +99,13 @@ int amp_thread_array_create(amp_thread_array_t *thread_array,
         
         return ENOMEM;
     }
+    
+    for (size_t i = 0; i < thread_count; ++i) {
+        
+        int rv = amp_internal_thread_init_for_configuration(&threads[i]);
+        assert(AMP_SUCCESS == rv);
+    }
+    
     
     group->threads = threads;
     group->thread_count = thread_count;
@@ -163,8 +169,8 @@ int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
     struct amp_raw_thread_s *threads = thread_array->threads;
     
     for (size_t i = index_begin; i < index_end; ++i) {
-        int const errc = amp_internal_raw_thread_configure_context(&threads[i],
-                                                                   shared_context);
+        int const errc = amp_internal_thread_configure_context(&threads[i],
+                                                               shared_context);
         if (AMP_SUCCESS != errc) {
             return errc;
         }
@@ -200,8 +206,8 @@ int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
     struct amp_raw_thread_s *threads = thread_array->threads;
     
     for (size_t i = index_begin; i < index_end; ++i) {
-        int const errc = amp_internal_raw_thread_configure_function(&threads[i],
-                                                                    shared_function);
+        int const errc = amp_internal_thread_configure_function(&threads[i],
+                                                                shared_function);
         if (AMP_SUCCESS != errc) {
             return errc;
         }
@@ -238,10 +244,10 @@ int amp_thread_array_configure(amp_thread_array_t thread_array,
     struct amp_raw_thread_s *threads = thread_array->threads;
     
     for (size_t i = index_begin; i < index_end; ++i) {
-        int const errc0 = amp_internal_raw_thread_configure_context(&threads[i],
-                                                                    shared_context);
-        int const errc1 = amp_internal_raw_thread_configure_function(&threads[i],
-                                                                     shared_function);
+        int const errc0 = amp_internal_thread_configure_context(&threads[i],
+                                                                shared_context);
+        int const errc1 = amp_internal_thread_configure_function(&threads[i],
+                                                                 shared_function);
         if (AMP_SUCCESS != errc0
             || AMP_SUCCESS != errc1) {
             
@@ -270,7 +276,7 @@ int amp_thread_array_launch_all(struct amp_thread_array_s *thread_array,
     while (   (joinable_count < thread_count)
            && (AMP_SUCCESS == retval)) {
         
-        retval = amp_internal_raw_thread_launch_configured(&(threads[joinable_count]));
+        retval = amp_internal_thread_launch_configured(&(threads[joinable_count]));
         
         if (AMP_SUCCESS != retval) {
             break;

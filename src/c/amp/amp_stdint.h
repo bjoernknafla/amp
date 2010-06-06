@@ -31,61 +31,32 @@
  */
 
 /**
- * @file
+ * Cross-platform Subset of types of C99 stdint needed by amp.
  *
- * Unit tests for launching and joining with amp_raw_thread.
- */
+ * Assumes a C99 compatible C compiler, or MSVC, or a compiler whose c lib
+ * contains the stdint header.
+ *
+ * Makes uintptr_t accessible to amp.
+ *
+ * If C89 needs to be supported or a platform needs a better platform detection
+ * and handling poc ( http://github.com/bjoernknafla/poc ) can be used to 
+ * define the necessary bit-sized primitive integer types. Currently poc isn't
+ * used to keep the dependencies of amp at a minimum.
+ */ 
+
+#ifndef AMP_amp_stdint_H
+#define AMP_amp_stdint_H
 
 
-#include <UnitTest++.h>
-
-// Include std::size_t
-#include <cstddef>
-
-// Include AMP_SUCCESS
-#include <amp/amp_stddef.h>
-#include <amp/amp_raw_thread.h>
-
-
-namespace
-{
-    int const launch_run_join_success_value = 42;
-    
-    void launch_run_join_thread_func(void *context)
-    {
-        int* value_to_set = static_cast<int*>(context);
-        *value_to_set = launch_run_join_success_value;
-    }
-    
-} // anonymous namespace
+#if defined(_MSC_VER)
+#   include <stddef.h> /* MSVC defines uintptr_t in stddef.h */
+#elif defined(__GNUC__)
+#   include <stdint.h> /* C99 header with uintptr_t */
+#elif defined(__llvm__) && defined(__clang__)
+#   include <stdint.h> /* C99 header with uintptr_t */
+#else
+#   error Unsupported platform.
+#endif
 
 
-SUITE(amp_raw_thread)
-{
-    TEST(launch_run_join)
-    {
-        std::size_t const thread_count = 64;
-        
-        amp_raw_thread_t threads[thread_count];
-        int values_to_set[thread_count] = {0};
-        
-        for (std::size_t i = 0; i < thread_count; ++i) {
-            int retval = amp_raw_thread_launch(&threads[i], 
-                                               (void *)&values_to_set[i], 
-                                               launch_run_join_thread_func);
-            CHECK_EQUAL(AMP_SUCCESS, retval);
-        }
-        
-        for (std::size_t i = 0; i < thread_count; ++i) {
-            int retval = amp_raw_thread_join(&threads[i]);
-            CHECK_EQUAL(AMP_SUCCESS, retval);
-        }
-        
-        for (std::size_t i = 0; i < thread_count; ++i) {
-            CHECK_EQUAL(launch_run_join_success_value, values_to_set[i]);
-        }
-        
-    }
-    
-}
-
+#endif /* AMP_amp_stdint_H */

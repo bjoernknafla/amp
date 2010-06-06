@@ -53,11 +53,8 @@
 
 #include <stddef.h>
 
-/* TODO: @todo Replace with amp_thread.h the moment it exists. */
-#include <amp/amp_raw_thread.h>
 #include <amp/amp_memory.h>
-#include <amp/amp_stddef.h>
-
+#include <amp/amp_thread.h>
 
 
 #if defined(__cplusplus)

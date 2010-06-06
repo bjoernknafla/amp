@@ -41,12 +41,13 @@
 
 
 
-// Include EDEADLK
+#include <assert.h>
 #include <errno.h>
 
 
 #include <amp/amp_raw_mutex.h>
-#include <amp/amp_raw_thread.h>
+#include <amp/amp_thread.h>
+#include <amp/amp_thread_array.h>
 #include <amp/amp_stddef.h>
 
 
@@ -188,12 +189,20 @@ SUITE(amp_raw_mutex)
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
-        struct amp_raw_thread_s thread;
-        retval = amp_raw_thread_launch(&thread, &mutex_and_flag, unsuccessful_trylock_thread_func);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
+        amp_thread_t thread = NULL;
+        retval = amp_thread_create_and_launch(&thread,
+                                              NULL,
+                                              &amp_malloc,
+                                              &amp_free,
+                                              &mutex_and_flag, 
+                                              &unsuccessful_trylock_thread_func);
+        assert(AMP_SUCCESS == retval);
         
-        retval = amp_raw_thread_join(&thread);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
+        retval = amp_thread_join_and_destroy(thread,
+                                             NULL,
+                                             amp_free);
+        assert(AMP_SUCCESS == retval);
+        thread = NULL;
         
         CHECK_EQUAL(CHECK_FLAG_SET, mutex_and_flag.check_flag);
         
@@ -241,12 +250,20 @@ SUITE(amp_raw_mutex)
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
-        struct amp_raw_thread_s thread;
-        retval = amp_raw_thread_launch(&thread, &mutex_and_flag, bad_unlock_thread_func);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
+        amp_thread_t thread = NULL;
+        retval = amp_thread_create_and_launch(&thread, 
+                                              NULL,
+                                              amp_malloc,
+                                              amp_free,
+                                              &mutex_and_flag, 
+                                              &bad_unlock_thread_func);
+        assert(AMP_SUCCESS == retval);
         
-        retval = amp_raw_thread_join(&thread);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
+        retval = amp_thread_join_and_destroy(thread,
+                                             NULL,
+                                             amp_free);
+        assert(AMP_SUCCESS == retval);
+        thread = NULL;
         
         CHECK_EQUAL(CHECK_FLAG_SET, mutex_and_flag.check_flag);
         
@@ -322,10 +339,18 @@ SUITE(amp_raw_mutex)
         
         
         size_t const thread_count = 20;
-        amp_raw_thread_t threads[thread_count];
         struct staggered_data_s thread_contexts[thread_count];
         
         size_t lock_counter = 0;
+        
+        
+        amp_thread_array_t threads = NULL;
+        retval = amp_thread_array_create(&threads,
+                                         thread_count,
+                                         NULL,
+                                         amp_malloc, 
+                                         amp_free);
+        assert(AMP_SUCCESS == retval);
         
         for (size_t i = 0; i < thread_count; ++i) {
             
@@ -335,12 +360,20 @@ SUITE(amp_raw_mutex)
             thread_contexts[i].return_code = AMP_SUCCESS;
             thread_contexts[i].check_flag = CHECK_FLAG_UNSET;
             
-            int const retv = amp_raw_thread_launch(&threads[i], 
-                                                   &thread_contexts[i], 
-                                                   staggered_locking_thread_func);
-            CHECK_EQUAL(AMP_SUCCESS, retv);
+            int const retv = amp_thread_array_configure(threads,
+                                                        i, 
+                                                        i + 1,
+                                                        &thread_contexts[i],
+                                                        staggered_locking_thread_func);
+            assert(AMP_SUCCESS == retv);
+            
         }
         
+        size_t joinable_count = 0;
+        retval = amp_thread_array_launch_all(threads,
+                                             &joinable_count);
+        assert(AMP_SUCCESS == retval);
+        assert(thread_count == joinable_count);
         
         
         // Unlock the mutex to allow staggered access to the critical section
@@ -352,11 +385,17 @@ SUITE(amp_raw_mutex)
 
         // Join with all threads - which means that they all locked and unlocked
         // the mutex and worked in the critial section if no error occured.
+        retval = amp_thread_array_join_all(threads,
+                                           &joinable_count);
+        assert(AMP_SUCCESS == retval);
+        assert(0 == joinable_count);
         
-        for (size_t i = 0; i < thread_count; ++i) {
-            int retv = amp_raw_thread_join(&threads[i]);
-            CHECK_EQUAL(AMP_SUCCESS, retv);
-        }
+        retval = amp_thread_array_destroy(threads,
+                                          NULL,
+                                          amp_free);
+        assert(AMP_SUCCESS == retval);
+        threads = NULL;
+        
         
         // Check that all threads increased the lock counter.
         CHECK_EQUAL(lock_counter, thread_count);

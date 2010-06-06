@@ -65,16 +65,16 @@
 #ifndef AMP_amp_raw_H
 #define AMP_amp_raw_H
 
+#include <amp/amp.h>
 
-#include <amp/amp_stddef.h>
-#include <amp/amp_raw_barrier.h>
-#include <amp/amp_raw_byte_range.h>
-#include <amp/amp_raw_condition_variable.h>
-#include <amp/amp_raw_mutex.h>
 #include <amp/amp_raw_platform.h>
-#include <amp/amp_raw_semaphore.h>
 #include <amp/amp_raw_thread.h>
 #include <amp/amp_raw_thread_local_slot.h>
+#include <amp/amp_raw_once.h>
+#include <amp/amp_raw_semaphore.h>
+#include <amp/amp_raw_mutex.h>
+#include <amp/amp_raw_condition_variable.h>
+#include <amp/amp_raw_barrier.h>
 
 
 #endif /* AMP_amp_raw_H */

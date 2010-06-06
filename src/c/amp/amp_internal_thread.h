@@ -38,13 +38,19 @@
  *
  * TODO: @todo When introducing export macros and statements make sure to hide
  *             internals.
+ *
+ * TODO: @todo When adding the ability to detach a thread add a check to the
+ *             native thread adapter function to check for detachment and to
+ *             store and free the memory resources used by the thread. The 
+ *             detach function should therefore take an allocator context and
+ *             dealloc function argument.
  */
 
 
-#ifndef AMP_amp_internal_raw_thread_H
-#define AMP_amp_internal_raw_thread_H
+#ifndef AMP_amp_internal_thread_H
+#define AMP_amp_internal_thread_H
 
-
+#include <amp/amp_thread.h>
 #include <amp/amp_raw_thread.h>
 
 
@@ -63,14 +69,33 @@ extern "C" {
      *             occurences of joinable and joined states to handle the
      *             detached state, too.
      */
-    enum amp_internal_raw_thread_state {
-        amp_internal_raw_thread_prelaunch_state = 1,
-        amp_internal_raw_thread_joinable_state,
-        /* amp_internal_raw_thread_detached_state, Not implemented yet */
-        amp_internal_raw_thread_joined_state,
+    enum amp_internal_thread_state {
+        amp_internal_thread_prelaunch_state = 1,
+        amp_internal_thread_joinable_state,
+        /* amp_internal_thread_detached_state, Not implemented yet */
+        amp_internal_thread_joined_state,
     };
-    typedef enum amp_internal_raw_thread_state amp_internal_raw_thread_state_t;
+    typedef enum amp_internal_thread_state amp_internal_thread_state_t;
     
+    
+    /**
+     * Sets the fields of native_thread so it represent an invalid thread.
+     *
+     * native_thread must not be NULL.
+     *
+     * @return AMP_SUCCESS if native_thread is not NULL, otherwise retuns 
+     *         EINVAL.
+     */
+    int amp_internal_native_thread_set_invalid(struct amp_native_thread_s *native_thread);
+    
+    
+    /**
+     * Only call on non-launched threads.
+     * 
+     * Initializes all internal fields to zero and sets the thread state to
+     * amp_internal_thread_prelaunch_state.
+     */
+    int amp_internal_thread_init_for_configuration(amp_thread_t thread);
     
     
     /**
@@ -81,9 +106,9 @@ extern "C" {
      *
      * @attention Don't call for launched and not yet joined threads.
      */
-    int amp_internal_raw_thread_configure(struct amp_raw_thread_s *thread,
-                                          void* func_context,
-                                          amp_raw_thread_func_t func);
+    int amp_internal_thread_configure(amp_thread_t thread,
+                                      void* func_context,
+                                      amp_thread_func_t func);
     
     /**
      * Sets the threads context.
@@ -93,8 +118,8 @@ extern "C" {
      *
      * @attention Don't call for launched and not yet joined threads.
      */
-    int amp_internal_raw_thread_configure_context(struct amp_raw_thread_s *thread,
-                                                  void *context);
+    int amp_internal_thread_configure_context(amp_thread_t thread,
+                                              void *context);
     
     
     /**
@@ -105,8 +130,8 @@ extern "C" {
      *
      * @attention Don't call for launched and not yet joined threads.
      */
-    int amp_internal_raw_thread_configure_function(struct amp_raw_thread_s *thread,
-                                                   amp_raw_thread_func_t func);
+    int amp_internal_thread_configure_function(amp_thread_t thread,
+                                               amp_thread_func_t func);
     
     /**
      * Returns the thread context in *context.
@@ -117,8 +142,8 @@ extern "C" {
      * Based on the memory model the value might not be consistent between
      * threads.
      */
-    int amp_internal_raw_thread_context(struct amp_raw_thread_s *thread,
-                                        void **context);
+    int amp_internal_thread_context(amp_thread_t thread,
+                                    void **context);
     
     /**
      * Returns the thread function in *func.
@@ -129,14 +154,14 @@ extern "C" {
      * Based on the memory model the value might not be consistent between
      * threads.
      */
-    int amp_internal_raw_thread_function(struct amp_raw_thread_s *thread,
-                                         amp_raw_thread_func_t *func);
+    int amp_internal_thread_function(amp_thread_t thread,
+                                     amp_thread_func_t *func);
     
     
     /**
      * @attention Don't call for launched and not yet joined threads.
      */
-    int amp_internal_raw_thread_launch_configured(struct amp_raw_thread_s *thread);
+    int amp_internal_thread_launch_configured(amp_thread_t thread);
     
     
     
@@ -147,4 +172,4 @@ extern "C" {
 #endif
     
 
-#endif /* AMP_amp_internal_raw_thread_H */
+#endif /* AMP_amp_internal_thread_H */

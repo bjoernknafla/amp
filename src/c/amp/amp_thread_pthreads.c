@@ -30,14 +30,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "amp_internal_raw_thread.h"
+/**
+ * @file
+ *
+ * Shallow wrapper around Pthreads threads implements all backend specific 
+ * (non-common) functions from amp_thread.h, amp_raw_thread.h, and 
+ * amp_internal_thread.h.
+ *
+ * TODO: @todo Decide if to use Pthreads yield instead of POSIX yield.
+ */
 
 
-#include <errno.h>
+#include "amp_thread.h"
+
 #include <assert.h>
+#include <errno.h>
 
+#include <sched.h>
 
 #include "amp_stddef.h"
+#include "amp_raw_thread.h"
+#include "amp_internal_thread.h"
+
 
 
 /**
@@ -49,7 +63,7 @@
 void* amp_internal_native_thread_adapter_func(void *thread);
 void* amp_internal_native_thread_adapter_func(void *thread)
 {
-    struct amp_raw_thread_s *thread_context = (struct amp_raw_thread_s *)thread;
+    amp_thread_t thread_context = (amp_thread_t)thread;
     
     /*
      * Check if this is the thread the argument indicates it should be.
@@ -58,7 +72,7 @@ void* amp_internal_native_thread_adapter_func(void *thread)
      */
     /* assert(0 != pthread_equal(thread_context->native_thread_description.thread , pthread_self()));*/
     
-    thread_context->thread_func(thread_context->thread_func_context);
+    thread_context->func(thread_context->func_context);
     
     /**
      * TODO: @todo The moment amp atomic ops are available add a way to 
@@ -71,15 +85,30 @@ void* amp_internal_native_thread_adapter_func(void *thread)
 
 
 
-int amp_internal_raw_thread_launch_configured(struct amp_raw_thread_s *thread)
+int amp_internal_native_thread_set_invalid(struct amp_native_thread_s *native_thread)
+{
+    assert(NULL != native_thread);
+    
+    if (NULL == native_thread) {
+        return EINVAL;
+    }
+    
+    native_thread->thread = AMP_INVALID_THREAD_ID;
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_internal_thread_launch_configured(amp_thread_t thread)
 {
     assert(NULL != thread);
-    assert(NULL != thread->thread_func);
-    assert(amp_internal_raw_thread_prelaunch_state == thread->state);
+    assert(NULL != thread->func);
+    assert(amp_internal_thread_prelaunch_state == thread->state);
     
     if (   (NULL == thread) 
-        || (NULL == thread->thread_func) 
-        || (amp_internal_raw_thread_prelaunch_state != thread->state)) {
+        || (NULL == thread->func) 
+        || (amp_internal_thread_prelaunch_state != thread->state)) {
         
         return EINVAL;
     }
@@ -92,10 +121,85 @@ int amp_internal_raw_thread_launch_configured(struct amp_raw_thread_s *thread)
     assert((0 == retval || EAGAIN == retval) && "Unexpected error.");
     
     if (0 == retval) {
-        thread->state = amp_internal_raw_thread_joinable_state;
+        thread->state = amp_internal_thread_joinable_state;
     }
     
     return retval;
+}
+
+
+
+int amp_raw_thread_join(amp_thread_t thread)
+{
+    assert(0 != thread);
+    assert(amp_internal_thread_joinable_state == thread->state);
+    
+    if (amp_internal_thread_joinable_state != thread->state) {
+        /* If thread hasn't been launched it could be already joined or is 
+         * invalid.
+         */
+        if (amp_internal_thread_joined_state == thread->state) {
+            /* Thread has already joined. */
+            return EINVAL;
+        } else {
+            /* thread doesn't point to valid thread data. */
+            return ESRCH;
+        }
+    }
+    
+    /* Currently is ignored. */
+    void *thread_exit_value = 0;
+    int const retval = pthread_join(thread->native_thread_description.thread,
+                                    &thread_exit_value);
+    assert( (0 == retval 
+             || EINVAL == retval 
+             || EDEADLK == retval 
+             || ESRCH == retval) 
+           && "Unexpected error.");
+    
+    if (0 == retval) {
+        /* Successful join.*/
+        thread->state = amp_internal_thread_joined_state;
+    }
+    
+    return retval;
+}
+
+
+
+amp_thread_id_t amp_thread_current_id(void)
+{
+    /*
+     * TODO: @todo Remove hack! Most Pthreads libraries implement pthread_t as
+     *             a pointer to a thread struct, a pointeer can be converted to
+     *             
+     */
+    return (amp_thread_id_t)pthread_self();
+}
+
+
+
+int amp_thread_id(amp_thread_t thread,
+                  amp_thread_id_t *id)
+{
+    assert(NULL != thread);
+    assert(NULL != id);
+    
+    if (amp_internal_thread_joinable_state != thread->state) {
+        *id = AMP_INVALID_THREAD_ID;
+        return ESRCH;
+    }
+    
+    *id = (amp_thread_id_t)(thread->native_thread_description.thread);
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_thread_yield(void)
+{
+    return sched_yield();
 }
 
 
