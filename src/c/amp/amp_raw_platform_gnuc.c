@@ -44,10 +44,11 @@
 
 #include "amp_raw_platform.h"
 
-
-#include <sys/sysinfo.h>
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
+
+#include <sys/sysinfo.h>
 
 
 

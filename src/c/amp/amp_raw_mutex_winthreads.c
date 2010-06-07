@@ -46,11 +46,9 @@
 
 #include "amp_raw_mutex.h"
 
-
-
 #include <assert.h>
 #include <errno.h>
-
+#include <stddef.h>
 
 #include "amp_stddef.h"
 #include "amp_internal_winthreads_critical_section_config.h"

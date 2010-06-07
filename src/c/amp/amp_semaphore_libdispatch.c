@@ -36,32 +36,30 @@
  * Shallow wrapper around Mac OS X 10.6 libdispatch semaphores.
  */
 
+#include "amp_semaphore.h"
+
+#include <assert.h>
+#include <errno.h>
+#include <stddef.h>
+
+#include "amp_stddef.h"
 #include "amp_raw_semaphore.h"
 
 
 
-#include <errno.h>
-#include <assert.h>
-
-
-
-#include "amp_stddef.h"
-
-
-
-int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                           amp_raw_semaphore_count_t init_count)
+int amp_raw_semaphore_init(amp_semaphore_t semaphore,
+                           amp_semaphore_counter_t init_count)
 {
     /* No way to reliably detect if the sem is already initialized... */
     
-    assert(NULL != sem);
-    assert(0l <= init_count);
+    assert(NULL != semaphore);
+    assert((amp_semaphore_counter_t)0 <= init_count);
+    assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
     
-    if (NULL == sem) {
-        return EINVAL;
-    }
-    
-    if (0l > init_count) {
+    if (NULL == semaphore
+        || (amp_semaphore_counter_t)0 > init_count
+        || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count) {
+            
         return EINVAL;
     }
     
@@ -73,9 +71,9 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
      *             before the wait but before the release).
      */
     /* sem->semaphore = dispatch_semaphore_create(init_count); */
-    sem->semaphore = dispatch_semaphore_create(0l);
+    semaphore->semaphore = dispatch_semaphore_create(0l);
 
-    if (NULL == sem->semaphore) {
+    if (NULL == semaphore->semaphore) {
         return ENOMEM;
     }
     
@@ -86,58 +84,58 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
      *             the waits have been called somewhere (needn't be before the 
      *             wait but before the release).
      */
-    for (long i = 0; i < init_count; ++i) {
-        long const signal_retval = dispatch_semaphore_signal(sem->semaphore);
+    for (amp_semaphore_counter_t i = 0; i < init_count; ++i) {
+        long const signal_retval = dispatch_semaphore_signal(semaphore->semaphore);
+        assert(0 == signal_retval && "During creation no thread must wait on the semaphore.");
         (void) signal_retval;
     }
     
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_raw_semaphore_finalize(amp_semaphore_t semaphore)
+{
+    assert(NULL != semaphore);
+    assert(NULL != semaphore->semaphore);
+    
+    if (NULL == semaphore)  {
+        return EINVAL;
+    }
+    
+    if (NULL == semaphore->semaphore) {
+        return EINVAL;
+    }
+    
+    dispatch_release(semaphore->semaphore);
     
     return AMP_SUCCESS;
 }
 
 
 
-int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
+int amp_semaphore_wait(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
-    assert(NULL != sem->semaphore);
-    
-    if (NULL == sem)  {
-        return EINVAL;
-    }
-    
-    if (NULL == sem->semaphore) {
-        return EINVAL;
-    }
-    
-    dispatch_release(sem->semaphore);
-    
-    return AMP_SUCCESS;
-}
+    assert(NULL != semaphore);
+    assert(NULL != semaphore->semaphore);
 
-
-
-int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
-{
-    assert(NULL != sem);
-    assert(NULL != sem->semaphore);
-
-    long retval = dispatch_semaphore_wait(sem->semaphore, DISPATCH_TIME_FOREVER);
+    long retval = dispatch_semaphore_wait(semaphore->semaphore, DISPATCH_TIME_FOREVER);
     (void)retval;
     
-    assert(0 == retval && "Unexpected error.");
+    assert(0 == retval && "Timeout should not occur when waiting for DISPATCH_TIME_FOREVER.");
     
     return AMP_SUCCESS;
 }
 
 
 
-int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
+int amp_semaphore_signal(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
-    assert(NULL != sem->semaphore);
+    assert(NULL != semaphore);
+    assert(NULL != semaphore->semaphore);
     
-    dispatch_semaphore_signal(sem->semaphore);
+    (void)dispatch_semaphore_signal(semaphore->semaphore);
     
     return AMP_SUCCESS;
 }

@@ -42,6 +42,12 @@
 
 #inlude "amp_raw_condition_variable.h"
 
+#include <assert.h>
+#include <errno.h>
+#include <stddef.h>
+
+
+
 
 int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
 {

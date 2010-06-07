@@ -47,53 +47,41 @@
 
 
 
-#include "amp_raw_semaphore.h"
+#include "amp_semaphore.h"
 
-/* Include NULL */
+#include <assert.h>
+#include <errno.h>
 #include <stddef.h>
 
-/* Include assert */
-#include <assert.h>
-
-/* Include errno, EINVAL, ENOSYS, ENOSPC, EPERM, EBUSY, EINTR, EDEADLK */
-#include <errno.h>
-
-/* TODO: @todo Remove include if not needed. */
-/* #include <WinError.h> */
-
-
-
-/* Include AMP_SUCCESS */
 #include "amp_stddef.h"
+#include "amp_raw_semaphore.h"
 
 
 
 
 
-
-int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                           amp_raw_semaphore_count_t init_count)
+int amp_raw_semaphore_init(amp_semaphore_t semaphore,
+                           amp_semaphore_counter_t init_count)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
+    assert((amp_semaphore_counter_t)0 <= init_count);
+    assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
     
-    if ((0ul > init_count) ||
-        (AMP_RAW_SEMAPHORE_COUNT_MAX < init_count)) {
+    if (NULL == semaphore
+        || (amp_semaphore_counter_t)0 > init_count
+        || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count) {
         
-        /* TODO: @todo Decide if to assert or no to assert. */
-        assert( (0ul <= init_count && AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count) 
-               && "init_count must be greater or equal to zero and lesser or equal to AMP_RAW_SEMAPHORE_COUNT_MAX.");
-            
         return EINVAL;
     }
     
     int retval = AMP_SUCCESS;
     
-    sem->semaphore_handle = CreateSemaphore(NULL, 
-                                            (long)init_count, 
-                                            (long)AMP_RAW_SEMAPHORE_COUNT_MAX,
-                                            NULL);
+    semaphore->semaphore_handle = CreateSemaphore(NULL, 
+                                                  (long)init_count, 
+                                                  (long)AMP_RAW_SEMAPHORE_COUNT_MAX,
+                                                  NULL);
     DWORD const last_error = GetLastError();
-    if (NULL == sem->semaphore_handle) {
+    if (NULL == semaphore->semaphore_handle) {
         
         switch (last_error) {
             case ERROR_TOO_MANY_SEMAPHORES:
@@ -150,12 +138,12 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
 
 
 
-int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
+int amp_raw_semaphore_finalize(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
     
     int retval = AMP_SUCCESS;
-    BOOL const close_retval = CloseHandle(sem->semaphore_handle);
+    BOOL const close_retval = CloseHandle(semaphore->semaphore_handle);
     if (FALSE == close_retval) {
         DWORD const last_error = GetLastError();
         
@@ -216,13 +204,13 @@ int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
 
 
 
-int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
+int amp_semaphore_wait(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
     
     int retval = AMP_SUCCESS;
     
-    DWORD const wait_retval = WaitForSingleObject(sem->semaphore_handle,
+    DWORD const wait_retval = WaitForSingleObject(semaphore->semaphore_handle,
                                                   INFINITE);
     if (WAIT_OBJECT_0 != wait_retval) {
         assert(WAIT_TIMEOUT != wait_retval 
@@ -296,12 +284,12 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
 }
 
 
-int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
+int amp_semaphore_signal(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
     
     int retval = AMP_SUCCESS;
-    BOOL const release_retval = ReleaseSemaphore(sem->semaphore_handle, 1, NULL);
+    BOOL const release_retval = ReleaseSemaphore(semaphore->semaphore_handle, 1, NULL);
     
     if (FALSE == release_retval) {
         

@@ -59,12 +59,12 @@
 
 #include "amp_raw_platform.h"
 
+#include <assert.h>
+#include <errno.h>
+#include <stddef.h>
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
-#include <assert.h>
-#include <errno.h>
-
 
 #include "amp_stddef.h"
 

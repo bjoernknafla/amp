@@ -30,6 +30,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * Shallow wrapper around the platforms threads. Threads launched must always
+ * be joined to prevent resource leaks. Currently threads can't be detached.
+ *
+ * TODO: @todo Manage threads when using cocoa (create at least one NSTask and 
+ *             create an autoreleasepool inside the threads.
+ * TODO: @todo Add docu to say how many threads can run at max and if joined 
+ *             thread slots are recycled or are blocked for the runtime of the 
+ *             app. Decide if the id is really necessary.
+ * TODO: @todo Decide, implement and document if amp threads surpress 
+ *             signals from reaching them.
+ */
 
 #ifndef AMP_amp_thread_H
 #define AMP_amp_thread_H

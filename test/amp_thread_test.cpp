@@ -33,7 +33,8 @@
 /**
  * @file
  *
- * Unit tests for launching and joining with amp_thread.
+ * Unit tests for launching and joining with amp_thread and therefore indirectly
+ * with amp_raw_thread.
  */
 
 

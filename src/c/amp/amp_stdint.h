@@ -36,12 +36,18 @@
  * Assumes a C99 compatible C compiler, or MSVC, or a compiler whose c lib
  * contains the stdint header.
  *
- * Makes uintptr_t accessible to amp.
+ * Makes intptr_t,  and uintptr_t accessible to amp.
  *
  * If C89 needs to be supported or a platform needs a better platform detection
  * and handling poc ( http://github.com/bjoernknafla/poc ) can be used to 
  * define the necessary bit-sized primitive integer types. Currently poc isn't
  * used to keep the dependencies of amp at a minimum.
+ *
+ * amp uses intptr_t and uintptr_t in places where intmax_t and uintmax_t would
+ * be more appropriate. However making intmax_t and uintmax_t available in a 
+ * cross platform way complicates the implementation and adds more complexity
+ * than it seems worth just yet. As all amp types that use bit-sized integral
+ * types are typedefed changes can be made later one without much work.
  */ 
 
 #ifndef AMP_amp_stdint_H
@@ -49,11 +55,11 @@
 
 
 #if defined(_MSC_VER)
-#   include <stddef.h> /* MSVC defines uintptr_t in stddef.h */
+#   include <stddef.h> /* MSVC defines intptr_t, uintptr_t in stddef.h */
 #elif defined(__GNUC__)
-#   include <stdint.h> /* C99 header with uintptr_t */
+#   include <stdint.h> /* C99 header with intptr_t, uintptr_t */
 #elif defined(__llvm__) && defined(__clang__)
-#   include <stdint.h> /* C99 header with uintptr_t */
+#   include <stdint.h> /* C99 header with intptr_t, uintptr_t */
 #else
 #   error Unsupported platform.
 #endif

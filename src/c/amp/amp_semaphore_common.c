@@ -33,57 +33,79 @@
 /**
  * @file
  *
- * Implementation of amp_raw_platform functionality used by all platform 
- * specific implementations.
+ * Implementation shared by all amp semaphore backends.
  */
 
-#include "amp_raw_platform.h"
+#include "amp_semaphore.h"
+#include "amp_raw_semaphore.h"
 
 #include <assert.h>
 #include <errno.h>
-#include <stddef.h>
 
 #include "amp_stddef.h"
 
 
-int amp_raw_platform_init(struct amp_raw_platform_s* descr,
-                          void* allocator_context,
-                          amp_alloc_func_t alloc_func,
-                          amp_dealloc_func_t dealloc_func)
+
+int amp_semaphore_create(amp_semaphore_t *semaphore,
+                         amp_semaphore_counter_t init_count,
+                         void *allocator_context,
+                         amp_alloc_func_t alloc_func,
+                         amp_dealloc_func_t dealloc_func)
 {
-    assert(NULL != descr);
+    assert(NULL != semaphore);
+    assert((amp_semaphore_counter_t)0 <= init_count);
+    assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
-    if (NULL == descr
+    if (NULL == semaphore
+        || (amp_semaphore_counter_t)0 > init_count
+        || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count
         || NULL == alloc_func
         || NULL == dealloc_func) {
         
         return EINVAL;
     }
     
-    descr->allocator_context = allocator_context;
-    descr->alloc_func = alloc_func;
-    descr->dealloc_func = dealloc_func;
+    amp_semaphore_t tmp_sema = (amp_semaphore_t)alloc_func(allocator_context,
+                                                           sizeof(struct amp_raw_semaphore_s));
+    if (NULL == tmp_sema) {
+        return ENOMEM;
+    }
     
-    return AMP_SUCCESS;
+    int const retval = amp_raw_semaphore_init(tmp_sema,
+                                              init_count);
+    if (AMP_SUCCESS == retval) {
+        *semaphore = tmp_sema;
+    } else {
+        dealloc_func(allocator_context, tmp_sema);
+    }
+    
+    return retval;
 }
 
 
-int amp_raw_platform_finalize(struct amp_raw_platform_s* descr)
+
+int amp_semaphore_destroy(amp_semaphore_t semaphore,
+                          void *allocator_context,
+                          amp_dealloc_func_t dealloc_func)
 {
-    assert(NULL != descr);
+    assert(NULL != semaphore);
+    assert(NULL != dealloc_func);
     
-    if (NULL == descr) {
+    if (NULL == semaphore
+        || NULL == dealloc_func) {
         
         return EINVAL;
     }
     
-    descr->allocator_context = NULL;
-    descr->alloc_func = NULL;
-    descr->dealloc_func = NULL;
+    int const retval = amp_raw_semaphore_finalize(semaphore);
+    if (AMP_SUCCESS == retval) {
+        dealloc_func(allocator_context,
+                     semaphore);
+    }
     
-    return AMP_SUCCESS;
+    return retval;
 }
 
 

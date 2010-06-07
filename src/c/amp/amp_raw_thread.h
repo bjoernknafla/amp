@@ -31,17 +31,10 @@
  */
 
 /**
- * Shallow wrapper around the platforms threads. Threads launched must always
- * be joined to prevent resource leaks. Currently threads can't be detached.
+ * @file
  *
- * TODO: @todo Manage threads when using cocoa (create at least one NSTask and create an autoreleasepool inside the threads.
- * TODO: @todo Rename this file and its functions to raw threads and create a amp_thread ADT or a amp thread cluster that collects threads and controls the functions running on the thread. Then add semaphores, mutexes, locks, atomic barriers and ops, and perhaps other stuff as needed.
- * TODO: @todo Add docu to say how many threads can run at max and if joined thread slots are recycled or are blocked for the runtime of the app. Decide if the id is really necessary.
- *
- * TODO: @todo Decide, implement and document if amp raw threads surpress 
- *             signals from reaching them.
+ * Definition of amp_raw_thread_s containing backend dependencies.
  */
-
 
 #ifndef AMP_amp_raw_thread_H
 #define AMP_amp_raw_thread_H

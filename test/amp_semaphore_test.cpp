@@ -33,19 +33,25 @@
 /**
  * @file
  *
- * Unit tests for amp_raw_semaphore.
+ * Unit tests for amp_semaphore and therefore indirectly amp_raw_semaphore.
  *
  * TODO: @todo Add time constraints for tests that mustn't block.
  */
 
 #include <UnitTest++.h>
 
+#include <assert.h>
+#include <errno.h>
 
-#include <amp/amp_raw_semaphore.h>
-#include <amp/amp_raw_thread.h>
 #include <amp/amp_stddef.h>
+#include <amp/amp_memory.h>
+#include <amp/amp_thread.h>
+#include <amp/amp_thread_array.h>
+#include <amp/amp_semaphore.h>
 
-SUITE(amp_raw_semaphore)
+
+
+SUITE(amp_semaphore)
 {
     TEST(wait_on_init_signaled_semaphore)
     {
@@ -55,21 +61,27 @@ SUITE(amp_raw_semaphore)
         // tests...
         
         
-        struct amp_raw_semaphore_s sem;
-        int retval = amp_raw_semaphore_init(&sem, 1);
+        amp_semaphore_t sem = NULL;
+        int retval = amp_semaphore_create(&sem, 
+                                          1,
+                                          NULL,
+                                          amp_malloc,
+                                          amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         {
             int const milliseconds = 50;
             UNITTEST_TIME_CONSTRAINT(milliseconds);
             
-            retval = amp_raw_semaphore_wait(&sem);
+            retval = amp_semaphore_wait(sem);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
         
-        retval = amp_raw_semaphore_finalize(&sem);
+        retval = amp_semaphore_destroy(sem,
+                                       NULL,
+                                       amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
-        
+        sem = NULL;
     }
     
     
@@ -83,24 +95,30 @@ SUITE(amp_raw_semaphore)
         // tests...
         
         
-        struct amp_raw_semaphore_s sem;
-        int retval = amp_raw_semaphore_init(&sem, 0);
+        amp_semaphore_t sem = NULL;
+        int retval = amp_semaphore_create(&sem, 
+                                          0,
+                                          NULL,
+                                          amp_malloc,
+                                          amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_semaphore_signal(&sem);
+        retval = amp_semaphore_signal(sem);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         {
             int const milliseconds = 50;
             UNITTEST_TIME_CONSTRAINT(milliseconds);
         
-            retval = amp_raw_semaphore_wait(&sem);
+            retval = amp_semaphore_wait(sem);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
         
-        retval = amp_raw_semaphore_finalize(&sem);
+        retval = amp_semaphore_destroy(sem,
+                                       NULL,
+                                       amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
-        
+        sem = NULL;
     }
     
     
@@ -111,7 +129,7 @@ SUITE(amp_raw_semaphore)
         int const CHECK_FLAG_SET = 77;
         
         struct semaphore_flag_s {
-            struct amp_raw_semaphore_s sem;
+            amp_semaphore_t sem;
             int check_flag;
         };
         
@@ -120,7 +138,8 @@ SUITE(amp_raw_semaphore)
         {
             struct semaphore_flag_s *sem_flag = static_cast<struct semaphore_flag_s*>(context);
             
-            amp_raw_semaphore_wait(&(sem_flag->sem));
+            int retval = amp_semaphore_wait(sem_flag->sem);
+            assert(AMP_SUCCESS == retval);
             sem_flag->check_flag = CHECK_FLAG_SET;
         }
         
@@ -133,26 +152,39 @@ SUITE(amp_raw_semaphore)
         // a check flag. Join with the thread and check the flag.
         
         struct semaphore_flag_s sem_flag;
-        int retval = amp_raw_semaphore_init(&(sem_flag.sem), 1);
+        int retval = amp_semaphore_create(&sem_flag.sem, 
+                                          1,
+                                          NULL,
+                                          amp_malloc,
+                                          amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         sem_flag.check_flag = CHECK_FLAG_UNSET;
 
         
-        struct amp_raw_thread_s thread;
-        retval = amp_raw_thread_launch(&thread, 
-                                        &sem_flag, 
-                                        wait_on_semaphore_and_set_flag_func);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
+        amp_thread_t thread = NULL;
+        retval = amp_thread_create_and_launch(&thread,
+                                              NULL,
+                                              amp_malloc,
+                                              amp_free,
+                                              &sem_flag, 
+                                              &wait_on_semaphore_and_set_flag_func);
+        assert(AMP_SUCCESS == retval);
         
         // Joins after the thread waited and passed the semaphore.
-        retval = amp_raw_thread_join(&thread);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
+        retval = amp_thread_join_and_destroy(thread,
+                                             NULL,
+                                             amp_free);
+        assert(AMP_SUCCESS == retval);
+        thread = NULL;
         
         CHECK_EQUAL(CHECK_FLAG_SET, sem_flag.check_flag);
         
-        retval = amp_raw_semaphore_finalize(&sem_flag.sem);
+        retval = amp_semaphore_destroy(sem_flag.sem,
+                                       NULL,
+                                       amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
+        sem_flag.sem = NULL;
     }
     
     
@@ -160,31 +192,45 @@ SUITE(amp_raw_semaphore)
     TEST(thread_wait_on_init_then_signal_semaphore)
     {
         struct semaphore_flag_s sem_flag;
-        int retval = amp_raw_semaphore_init(&(sem_flag.sem), 0);
+        int retval = amp_semaphore_create(&sem_flag.sem, 
+                                          0,
+                                          NULL,
+                                          amp_malloc,
+                                          amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         sem_flag.check_flag = CHECK_FLAG_UNSET;
         
         
-        struct amp_raw_thread_s thread;
-        retval = amp_raw_thread_launch(&thread, 
-                                        &sem_flag, 
-                                        wait_on_semaphore_and_set_flag_func);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
+        amp_thread_t thread = NULL;
+        retval = amp_thread_create_and_launch(&thread,
+                                              NULL,
+                                              amp_malloc,
+                                              amp_free,
+                                              &sem_flag, 
+                                              &wait_on_semaphore_and_set_flag_func);
+        assert(AMP_SUCCESS == retval);
         
         // TODO: @todo Add a sleep here increase the possibility for the 
         //             thread to actually waiting on the semaphore.
         
-        retval = amp_raw_semaphore_signal(&(sem_flag.sem));
+        retval = amp_semaphore_signal(sem_flag.sem);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
         
         // Joins after the thread waited and passed the semaphore.
-        retval = amp_raw_thread_join(&thread);
-        CHECK_EQUAL(AMP_SUCCESS, retval);
+        retval = amp_thread_join_and_destroy(thread,
+                                             NULL,
+                                             amp_free);
+        assert(AMP_SUCCESS == retval);
+        thread = NULL;
         
         CHECK_EQUAL(CHECK_FLAG_SET, sem_flag.check_flag);
         
-        retval = amp_raw_semaphore_finalize(&sem_flag.sem);
-        CHECK_EQUAL(AMP_SUCCESS, retval);    
+        retval = amp_semaphore_destroy(sem_flag.sem,
+                                       NULL,
+                                       amp_free);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        sem_flag.sem = NULL;
     }
     
     
@@ -192,7 +238,7 @@ SUITE(amp_raw_semaphore)
     namespace
     {
         struct some_threads_wait_one_signals_s {
-            struct amp_raw_semaphore_s *sem_p;
+            amp_semaphore_t *sem_p;
             int check_flag;
         };
         
@@ -200,11 +246,13 @@ SUITE(amp_raw_semaphore)
         {
             struct some_threads_wait_one_signals_s *data = static_cast<struct some_threads_wait_one_signals_s*>(context);
             
-            amp_raw_semaphore_wait(data->sem_p);
+            int retcode = amp_semaphore_wait(*data->sem_p);
+            assert(AMP_SUCCESS == retcode);
             data->check_flag = CHECK_FLAG_SET;
             
             // Let the next thread through, too.
-            amp_raw_semaphore_signal(data->sem_p);
+            retcode = amp_semaphore_signal(*data->sem_p);
+            assert(AMP_SUCCESS == retcode);
         }
         
     } // anonymous namespace
@@ -216,8 +264,12 @@ SUITE(amp_raw_semaphore)
         // threads now pass one by one and store the check variable in an array
         // that is then tested to contain the correct value per element.
         
-        struct amp_raw_semaphore_s sem;
-        int retval = amp_raw_semaphore_init(&sem, 0);
+        amp_semaphore_t sem = NULL;
+        int retval = amp_semaphore_create(&sem,
+                                          0,
+                                          NULL,
+                                          amp_malloc,
+                                          amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -230,14 +282,30 @@ SUITE(amp_raw_semaphore)
             checks[i].check_flag = CHECK_FLAG_UNSET;
         }
         
-        // Launch waiting threads.
-        struct amp_raw_thread_s threads_to_wait[threads_to_wait_count];
+        amp_thread_array_t threads = NULL;
+        retval = amp_thread_array_create(&threads,
+                                         threads_to_wait_count,
+                                         NULL,
+                                         amp_malloc,
+                                         amp_free);
+        assert(AMP_SUCCESS == retval);
+        
         for (std::size_t i = 0; i < threads_to_wait_count; ++i) {
-            retval = amp_raw_thread_launch(&threads_to_wait[i], 
-                                            &checks[i],
-                                            thread_to_wait_func);
-            CHECK_EQUAL(AMP_SUCCESS, retval);
+            retval = amp_thread_array_configure(threads,
+                                                i,
+                                                i + 1,
+                                                &checks[i],
+                                                &thread_to_wait_func);
+            assert(AMP_SUCCESS == retval);
         }
+        
+        std::size_t joinable_count = 0;
+        retval = amp_thread_array_launch_all(threads,
+                                             &joinable_count);
+        assert(AMP_SUCCESS == retval);
+        assert(threads_to_wait_count == joinable_count);
+        
+        
         
         
         // TODO: @todo Decide if to loop here a few times to give the threads
@@ -246,28 +314,38 @@ SUITE(amp_raw_semaphore)
         // Check that no thread has yet passed the semaphoreand therefore
         // that all check flags are set to CHECK_FLAG_UNSET. This is no
         // absolute test for correctness as the threads might
-        // not even have started running yet, but bettern than nothing.
+        // not even have started running yet, but better than nothing.
+        // This test will not work if the memory model and semaphore access from
+        // the threads doesn't update the memory as seen by this thread.
         for (std::size_t i = 0; i < threads_to_wait_count; ++i) {
             CHECK_EQUAL(CHECK_FLAG_UNSET, checks[i].check_flag);
         }
         
         // Signal semaphore.
-        retval = amp_raw_semaphore_signal(&sem);
+        retval = amp_semaphore_signal(sem);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         // Join all threads - which means they waited and passed the semaphore.
-        for (std::size_t i = 0; i < threads_to_wait_count; ++i) {
-            retval = amp_raw_thread_join(&threads_to_wait[i]);
-            CHECK_EQUAL(AMP_SUCCESS, retval);
-        }
+        retval = amp_thread_array_join_all(threads,
+                                           &joinable_count);
+        assert(AMP_SUCCESS == retval);
+        assert(0 == joinable_count);
+        
+        retval = amp_thread_array_destroy(threads,
+                                          NULL,
+                                          amp_free);
+        assert(AMP_SUCCESS == retval);
         
         // Check value of check flags.
         for (std::size_t i = 0; i < threads_to_wait_count; ++i) {
             CHECK_EQUAL(CHECK_FLAG_SET, checks[i].check_flag);
         }
         
-        retval = amp_raw_semaphore_finalize(&sem);
+        retval = amp_semaphore_destroy(sem,
+                                       NULL,
+                                       amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
+        sem = NULL;
     }
     
 } // SUITE(amp_raw_semaphore)

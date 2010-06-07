@@ -58,24 +58,14 @@
 
 #include "amp_raw_condition_variable.h"
 
-
-/* Include LONG_MAX */
-#include <limits.h>
-
-/* Include assert */
 #include <assert.h>
-
-/* Include errno, etc. */
 #include <errno.h>
+#include <limits.h>
+#include <stddef.h>
 
-
-
-#include "amp_internal_winthreads_critical_section_config.h"
-
-/* Include AMP_SUCCESS */
 #include "amp_stddef.h"
-
 #include "amp_raw_mutex.h"
+#include "amp_internal_winthreads_critical_section_config.h"
 
 
 

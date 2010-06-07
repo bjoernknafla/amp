@@ -21,6 +21,11 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		320950BF11BCE8D800A48677 /* amp_semaphore.h in Headers */ = {isa = PBXBuildFile; fileRef = 320950BE11BCE8D800A48677 /* amp_semaphore.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		320950C011BCE8D800A48677 /* amp_semaphore.h in Headers */ = {isa = PBXBuildFile; fileRef = 320950BE11BCE8D800A48677 /* amp_semaphore.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		320950C211BD210C00A48677 /* amp_semaphore_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 320950C111BD210C00A48677 /* amp_semaphore_common.c */; };
+		320950C311BD210C00A48677 /* amp_semaphore_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 320950C111BD210C00A48677 /* amp_semaphore_common.c */; };
+		3209722911BDB08000A48677 /* amp_semaphore_libdispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B63E10769507009B33E6 /* amp_semaphore_libdispatch.c */; };
 		32100A4B10B85F2900971F59 /* amp_stddef_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32100A4A10B85F2900971F59 /* amp_stddef_test.cpp */; };
 		3231EC9410BEE31200C61517 /* amp_thread_array.h in Headers */ = {isa = PBXBuildFile; fileRef = 3231EC9110BEE31200C61517 /* amp_thread_array.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3231EC9510BEE31200C61517 /* amp_thread_array.c in Sources */ = {isa = PBXBuildFile; fileRef = 3231EC9210BEE31200C61517 /* amp_thread_array.c */; };
@@ -46,14 +51,12 @@
 		325928C0105875B900D5379D /* unit_tests_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928A81058713F00D5379D /* unit_tests_main.cpp */; };
 		325928C1105875BA00D5379D /* amp_thread_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928A91058714000D5379D /* amp_thread_test.cpp */; };
 		325928C2105875BA00D5379D /* amp_raw_thread_local_slot_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928AB1058714000D5379D /* amp_raw_thread_local_slot_test.cpp */; };
-		325928C3105875BB00D5379D /* amp_raw_semaphore_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928AA1058714000D5379D /* amp_raw_semaphore_test.cpp */; };
+		325928C3105875BB00D5379D /* amp_semaphore_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928AA1058714000D5379D /* amp_semaphore_test.cpp */; };
 		325928C4105875BC00D5379D /* amp_raw_mutex_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325928AC1058714000D5379D /* amp_raw_mutex_test.cpp */; };
 		325928CD105875DB00D5379D /* libUnitTest++.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 325928CC105875DB00D5379D /* libUnitTest++.a */; };
 		32746D4410BDBF2900534B9A /* amp_thread_array_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 322409F410B46D170051F7D0 /* amp_thread_array_test.cpp */; };
 		3284370310F6724A0085BDBE /* amp_thread_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 3284370210F6724A0085BDBE /* amp_thread_common.c */; };
 		3284370410F6724A0085BDBE /* amp_thread_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 3284370210F6724A0085BDBE /* amp_thread_common.c */; };
-		328709641147E70900BC7B8F /* amp_raw_platform_unknown.c in Sources */ = {isa = PBXBuildFile; fileRef = 3296B3DA11333E5E00B6664B /* amp_raw_platform_unknown.c */; };
-		328709971147F69F00BC7B8F /* amp_raw_platform_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 328709951147F69F00BC7B8F /* amp_raw_platform_common.c */; };
 		328709981147F69F00BC7B8F /* amp_raw_platform_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 328709951147F69F00BC7B8F /* amp_raw_platform_common.c */; };
 		328709991147F69F00BC7B8F /* amp_raw_platform_common.c in Sources */ = {isa = PBXBuildFile; fileRef = 328709951147F69F00BC7B8F /* amp_raw_platform_common.c */; };
 		328709B41147FAD600BC7B8F /* amp_raw_platform_sysctl.c in Sources */ = {isa = PBXBuildFile; fileRef = 3296B3D11132FAAF00B6664B /* amp_raw_platform_sysctl.c */; };
@@ -65,7 +68,6 @@
 		32A4A1831135495700D29CD2 /* amp_platform_check_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A4A15F1135451300D29CD2 /* amp_platform_check_main.cpp */; };
 		32C186D5109F341C001852EE /* amp_thread_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A21058711E00D5379D /* amp_thread_pthreads.c */; };
 		32C186D6109F341E001852EE /* amp_raw_thread_local_slot_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A11058711E00D5379D /* amp_raw_thread_local_slot_pthreads.c */; };
-		32C186D7109F3424001852EE /* amp_raw_semaphore_libdispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B63E10769507009B33E6 /* amp_raw_semaphore_libdispatch.c */; };
 		32C186D8109F342B001852EE /* amp_raw_mutex_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 3259289B1058711E00D5379D /* amp_raw_mutex_pthreads.c */; };
 		32C186D9109F3431001852EE /* amp_raw_condition_variable_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 321EFA991070EBF000CC24FF /* amp_raw_condition_variable_pthreads.c */; };
 		32C186DB109F346E001852EE /* amp_raw.h in Headers */ = {isa = PBXBuildFile; fileRef = 328D7F1D105923CA003F0E1E /* amp_raw.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -78,7 +80,7 @@
 		32C186F5109F3F90001852EE /* amp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32C186CF109F33FB001852EE /* amp.framework */; };
 		32C1883C10A18D83001852EE /* amp_raw_condition_variable_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 321EFA991070EBF000CC24FF /* amp_raw_condition_variable_pthreads.c */; };
 		32C1883D10A18D87001852EE /* amp_raw_mutex_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 3259289B1058711E00D5379D /* amp_raw_mutex_pthreads.c */; };
-		32C1883E10A18D8A001852EE /* amp_raw_semaphore_libdispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B63E10769507009B33E6 /* amp_raw_semaphore_libdispatch.c */; };
+		32C1883E10A18D8A001852EE /* amp_semaphore_libdispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B63E10769507009B33E6 /* amp_semaphore_libdispatch.c */; };
 		32C1883F10A18D90001852EE /* amp_raw_thread_local_slot_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A11058711E00D5379D /* amp_raw_thread_local_slot_pthreads.c */; };
 		32C1884010A18D95001852EE /* amp_thread_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A21058711E00D5379D /* amp_thread_pthreads.c */; };
 		32C86FD8119DD3A2007577DC /* amp_raw_barrier.h in Headers */ = {isa = PBXBuildFile; fileRef = 32C86FD7119DD3A2007577DC /* amp_raw_barrier.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -110,6 +112,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		320950BE11BCE8D800A48677 /* amp_semaphore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = amp_semaphore.h; sourceTree = "<group>"; };
+		320950C111BD210C00A48677 /* amp_semaphore_common.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_semaphore_common.c; sourceTree = "<group>"; };
 		32100A4A10B85F2900971F59 /* amp_stddef_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_stddef_test.cpp; sourceTree = "<group>"; };
 		321EFA981070EBF000CC24FF /* amp_raw_condition_variable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = amp_raw_condition_variable.h; path = ../../../src/c/amp/amp_raw_condition_variable.h; sourceTree = SOURCE_ROOT; };
 		321EFA991070EBF000CC24FF /* amp_raw_condition_variable_pthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_condition_variable_pthreads.c; path = ../../../src/c/amp/amp_raw_condition_variable_pthreads.c; sourceTree = SOURCE_ROOT; };
@@ -130,15 +134,15 @@
 		3259289A1058711E00D5379D /* amp_raw_mutex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = amp_raw_mutex.h; path = ../../../src/c/amp/amp_raw_mutex.h; sourceTree = "<group>"; };
 		3259289B1058711E00D5379D /* amp_raw_mutex_pthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_mutex_pthreads.c; path = ../../../src/c/amp/amp_raw_mutex_pthreads.c; sourceTree = "<group>"; };
 		3259289C1058711E00D5379D /* amp_raw_semaphore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = amp_raw_semaphore.h; path = ../../../src/c/amp/amp_raw_semaphore.h; sourceTree = "<group>"; };
-		3259289D1058711E00D5379D /* amp_raw_semaphore_posix_1003_1b.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_semaphore_posix_1003_1b.c; path = ../../../src/c/amp/amp_raw_semaphore_posix_1003_1b.c; sourceTree = "<group>"; };
-		3259289E1058711E00D5379D /* amp_raw_semaphore_pthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_semaphore_pthreads.c; path = ../../../src/c/amp/amp_raw_semaphore_pthreads.c; sourceTree = "<group>"; };
+		3259289D1058711E00D5379D /* amp_semaphore_posix_1003_1b.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_semaphore_posix_1003_1b.c; sourceTree = "<group>"; };
+		3259289E1058711E00D5379D /* amp_semaphore_pthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_semaphore_pthreads.c; sourceTree = "<group>"; };
 		3259289F1058711E00D5379D /* amp_raw_thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = amp_raw_thread.h; path = ../../../src/c/amp/amp_raw_thread.h; sourceTree = "<group>"; };
 		325928A01058711E00D5379D /* amp_raw_thread_local_slot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = amp_raw_thread_local_slot.h; path = ../../../src/c/amp/amp_raw_thread_local_slot.h; sourceTree = "<group>"; };
 		325928A11058711E00D5379D /* amp_raw_thread_local_slot_pthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_thread_local_slot_pthreads.c; path = ../../../src/c/amp/amp_raw_thread_local_slot_pthreads.c; sourceTree = "<group>"; };
 		325928A21058711E00D5379D /* amp_thread_pthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_thread_pthreads.c; sourceTree = "<group>"; };
 		325928A81058713F00D5379D /* unit_tests_main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = unit_tests_main.cpp; sourceTree = "<group>"; };
 		325928A91058714000D5379D /* amp_thread_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_thread_test.cpp; sourceTree = "<group>"; };
-		325928AA1058714000D5379D /* amp_raw_semaphore_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_raw_semaphore_test.cpp; sourceTree = "<group>"; };
+		325928AA1058714000D5379D /* amp_semaphore_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_semaphore_test.cpp; sourceTree = "<group>"; };
 		325928AB1058714000D5379D /* amp_raw_thread_local_slot_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_raw_thread_local_slot_test.cpp; sourceTree = "<group>"; };
 		325928AC1058714000D5379D /* amp_raw_mutex_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_raw_mutex_test.cpp; sourceTree = "<group>"; };
 		325928BB1058759300D5379D /* amp_unit_tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = amp_unit_tests; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -171,7 +175,7 @@
 		32A4A16B113548DC00D29CD2 /* amp_platform_check */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = amp_platform_check; sourceTree = BUILT_PRODUCTS_DIR; };
 		32A4A1B911354B0B00D29CD2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		32A4A26B1135DD5A00D29CD2 /* amp_raw_platform_windows_min_host_sdk_winserver2003_or_winxp_sp3_or_winxp_pro_x64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_raw_platform_windows_min_host_sdk_winserver2003_or_winxp_sp3_or_winxp_pro_x64.c; sourceTree = "<group>"; };
-		32B9B63E10769507009B33E6 /* amp_raw_semaphore_libdispatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_semaphore_libdispatch.c; path = ../../../src/c/amp/amp_raw_semaphore_libdispatch.c; sourceTree = "<group>"; };
+		32B9B63E10769507009B33E6 /* amp_semaphore_libdispatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_semaphore_libdispatch.c; sourceTree = "<group>"; };
 		32B9B65410769ACB009B33E6 /* amp_raw_condition_variable_winvista.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_condition_variable_winvista.c; path = ../../../src/c/amp/amp_raw_condition_variable_winvista.c; sourceTree = "<group>"; };
 		32C186AD109F30DE001852EE /* amp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "amp-Info.plist"; sourceTree = "<group>"; };
 		32C186CF109F33FB001852EE /* amp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = amp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -185,7 +189,7 @@
 		32E0D609114C26D0000CFE70 /* amp_raw_platform_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_raw_platform_test.cpp; sourceTree = "<group>"; };
 		32F240E410713F88009ABE70 /* amp_raw_condition_variable_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_raw_condition_variable_test.cpp; sourceTree = "<group>"; };
 		32F60DE810623C1E00CA43D5 /* amp_raw_mutex_winthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_mutex_winthreads.c; path = ../../../src/c/amp/amp_raw_mutex_winthreads.c; sourceTree = "<group>"; };
-		32F60DF21062910E00CA43D5 /* amp_raw_semaphore_winthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = amp_raw_semaphore_winthreads.c; path = ../../../src/c/amp/amp_raw_semaphore_winthreads.c; sourceTree = "<group>"; };
+		32F60DF21062910E00CA43D5 /* amp_semaphore_winthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_semaphore_winthreads.c; sourceTree = "<group>"; };
 		32FB64971088B95000CA3E06 /* amp_unit_tests.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = amp_unit_tests.xcconfig; sourceTree = "<group>"; };
 		32FB64991088B9AA00CA3E06 /* amp.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = amp.xcconfig; sourceTree = "<group>"; };
 		C6A0FF2C0290799A04C91782 /* amp.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = amp.1; sourceTree = "<group>"; };
@@ -325,7 +329,7 @@
 				325928A81058713F00D5379D /* unit_tests_main.cpp */,
 				32F240E410713F88009ABE70 /* amp_raw_condition_variable_test.cpp */,
 				325928AC1058714000D5379D /* amp_raw_mutex_test.cpp */,
-				325928AA1058714000D5379D /* amp_raw_semaphore_test.cpp */,
+				325928AA1058714000D5379D /* amp_semaphore_test.cpp */,
 				325928AB1058714000D5379D /* amp_raw_thread_local_slot_test.cpp */,
 				325928A91058714000D5379D /* amp_thread_test.cpp */,
 				322409F410B46D170051F7D0 /* amp_thread_array_test.cpp */,
@@ -394,11 +398,13 @@
 				3259289A1058711E00D5379D /* amp_raw_mutex.h */,
 				3259289B1058711E00D5379D /* amp_raw_mutex_pthreads.c */,
 				32F60DE810623C1E00CA43D5 /* amp_raw_mutex_winthreads.c */,
+				320950BE11BCE8D800A48677 /* amp_semaphore.h */,
 				3259289C1058711E00D5379D /* amp_raw_semaphore.h */,
-				32B9B63E10769507009B33E6 /* amp_raw_semaphore_libdispatch.c */,
-				3259289D1058711E00D5379D /* amp_raw_semaphore_posix_1003_1b.c */,
-				3259289E1058711E00D5379D /* amp_raw_semaphore_pthreads.c */,
-				32F60DF21062910E00CA43D5 /* amp_raw_semaphore_winthreads.c */,
+				320950C111BD210C00A48677 /* amp_semaphore_common.c */,
+				32B9B63E10769507009B33E6 /* amp_semaphore_libdispatch.c */,
+				3259289D1058711E00D5379D /* amp_semaphore_posix_1003_1b.c */,
+				3259289E1058711E00D5379D /* amp_semaphore_pthreads.c */,
+				32F60DF21062910E00CA43D5 /* amp_semaphore_winthreads.c */,
 				3240BC7D11BA5F4600B56E29 /* amp_thread.h */,
 				3259289F1058711E00D5379D /* amp_raw_thread.h */,
 				3292F48110CECBEA005E9567 /* amp_internal_thread.h */,
@@ -468,6 +474,7 @@
 				32C86FD8119DD3A2007577DC /* amp_raw_barrier.h in Headers */,
 				3240BC7E11BA5F4600B56E29 /* amp_thread.h in Headers */,
 				3240BC9E11BA9CB700B56E29 /* amp_stdint.h in Headers */,
+				320950BF11BCE8D800A48677 /* amp_semaphore.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -490,6 +497,7 @@
 				3240DE9B11BC036500B56E29 /* amp_internal_thread.h in Headers */,
 				3240DE9C11BC036500B56E29 /* amp_raw_thread_local_slot.h in Headers */,
 				3240DE9D11BC036500B56E29 /* amp_raw_barrier.h in Headers */,
+				320950C011BCE8D800A48677 /* amp_semaphore.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -623,13 +631,11 @@
 				325928C0105875B900D5379D /* unit_tests_main.cpp in Sources */,
 				325928C1105875BA00D5379D /* amp_thread_test.cpp in Sources */,
 				325928C2105875BA00D5379D /* amp_raw_thread_local_slot_test.cpp in Sources */,
-				325928C3105875BB00D5379D /* amp_raw_semaphore_test.cpp in Sources */,
+				325928C3105875BB00D5379D /* amp_semaphore_test.cpp in Sources */,
 				325928C4105875BC00D5379D /* amp_raw_mutex_test.cpp in Sources */,
 				32F240E510713F88009ABE70 /* amp_raw_condition_variable_test.cpp in Sources */,
 				32100A4B10B85F2900971F59 /* amp_stddef_test.cpp in Sources */,
 				32746D4410BDBF2900534B9A /* amp_thread_array_test.cpp in Sources */,
-				328709641147E70900BC7B8F /* amp_raw_platform_unknown.c in Sources */,
-				328709971147F69F00BC7B8F /* amp_raw_platform_common.c in Sources */,
 				32E0D60A114C26D0000CFE70 /* amp_raw_platform_test.cpp in Sources */,
 				32C86FF8119F34FA007577DC /* amp_raw_barrier_test.cpp in Sources */,
 			);
@@ -649,7 +655,6 @@
 			files = (
 				32C186D5109F341C001852EE /* amp_thread_pthreads.c in Sources */,
 				32C186D6109F341E001852EE /* amp_raw_thread_local_slot_pthreads.c in Sources */,
-				32C186D7109F3424001852EE /* amp_raw_semaphore_libdispatch.c in Sources */,
 				32C186D8109F342B001852EE /* amp_raw_mutex_pthreads.c in Sources */,
 				32C186D9109F3431001852EE /* amp_raw_condition_variable_pthreads.c in Sources */,
 				3231EC9510BEE31200C61517 /* amp_thread_array.c in Sources */,
@@ -658,6 +663,8 @@
 				328709981147F69F00BC7B8F /* amp_raw_platform_common.c in Sources */,
 				3298F05511594F0700A976F2 /* amp_raw_platform_sysctl.c in Sources */,
 				32C86FDF119DD785007577DC /* amp_raw_barrier_generic_broadcast.c in Sources */,
+				320950C211BD210C00A48677 /* amp_semaphore_common.c in Sources */,
+				3209722911BDB08000A48677 /* amp_semaphore_libdispatch.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -667,7 +674,7 @@
 			files = (
 				32C1883C10A18D83001852EE /* amp_raw_condition_variable_pthreads.c in Sources */,
 				32C1883D10A18D87001852EE /* amp_raw_mutex_pthreads.c in Sources */,
-				32C1883E10A18D8A001852EE /* amp_raw_semaphore_libdispatch.c in Sources */,
+				32C1883E10A18D8A001852EE /* amp_semaphore_libdispatch.c in Sources */,
 				32C1883F10A18D90001852EE /* amp_raw_thread_local_slot_pthreads.c in Sources */,
 				32C1884010A18D95001852EE /* amp_thread_pthreads.c in Sources */,
 				3231EC9710BEE31200C61517 /* amp_thread_array.c in Sources */,
@@ -676,6 +683,7 @@
 				328709991147F69F00BC7B8F /* amp_raw_platform_common.c in Sources */,
 				328709B41147FAD600BC7B8F /* amp_raw_platform_sysctl.c in Sources */,
 				32C86FDD119DD785007577DC /* amp_raw_barrier_generic_broadcast.c in Sources */,
+				320950C311BD210C00A48677 /* amp_semaphore_common.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

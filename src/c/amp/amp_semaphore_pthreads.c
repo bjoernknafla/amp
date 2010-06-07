@@ -41,16 +41,14 @@
  */
 
 
-#include "amp_raw_semaphore.h"
+#include "amp_semaphore.h"
 
-/* Include EAGAIN, ENOMEM, EPERM, EBUSY, EINVAL */
-#include <errno.h>
-
-/* Include assert */
 #include <assert.h>
+#include <errno.h>
+#include <stddef.h>
 
-/* Include AMP_SUCCESS */
 #include "amp_stddef.h"
+#include "amp_raw_semaphore.h"
 
 
 
@@ -60,28 +58,27 @@
 
 
 
-int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                           amp_raw_semaphore_count_t init_count)
+int amp_raw_semaphore_init(amp_semaphore_t semaphore,
+                           amp_semaphore_counter_t init_count)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
+    assert((amp_semaphore_counter_t)0 <= init_count);
+    assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
     
-    if (((amp_raw_semaphore_count_t)0 > init_count) 
-        || (AMP_RAW_SEMAPHORE_COUNT_MAX < init_count)) {
-        
-        /* TODO: @todo Decide if to assert or no to assert. */
-        assert( ((amp_raw_semaphore_count_t)0 <= init_count 
-                 && AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count) 
-               && "init_count must be greater or equal to zero and lesser or equal to AMP_RAW_SEMAPHORE_COUNT_MAX.");
+    if (NULL == semaphore
+        || (amp_semaphore_counter_t)0 > init_count
+        || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count) {
         
         /* Set to zero to potentially show detectable strange behavior
          * if the non-initialized mutex doesn't crash or act up and the dev
          * doesn't check and react to the return code.
          */
-        sem->count = 0;
+        semaphore->count = 0;
+        
         return EINVAL;
     }
     
-    sem->count = init_count;
+    semaphore->count = init_count;
     
     int retval = AMP_SUCCESS;
     pthread_mutexattr_t mutex_attributes;
@@ -106,7 +103,7 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
      * EINVAL, EPERM, and EBUSY  error codes are implementation problems and are
      * therefore checked while debugging.
      */ 
-    retval = pthread_mutex_init(&sem->mutex,&mutex_attributes);
+    retval = pthread_mutex_init(&semaphore->mutex,&mutex_attributes);
     assert(EINVAL != retval && "Attribute is invalid.");
     assert(EPERM != retval && "No privileges to perform operation.");
     assert(EBUSY != retval && "Mutex already initialized.");
@@ -137,7 +134,7 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
      * Other errors indicate programming errors and trigger assertions in debug 
      * mode (and are also returned in non-debug mode).
      */
-    retval = pthread_cond_init(&sem->a_thread_can_pass, NULL);
+    retval = pthread_cond_init(&semaphore->a_thread_can_pass, NULL);
     assert(EBUSY != retval && "Condition variable is already initialized.");
     assert(EINVAL != retval && "Attribute is invalid.");
     assert( (0 == retval
@@ -147,7 +144,7 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
            && "Unexpected error.");
     
     if (0 != retval) {
-        int const retv = pthread_mutex_destroy(&sem->mutex);
+        int const retv = pthread_mutex_destroy(&semaphore->mutex);
         assert(EBUSY != retv && "Mutex is in use.");
         assert(EINVAL != retv && "Mutex is invalid.");
         assert( (0 == retv
@@ -167,11 +164,11 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
 }
 
 
-int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
+int amp_raw_semaphore_finalize(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
     
-    int retval = pthread_cond_destroy(&sem->a_thread_can_pass);
+    int retval = pthread_cond_destroy(&semaphore->a_thread_can_pass);
     assert(EBUSY != retval && "Condition variable is in use.");
     assert(EINVAL != retval && "Condition varialbe is invalid.");
     assert(0 == retval && "Unexpected error.");
@@ -180,7 +177,7 @@ int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
         return retval;
     }
     
-    retval = pthread_mutex_destroy(&sem->mutex);
+    retval = pthread_mutex_destroy(&semaphore->mutex);
     assert(EBUSY != retval && "Mutex is in use.");
     assert(EINVAL != retval && "Mutex is invalid.");
     assert(0 == retval && "Unexpected error.");
@@ -193,12 +190,12 @@ int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
 }
 
 
-int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
+int amp_semaphore_wait(amp_semaphore_t semaphore)
 {    
-    assert(NULL != sem);
+    assert(NULL != semaphore);
     
     int retval = AMP_SUCCESS;
-    int const mlock_retval = pthread_mutex_lock(&sem->mutex);
+    int const mlock_retval = pthread_mutex_lock(&semaphore->mutex);
     assert(EINVAL != mlock_retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
     assert(EDEADLK != mlock_retval && "Calling thread already owns the mutex.");
     assert(0 == mlock_retval && "Unknown error code.");
@@ -209,9 +206,10 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
     }
     
     {
-        while ((0 == sem->count) && (AMP_SUCCESS == retval)) {
+        while ((0 == semaphore->count) && (AMP_SUCCESS == retval)) {
             /* The following asserts trigger on user programming errors. */
-            int const rv = pthread_cond_wait(&sem->a_thread_can_pass, &sem->mutex);
+            int const rv = pthread_cond_wait(&semaphore->a_thread_can_pass, 
+                                             &semaphore->mutex);
             assert(EINVAL != rv && "Condition variable or mutex is invalid or different mutexes are used for concurrent waits or mutex is not owned by calling thread.");
             assert(0 == rv && "Unexpected error.");
             
@@ -221,10 +219,10 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
         }
         
         if (AMP_SUCCESS == retval) {
-            --(sem->count);
+            --(semaphore->count);
         }
     }
-    int const munlock_retval = pthread_mutex_unlock(&sem->mutex);
+    int const munlock_retval = pthread_mutex_unlock(&semaphore->mutex);
     assert(EINVAL != munlock_retval && "Mutex is invalid.");
     assert(EPERM != munlock_retval && "Calling thread does not own mutex.");
     assert(0 == munlock_retval && "Unexpected error.");
@@ -238,13 +236,13 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
 }
 
 
-int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
+int amp_semaphore_signal(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
     
     int retval = AMP_SUCCESS;
     
-    int const mlock_retval = pthread_mutex_lock(&sem->mutex);
+    int const mlock_retval = pthread_mutex_lock(&semaphore->mutex);
     assert(EINVAL != mlock_retval && "Mutex is invalid or thread priority exceeds mutex priority ceiling.");
     assert(EDEADLK != mlock_retval && "Calling thread already owns the mutex.");
     assert(0 == mlock_retval && "Unexpected error.");
@@ -254,11 +252,11 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
         return mlock_retval;
     }
     {
-        if (sem->count < AMP_RAW_SEMAPHORE_COUNT_MAX) {
-            ++(sem->count); 
+        if (semaphore->count < (amp_semaphore_counter_t)AMP_RAW_SEMAPHORE_COUNT_MAX) {
+            ++(semaphore->count); 
             
             /* Could also signal after unlocking the mutex. Needs experimentation.*/
-            int const rv = pthread_cond_signal(&sem->a_thread_can_pass);
+            int const rv = pthread_cond_signal(&semaphore->a_thread_can_pass);
             assert(EINVAL != rv && "Condition variable is invalid.");
             assert(0 == rv && "Unexpected error.");
             
@@ -270,7 +268,7 @@ int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
             retval = EOVERFLOW;
         }
     }
-    int const munlock_retval = pthread_mutex_unlock(&sem->mutex);
+    int const munlock_retval = pthread_mutex_unlock(&semaphore->mutex);
     assert(EINVAL != munlock_retval && "Mutex is invalid.");
     assert(EPERM != munlock_retval && "Calling thread does not own mutex.");
     assert(0 == munlock_retval && "Unexpected error.");

@@ -35,11 +35,12 @@
 
 #include "amp_internal_platform_win_system_logical_processor_information.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 #include "amp_stddef.h"
 

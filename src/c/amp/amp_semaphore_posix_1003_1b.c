@@ -36,25 +36,18 @@
  * Shallow wrapper around POSIX 1003 1b semaphores.
  */
 
-#error Implementation is completely untested and haven't been compiled yet. Take care!
+/* #error Implementation is completely untested and hasn't been compiled yet. Take care!
+*/
+#include "amp_semaphore.h"
 
-
-#include "amp_raw_semaphore.h"
-
-/* Include NULL */
+#include <assert.h>
+#include <errno.h>
 #include <stddef.h>
 
-/* Include assert */
-#include <assert.h>
-
-/* Include errno, EINVAL, ENOSYS, ENOSPC, EPERM, EBUSY, EINTR, EDEADLK */
-#include <errno.h>
-
-/* Include _POSIX_SEMAPHORES (if supported) */
 #include <unistd.h>
 
-/* Include AMP_SUCCESS */
 #include "amp_stddef.h"
+#include "amp_raw_semaphore.h"
 
 
 
@@ -69,17 +62,24 @@
 
 
 
-int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                                     amp_semaphore_count_t init_count)
+int amp_raw_semaphore_init(amp_semaphore_t semaphore,
+                           amp_semaphore_counter_t init_count)
 {
-    assert(NULL != sem);
-    /* TODO: @todo Decide if to assert or no to assert. */
-    assert( ((amp_raw_semaphore_count_t)0 <= init_count 
-             && AMP_RAW_SEMAPHORE_COUNT_MAX >= init_count) 
-           && "init_count must be greater or equal to zero and lesser or equal to AMP_RAW_SEMAPHORE_COUNT_MAX.");
+    assert(NULL != semaphore);
+    assert((amp_semaphore_counter_t)0 <= init_count);
+    assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
     
+    if (NULL == semaphore
+        || (amp_semaphore_counter_t)0 > init_count
+        || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count) {
+        
+        return EINVAL;
+    }
+    
+    /* TODO: @todo Decide if side effect on errno is ok or not.
+     */
     errno = 0;
-    int const retval = sem_init(&sem->semaphore, 
+    int const retval = sem_init(&semaphore->semaphore, 
                                 0, /* Don't share semaphore between processes */
                                 (unsigned int)init_count);
     assert(EPERM != errno && "Process lacks privileges.");
@@ -96,12 +96,12 @@ int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
 
 
 
-int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
+int amp_raw_semaphore_finalize(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
     
     errno = 0;
-    int retval = sem_destroy(&sem->semaphore);
+    int retval = sem_destroy(&semaphore->semaphore);
     assert(EBUSY != errno && "Threads are still blocked on the semaphore.");
     assert((0 == retval || ENOSYS == errno)&& "Unexpected error.");
     
@@ -115,12 +115,12 @@ int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem)
 
 
 
-int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
+int amp_semaphore_wait(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
     
     errno = 0;
-    int retval = sem_wait(&sem->semaphore);
+    int retval = sem_wait(&semaphore->semaphore);
     assert(EINVAL != errno && "sem->semaphore is not a valid semaphore.");
     assert(EDEADLK != errno && "A deadlock was detected.");
     assert( (0 == retval
@@ -137,12 +137,12 @@ int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem)
 }
 
 
-int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem)
+int amp_semaphore_signal(amp_semaphore_t semaphore)
 {
-    assert(NULL != sem);
+    assert(NULL != semaphore);
     
     errno = 0;
-    int retval = sem_post(&sem->semaphore);
+    int retval = sem_post(&semaphore->semaphore);
     assert(EINVAL != errno && "sem->semaphore is not a valid semaphore.");
     assert((0 == retval || ENOSYS == errno || EOVERFLOW == errno) 
            && "Unexpected error.");

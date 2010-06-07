@@ -44,7 +44,7 @@
 
 #include <errno.h>
 #include <assert.h>
-
+#include <stddef.h>
 
 #include "amp_stddef.h"
 

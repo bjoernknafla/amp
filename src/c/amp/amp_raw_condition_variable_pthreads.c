@@ -39,12 +39,9 @@
 
 #include "amp_raw_condition_variable.h"
 
-
-
 #include <errno.h>
 #include <assert.h>
-
-
+#include <stddef.h>
 
 #include "amp_raw_mutex.h"
 

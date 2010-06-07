@@ -33,18 +33,11 @@
 /**
  * @file
  *
- * Shallow wrapper around a semaphore type of the platform which is only
- * used inside one process.
+ * Definition of amp_raw_semaphore_s containing backend dependencies.
  *
- * @attention Don't copy or move semaphores - copying and moving pointers to
+ * @attention Don't copy or move raw semaphores - copying and moving pointers to
  *            them is ok though you need to take care about ownership 
  *            management.
- * 
- * @attention Don't pass pointers to an invalid semaphore structure to any
- *            of the functions. Don't pass non-initialized (or after 
- *            initialization destroyed) semaphores to any function other than
- *            to amp_raw_semaphore_init. Don't pass initialized semaphores
- *            to amp_raw_semaphore_init.
  *
  * @attention ENOSYS might be returned by the functions if the POSIX 1003 1b 
  *            backend is used and the system doesn't support semaphores. Use 
@@ -60,12 +53,15 @@
  * TODO: @todo When adding a trywait function look if POSIX specifies EBUSY
  *             or EAGAIN as a return value to indicate that the thread would
  *             block.
+ *
+ * TODO: @todo Add a way to ensure that the calls to signal and wait are 
+ *             balanced before a semaphore is finalized or detroyed.
  */
 
 #ifndef AMP_amp_raw_semaphore_H
 #define AMP_amp_raw_semaphore_H
 
-
+#include <amp/amp_semaphore.h>
 
 #if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
 #   include <semaphore.h>
@@ -98,13 +94,13 @@ extern "C" {
      * and check if limits.h must be included or not.
      */
 #if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
-    typedef unsigned int amp_raw_semaphore_count_t;
+    typedef unsigned int amp_raw_semaphore_counter_t;
 #elif defined(AMP_USE_LIBDISPATCH_SEMAPHORES)
-    typedef long amp_raw_semaphore_count_t;
+    typedef long amp_raw_semaphore_counter_t;
 #elif defined(AMP_USE_PTHREADS)
-    typedef unsigned int amp_raw_semaphore_count_t;
+    typedef unsigned int amp_raw_semaphore_counter_t;
 #elif defined(AMP_USE_WINTHREADS)
-    typedef long amp_raw_semaphore_count_t;
+    typedef long amp_raw_semaphore_counter_t;
 #else
 #   error Unsupported platform.
 #endif
@@ -119,13 +115,13 @@ extern "C" {
      *             of semaphores allowed (not found yet).
      */
 #if defined(AMP_USE_POSIX_1003_1B_SEMAPHORES)
-#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(SEM_VALUE_MAX))
+#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_counter_t)(SEM_VALUE_MAX))
 #elif defined(AMP_USE_LIBDISPATCH_SEMAPHORES)
-#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(LONG_MAX)
+#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_counter_t)(LONG_MAX))
 #elif defined(AMP_USE_PTHREADS)
-#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(UINT_MAX))
+#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_counter_t)(LONG_MAX))
 #elif defined(AMP_USE_WINTHREADS)
-#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_count_t)(LONG_MAX))
+#   define AMP_RAW_SEMAPHORE_COUNT_MAX ((amp_raw_semaphore_counter_t)(LONG_MAX))
 #else
 #   error Unsupported platform.
 #endif
@@ -145,129 +141,30 @@ extern "C" {
 #elif defined(AMP_USE_PTHREADS)
         pthread_mutex_t mutex;
         pthread_cond_t a_thread_can_pass;
-        amp_raw_semaphore_count_t count;
+        amp_semaphore_counter_t count;
 #elif defined(AMP_USE_WINTHREADS)
         HANDLE semaphore_handle;
 #else
 #   error Unsupported platform.
 #endif
     };
-    typedef struct amp_raw_semaphore_s *amp_raw_semaphore_t;
     
     
     /**
-     * Initializes the semaphore pointed to by sem.
-     *
-     * @param init_count specifies the initial (non-negative and lesser or equal
-     *                   than AMP_RAW_SEMAPHORE_COUNT_MAX) semaphore counter 
-     *                   value.
-     *
-     * @return AMP_SUCCESS on successful initialization, otherwise:
-     *         ENOMEM if memory is insufficient.
-     *         EAGAIN if other system resources are insufficient.
-     *         ENOSPC if the POSIX 1003 1b backend is used and the system lacks
-     *         resources.
-     *         ENOSYS if the POSIX 1003 1b backend is used and the system 
-     *         doesn't support semaphores. Use another backend while compiling,
-     *         for example AMP_USE_WINTHREADS, or AMP_USE_PTHREADS and don't 
-     *         define AMP_USE_POSIX_1003_1b_SEMAPHORES.
-     *         Other error codes might be returned to signal errors while
-     *         initializing, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the semaphore is invalid, the init_count is negative or
-     *         greater than AMP_RAW_SEMAPHORE_COUNT_MAX.
-     *         EPERM if the process lacks privileges to initialize the 
-     *         semaphore.
-     *         EBUSY if the semaphore is already initialized.
-     *
-     * @attention sem mustn't be NULL.
-     *
-     * @attention Don't pass an initialized (and not finalized after 
-     *            initialization) semaphore to amp_raw_semaphore_init.
-     *
-     * @attention init_count mustn't be negative and mustn't be greater than
-     *            AMP_RAW_SEMAPHORE_COUNT_MAX.
-     *
-     * TODO: @todo See how many of the backend specific error codes are really
-     *             needed.
+     * Like amp_semaphore_create but does not allocate memory for the semaphore
+     * other than indirectly via the platform API to create one.
      */
     int amp_raw_semaphore_init(struct amp_raw_semaphore_s *sem,
-                               amp_raw_semaphore_count_t init_count);
+                               amp_semaphore_counter_t init_count);
+    
     
     /**
-     * Finalizes a semaphore and frees the resources it used.
-     *
-     * @return AMP_SUCCESS on successful finalization.
-     *         ENOSYS if the backend doesn't support semaphores.
-     *         Error codes might be returned to signal errors while
-     *         finalization, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EBUSY if threads block on the semaphore.
-     *         EINVAL if the semaphore isn't valid, e.g. not initialized.
-     *
-     * @attention sem mustn't be NULL.
-     *
-     * @attention Don't pass an uninitialized semaphore into 
-     *            amp_raw_semaphore_finalize.
-     *
-     * @attention Don't call on a blocked semaphore, otherwise behavior is 
-     *            undefined.
+     * Like amp_semaphore_destroy but does not free memory for the amp semaphore
+     * other than indirectly via the platform API to destroy one.
      */
     int amp_raw_semaphore_finalize(struct amp_raw_semaphore_s *sem);
     
-    /**
-     * If the semaphore counter is not zero decrements the counter and pass the
-     * semaphore. If the counter is zero the thread blocks until the semaphore
-     * counter becomes greater than zero again and its the threads turn to 
-     * decrease and pass it.
-     *
-     * @return AMP_SUCCESS after waited successful on the semaphore.
-     *         EINTR if the semaphore was interrupted by a signal when using a
-     *         backend that supports signal interruption.
-     *         ENOSYS if the backend doesn't support semaphores.
-     *         EOVERFLOW if the semaphore counter value exceeds 
-     *         Error codes might be returned to signal errors while
-     *         waiting, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EDEADLK if a deadlock condition was detected.
-     *         EINVAL if the semaphore isn't valid, e.g. not initialized.
-     *         EPERM if the process lacks privileges to wait on the 
-     *         semaphore.
-     *
-     * @attention sem mustn't be NULL.
-     *
-     * @attention Based on the backend amp_raw_semaphores might or might not 
-     *            react to / are or are not usable with signals. Set the threads
-     *            signal mask to not let any signals through.
-     *
-     * TODO: @todo Decide if os signals should be able to interrupt the waiting.
-     */
-    int amp_raw_semaphore_wait(struct amp_raw_semaphore_s *sem);
     
-    /**
-     * Increments the semaphore counter by one and if threads are blocked on the
-     * semaphore one of them is woken up and gets the chance to decrease the 
-     * counter and pass the semaphore.
-     *
-     * @return AMP_SUCCESS after succesful signaling the semaphore.
-     *         ENOSYS if the backend doesn't support semaphores.
-     *         EOVERFLOW or EAGAIN if the semaphore counter value exceeds 
-     *           AMP_RAW_SEMAPHORE_COUNT_MAX .
-     *         Error codes might be returned to signal errors while
-     *         signaling, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the semaphore isn't valid, e.g. not initialized.
-     *         EDEADLK if a deadlock condition is detected.
-     *         EPERM if the process lacks privileges to signal the 
-     *         semaphore.
-     *
-     * @attention sem mustn't be NULL.
-     */
-    int amp_raw_semaphore_signal(struct amp_raw_semaphore_s *sem);
     
     
     

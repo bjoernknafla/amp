@@ -47,12 +47,11 @@
 
 #include "amp_raw_platform.h"
 
-#import <foundation/foundation.h>
-
-
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
 
+#import <foundation/foundation.h>
 
 #include "amp_stddef.h"
 

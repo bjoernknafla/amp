@@ -40,6 +40,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
 
 #include "amp_stddef.h"
 #include "amp_thread.h"

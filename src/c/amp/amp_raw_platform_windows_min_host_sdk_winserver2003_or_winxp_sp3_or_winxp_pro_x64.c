@@ -35,10 +35,9 @@
 
 #include "amp_raw_platform.h"
 
-
 #include <errno.h>
 #include <assert.h>
-
+#include <stddef.h>
 
 #include "amp_stddef.h"
 #include "amp_internal_platform_win_system_info.h"
