@@ -167,7 +167,7 @@ int amp_barrier_wait(peak_barrier_t barrier)
     }
     {
         while (amp_internal_counting_raw_barrier_state != barrier->state) {
-            return_code = amp_raw_condition_variable_wait(&barrier->counting_condition,
+            return_code = amp_condition_variable_wait(&barrier->counting_condition,
                                                      &barrier->count_mutex);
             assert(AMP_SUCCESS == return_code);
             if (AMP_SUCCESS != return_code) {
@@ -181,9 +181,9 @@ int amp_barrier_wait(peak_barrier_t barrier)
         
         if (current_count != 0) {
             while (amp_internal_waking_raw_barrier_state != barrier->state) {
-                int const ec1 = amp_raw_condition_variable_signal(&barrier->counting_condition);
+                int const ec1 = amp_condition_variable_signal(&barrier->counting_condition);
                 assert(AMP_SUCCESS == ec1);
-                int const ec2 = amp_raw_condition_variable_wait(&barrier->waking_condition);
+                int const ec2 = amp_condition_variable_wait(&barrier->waking_condition);
                 assert(AMP_SUCCESS == ec2);
                 if (AMP_SUCCESS != ec1) {
                     return_code = ec1;
@@ -201,7 +201,7 @@ int amp_barrier_wait(peak_barrier_t barrier)
         ++(barrier->count);
         
         if (barrier->count != barrier->init_count) {
-            int const ec = amp_raw_condition_variable_signal(&barrier->waking_condition);
+            int const ec = amp_condition_variable_signal(&barrier->waking_condition);
             assert(AMP_SUCCESS == ec);
             if (AMP_SUCCESS != ec) {
                 return_code = ec;
@@ -209,7 +209,7 @@ int amp_barrier_wait(peak_barrier_t barrier)
             
         } else {
             barrier->state = amp_internal_counting_raw_barrier_state;
-            int const ec = amp_raw_condition_variable_signal(&barrier->counting_condition);
+            int const ec = amp_condition_variable_signal(&barrier->counting_condition);
             assert(AMP_SUCCESS == ec);
             if (AMP_SUCCESS != ec) {
                 return_code = ec;

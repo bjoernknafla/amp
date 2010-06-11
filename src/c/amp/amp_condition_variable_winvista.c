@@ -40,17 +40,19 @@
 
 #error Untested
 
-#inlude "amp_raw_condition_variable.h"
+#include "amp_condition_variable.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
 
+#include "amp_stddef.h"
+#include "amp_mutex.h"
 #include "amp_raw_mutex.h"
+#include "amp_raw_condition_variable.h"
 
 
-
-int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
+int amp_raw_condition_variable_init(amp_condition_variable_t cond)
 {
     assert(NULL != cond);
     
@@ -66,7 +68,7 @@ int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
 
 
 
-int amp_raw_condition_variable_finalize(amp_raw_condition_variable_t cond)
+int amp_raw_condition_variable_finalize(amp_condition_variable_t cond)
 {
     assert(NULL != cond);
     
@@ -81,7 +83,7 @@ int amp_raw_condition_variable_finalize(amp_raw_condition_variable_t cond)
 
 
 
-int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
+int amp_condition_variable_broadcast(amp_condition_variable_t cond)
 {
     assert(NULL != cond);
     
@@ -93,7 +95,7 @@ int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
 
 
 
-int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
+int amp_condition_variable_signal(amp_condition_variable_t cond)
 {
     assert(NULL != cond);
     
@@ -105,8 +107,8 @@ int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
 
 
 
-int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
-                                    amp_mutex_t mutex)
+int amp_condition_variable_wait(amp_condition_variable_t cond,
+                                amp_mutex_t mutex)
 {
     assert(NULL != cond);
     assert(NULL != mutex);

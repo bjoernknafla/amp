@@ -139,7 +139,7 @@ int amp_barrier_wait(amp_barrier_t barrier)
         if (current_count == 0) {
             ++(barrier->period);
             barrier->count = barrier->init_count;
-            return_code = amp_raw_condition_variable_broadcast(&barrier->waking_condition);
+            return_code = amp_condition_variable_broadcast(&barrier->waking_condition);
             if (AMP_SUCCESS == return_code) {
                 return_code = AMP_BARRIER_SERIAL_THREAD;
             }
@@ -148,8 +148,8 @@ int amp_barrier_wait(amp_barrier_t barrier)
             amp_barrier_count_t waiting_period = barrier->period;
             
             while (waiting_period == barrier->period) {
-                return_code = amp_raw_condition_variable_wait(&barrier->waking_condition,
-                                                       &barrier->count_mutex);
+                return_code = amp_condition_variable_wait(&barrier->waking_condition,
+                                                          &barrier->count_mutex);
                 if (AMP_SUCCESS != return_code) {
                     break;
                 }

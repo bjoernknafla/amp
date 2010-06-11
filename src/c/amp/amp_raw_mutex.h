@@ -37,7 +37,7 @@
  * stack though platform specific headers will be included.
  *
  * @attention Don't copy a variable of type amp_raw_mutex_s - copying a pointer
- *            to this type or a amp_raw_mutex_t variable is ok though.
+ *            to this type is ok though.
  */
 
 
