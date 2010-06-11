@@ -48,6 +48,8 @@
 #ifndef AMP_amp_raw_condition_variable_H
 #define AMP_amp_raw_condition_variable_H
 
+#include <amp/amp_mutex.h>
+
 
 
 #if defined(AMP_USE_PTHREADS)
@@ -74,8 +76,6 @@
 extern "C" {
 #endif
 
-    /* Forward declaration */
-    struct amp_raw_mutex_s;
     
     /**
      * Don't copy and don't move, pointer can be copied and moved but ownership
@@ -208,7 +208,7 @@ extern "C" {
      *         thread.
      */
     int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
-                                        struct amp_raw_mutex_s *mutex);
+                                        amp_mutex_t mutex);
     
     
 

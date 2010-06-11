@@ -44,18 +44,19 @@
  */
 
 
-#include "amp_raw_mutex.h"
+#include "amp_mutex.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_raw_mutex.h"
 #include "amp_internal_winthreads_critical_section_config.h"
 
 
 
-int amp_raw_mutex_init(amp_raw_mutex_t mutex)
+int amp_raw_mutex_init(amp_mutex_t mutex)
 {
     /*
      * Adding a field to amp_raw_mutex_s to falg if the data structure is
@@ -87,7 +88,7 @@ int amp_raw_mutex_init(amp_raw_mutex_t mutex)
 
 
 
-int amp_raw_mutex_finalize(amp_raw_mutex_t mutex)
+int amp_raw_mutex_finalize(amp_mutex_t mutex)
 {
     assert(NULL != mutex);
     
@@ -133,7 +134,7 @@ int amp_raw_mutex_finalize(amp_raw_mutex_t mutex)
 
 
 
-int amp_raw_mutex_lock(amp_raw_mutex_t mutex)
+int amp_mutex_lock(amp_mutex_t mutex)
 {
     assert(NULL != mutex);
     
@@ -181,7 +182,7 @@ int amp_raw_mutex_lock(amp_raw_mutex_t mutex)
 
 
 
-int amp_raw_mutex_trylock(amp_raw_mutex_t mutex)
+int amp_mutex_trylock(amp_mutex_t mutex)
 {
     assert(NULL != mutex);
     
@@ -216,7 +217,7 @@ int amp_raw_mutex_trylock(amp_raw_mutex_t mutex)
 
 
 
-int amp_raw_mutex_unlock(amp_raw_mutex_t mutex)
+int amp_mutex_unlock(amp_mutex_t mutex)
 {
     assert(NULL != mutex);
 

@@ -15,6 +15,8 @@
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_mutex.h"
+
 
 
 #if !defined(AMP_USE_GENERIC_SIGNAL_BARRIERS)
@@ -105,12 +107,12 @@ int amp_raw_barrier_finalize(struct amp_raw_barrier_s* barrier)
     
 #ifndef(NDEBUG)
     /* Weak check in debug mode that no threads wait for the barrier. */
-    errc = amp_raw_mutex_lock(&barrier->count_mutex);
+    errc = amp_mutex_lock(&barrier->count_mutex);
     assert(AMP_SUCCESS == errc);
     {
         barrier_count = barrier->count;
     }
-    errc = amp_raw_mutex_unlock(&barrier->count_mutex);
+    errc = amp_mutex_unlock(&barrier->count_mutex);
     assert(AMP_SUCCESS == errc);
     
     if (barrier_count != barrier->init_count) {
@@ -158,7 +160,7 @@ int amp_barrier_wait(peak_barrier_t barrier)
         return EINVAL;
     }
     
-    int return_code = amp_raw_mutex_lock(&barrier->count_mutex);
+    int return_code = amp_mutex_lock(&barrier->count_mutex);
     assert(AMP_SUCCESS == return_code);
     if (AMP_SUCCESS != return_code) {
         return return_code;
@@ -215,7 +217,7 @@ int amp_barrier_wait(peak_barrier_t barrier)
         }
     }
 unlock_and_out:
-    int const ec = amp_raw_mutex_unlock(&barrier->count_mutex);
+    int const ec = amp_mutex_unlock(&barrier->count_mutex);
     assert(AMP_SUCCESS == ec);
     
     

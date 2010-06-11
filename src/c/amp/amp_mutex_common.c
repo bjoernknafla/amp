@@ -33,91 +33,75 @@
 /**
  * @file
  *
- * Shallow wrapper around Windows Vista condition variables.
- *
- * TODO: @todo Test on Windows Vista system.
+ * Implementation shared by all amp mutex backends.
  */
 
-#error Untested
-
-#inlude "amp_raw_condition_variable.h"
+#include "amp_mutex.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
 
+#include "amp_stddef.h"
 #include "amp_raw_mutex.h"
 
 
-
-int amp_raw_condition_variable_init(amp_raw_condition_variable_t cond)
+int amp_mutex_create(amp_mutex_t *mutex,
+                     void *allocator_context,
+                     amp_alloc_func_t alloc_func,
+                     amp_dealloc_func_t dealloc_func)
 {
-    assert(NULL != cond);
-    
-    if (NULL == cond) {
-        return EINVAL;
-    }
-    
-    /* No value returned. */
-    InitializeConditionVariable(&cond->cond);
-    
-    return AMP_SUCCESS;
-}
-
-
-
-int amp_raw_condition_variable_finalize(amp_raw_condition_variable_t cond)
-{
-    assert(NULL != cond);
-    
-    if (NULL == cond) {
-        return EINVAL;
-    }
-    
-    /* Nothing to do... */
-    
-    return AMP_SUCCESS;
-}
-
-
-
-int amp_raw_condition_variable_broadcast(amp_raw_condition_variable_t cond)
-{
-    assert(NULL != cond);
-    
-    /* No value returned. */
-    WakeAllConditionVariable(&cond->cond);
-    
-    return AMP_SUCCESS;
-}
-
-
-
-int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
-{
-    assert(NULL != cond);
-    
-    /* No value returned. */
-    WakeConditionVariable(&cond->cond);
-    
-    return AMP_SUCCESS;
-}
-
-
-
-int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
-                                    amp_mutex_t mutex)
-{
-    assert(NULL != cond);
     assert(NULL != mutex);
+    assert(NULL != alloc_func);
+    assert(NULL != dealloc_func);
     
-    BOOL retval = SleepConditionVariable(&cond->cond, &mutex->critical_section, INFINITE);
-    assert(FALSE != retval && "Unexpected error.");
+    if (NULL == mutex
+        || NULL == alloc_func
+        || NULL == dealloc_func) {
+        
+        return EINVAL;
+    }
     
-    /* GetLastError has more infos in case of error. */
+    amp_mutex_t tmp_mutex = (amp_mutex_t)alloc_func(allocator_context,
+                                                    sizeof(struct amp_raw_mutex_s));
+    if (NULL == tmp_mutex) {
+        return ENOMEM;
+    }
+ 
+    int const retval = amp_raw_mutex_init(tmp_mutex);
+    if (AMP_SUCCESS == retval) {
+        *mutex = tmp_mutex;
+    } else {
+        dealloc_func(allocator_context,
+                     tmp_mutex);
+        tmp_mutex = NULL;
+    }
     
-    return AMP_SUCCESS;
+    return retval;
 }
 
+
+
+int amp_mutex_destroy(amp_mutex_t mutex,
+                      void *allocator_context,
+                      amp_dealloc_func_t dealloc_func)
+{
+    assert(NULL != mutex);
+    assert(NULL != dealloc_func);
+    
+    if (NULL == mutex
+        || NULL == dealloc_func) {
+        
+        return EINVAL;
+    }
+    
+    int const retval = amp_raw_mutex_finalize(mutex);
+    if (AMP_SUCCESS == retval) {
+        dealloc_func(allocator_context,
+                     mutex);
+    }
+    
+    return retval;
+}
 
 

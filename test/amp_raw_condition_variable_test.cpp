@@ -51,11 +51,10 @@
 
 
 #include <amp/amp_stddef.h>
-#include <amp/amp_raw_mutex.h>
-#include <amp/amp_semaphore.h>
 #include <amp/amp_thread.h>
 #include <amp/amp_thread_array.h>
-
+#include <amp/amp_semaphore.h>
+#include <amp/amp_mutex.h>
 
 
 namespace {
@@ -106,7 +105,7 @@ SUITE(amp_raw_condition_variable)
         int const state_awake_after_waiting_flag = 312;
         
         struct mutex_with_cond_s {
-            struct amp_raw_mutex_s mutex;
+            amp_mutex_t mutex;
             struct amp_raw_condition_variable_s cond;
             amp_semaphore_t ready_for_signal_sem;
             int state;
@@ -117,7 +116,7 @@ SUITE(amp_raw_condition_variable)
         {
             struct mutex_with_cond_s *context = static_cast<struct mutex_with_cond_s*>(ctxt);
             
-            int retval = amp_raw_mutex_lock(&context->mutex);
+            int retval = amp_mutex_lock(context->mutex);
             assert(AMP_SUCCESS == retval);
             
             context->state = state_waiting_flag;
@@ -126,12 +125,12 @@ SUITE(amp_raw_condition_variable)
             assert(AMP_SUCCESS == retval);
             
             retval = amp_raw_condition_variable_wait(&context->cond, 
-                                                    &context->mutex);
+                                                    context->mutex);
             
             context->state = state_awake_after_waiting_flag;
             
             
-            retval = amp_raw_mutex_unlock(&context->mutex);
+            retval = amp_mutex_unlock(context->mutex);
             assert(AMP_SUCCESS == retval);
         }
         
@@ -144,7 +143,10 @@ SUITE(amp_raw_condition_variable)
         
         
         
-        int retval = amp_raw_mutex_init(&mwc.mutex);
+        int retval = amp_mutex_create(&mwc.mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_raw_condition_variable_init(&mwc.cond);
@@ -177,13 +179,13 @@ SUITE(amp_raw_condition_variable)
         
         CHECK_EQUAL(state_waiting_flag, mwc.state);
         
-        retval = amp_raw_mutex_lock(&mwc.mutex);
+        retval = amp_mutex_lock(mwc.mutex);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_raw_condition_variable_signal(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_unlock(&mwc.mutex);
+        retval = amp_mutex_unlock(mwc.mutex);
         assert(AMP_SUCCESS == retval);
      
         retval = amp_thread_join_and_destroy(thread,
@@ -203,7 +205,9 @@ SUITE(amp_raw_condition_variable)
         retval = amp_raw_condition_variable_finalize(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_finalize(&mwc.mutex);
+        retval = amp_mutex_destroy(mwc.mutex,
+                                   NULL,
+                                   amp_free);
         assert(AMP_SUCCESS == retval);
     }
     
@@ -215,7 +219,10 @@ SUITE(amp_raw_condition_variable)
         
         mwc.state = state_initialized_flag;
         
-        int retval = amp_raw_mutex_init(&mwc.mutex);
+        int retval = amp_mutex_create(&mwc.mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_raw_condition_variable_init(&mwc.cond);
@@ -261,14 +268,14 @@ SUITE(amp_raw_condition_variable)
             retval = amp_raw_condition_variable_signal(&mwc.cond);
             CHECK_EQUAL(AMP_SUCCESS, retval);
             
-            int rv = amp_raw_mutex_lock(&mwc.mutex);
+            int rv = amp_mutex_lock(mwc.mutex);
             assert(AMP_SUCCESS == rv);
             
             if (state_awake_after_waiting_flag == mwc.state) {
                 waiting_thread_is_awake = true;
             }
             
-            rv = amp_raw_mutex_unlock(&mwc.mutex);
+            rv = amp_mutex_unlock(mwc.mutex);
             assert(AMP_SUCCESS == rv);
             
             // Give the waiting thread a greater chance to get the mutex.
@@ -295,7 +302,9 @@ SUITE(amp_raw_condition_variable)
         retval = amp_raw_condition_variable_finalize(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_finalize(&mwc.mutex);
+        retval = amp_mutex_destroy(mwc.mutex,
+                                   NULL,
+                                   amp_free);
         assert(AMP_SUCCESS == retval);
     }
     
@@ -304,7 +313,7 @@ SUITE(amp_raw_condition_variable)
     namespace {
         
         struct one_cond_wait_threads_common_context_s {
-            struct amp_raw_mutex_s mutex;
+            amp_mutex_t mutex;
             struct amp_raw_condition_variable_s cond;
             amp_semaphore_t ready_for_signal_sem;
             amp_semaphore_t thread_awake_sem;
@@ -324,7 +333,7 @@ SUITE(amp_raw_condition_variable)
                 static_cast<struct one_cond_wait_thread_context_s*>(ctxt);
             
             
-            int retval = amp_raw_mutex_lock(&context->common->mutex);
+            int retval = amp_mutex_lock(context->common->mutex);
             assert(AMP_SUCCESS == retval);
             
             context->state = state_waiting_flag;
@@ -343,14 +352,14 @@ SUITE(amp_raw_condition_variable)
             }
             
             retval = amp_raw_condition_variable_wait(&context->common->cond, 
-                                                     &context->common->mutex);
+                                                     context->common->mutex);
             assert(AMP_SUCCESS == retval);
             context->state = state_awake_after_waiting_flag;
             
             retval = amp_semaphore_signal(context->common->thread_awake_sem);
             assert(AMP_SUCCESS == retval);
             
-            retval = amp_raw_mutex_unlock(&context->common->mutex);
+            retval = amp_mutex_unlock(context->common->mutex);
             assert(AMP_SUCCESS == retval);
         }
         
@@ -362,7 +371,10 @@ SUITE(amp_raw_condition_variable)
             :   threads_common_context()
             ,   thread_contexts(NULL)
             {
-                int retval = amp_raw_mutex_init(&threads_common_context.mutex);
+                int retval = amp_mutex_create(&threads_common_context.mutex,
+                                              NULL,
+                                              amp_malloc,
+                                              amp_free);
                 assert(AMP_SUCCESS == retval);
                 
                 retval = amp_raw_condition_variable_init(&threads_common_context.cond);
@@ -414,7 +426,9 @@ SUITE(amp_raw_condition_variable)
                 retval = amp_raw_condition_variable_finalize(&threads_common_context.cond);
                 assert(AMP_SUCCESS == retval);
                 
-                retval = amp_raw_mutex_finalize(&threads_common_context.mutex);
+                retval = amp_mutex_destroy(threads_common_context.mutex,
+                                           NULL,
+                                           amp_free);
                 assert(AMP_SUCCESS == retval);
             }
             
@@ -481,13 +495,13 @@ SUITE(amp_raw_condition_variable)
         // Signal while owning the mutex
         for (std::size_t i = 0; i < thread_count/2; ++i) {
             
-            retval = amp_raw_mutex_lock(&threads_common_context.mutex);
+            retval = amp_mutex_lock(threads_common_context.mutex);
             assert(AMP_SUCCESS == retval);
             {
                 retval = amp_raw_condition_variable_signal(&threads_common_context.cond);
                 CHECK_EQUAL(AMP_SUCCESS, retval);
             }
-            retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
+            retval = amp_mutex_unlock(threads_common_context.mutex);
             assert(AMP_SUCCESS == retval);
             
             retval = amp_semaphore_wait(threads_common_context.thread_awake_sem);
@@ -534,7 +548,7 @@ SUITE(amp_raw_condition_variable)
                 
                 ++signal_count;
                 
-                retval = amp_raw_mutex_lock(&threads_common_context.mutex);
+                retval = amp_mutex_lock(threads_common_context.mutex);
                 assert(AMP_SUCCESS == retval);
                 {
                     
@@ -559,7 +573,7 @@ SUITE(amp_raw_condition_variable)
                     }
                 
                 }
-                retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
+                retval = amp_mutex_unlock(threads_common_context.mutex);
                 assert(AMP_SUCCESS == retval);
                 
                 // Give the waiting thread a greater chance to get the mutex.
@@ -611,7 +625,10 @@ SUITE(amp_raw_condition_variable)
         
         struct mutex_with_cond_s mwc;
         
-        int retval = amp_raw_mutex_init(&mwc.mutex);
+        int retval = amp_mutex_create(&mwc.mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_raw_condition_variable_init(&mwc.cond);
@@ -644,13 +661,13 @@ SUITE(amp_raw_condition_variable)
         
         CHECK_EQUAL(state_waiting_flag, mwc.state);
         
-        retval = amp_raw_mutex_lock(&mwc.mutex);
+        retval = amp_mutex_lock(mwc.mutex);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_raw_condition_variable_broadcast(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_unlock(&mwc.mutex);
+        retval = amp_mutex_unlock(mwc.mutex);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_thread_join_and_destroy(thread,
@@ -670,7 +687,9 @@ SUITE(amp_raw_condition_variable)
         retval = amp_raw_condition_variable_finalize(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_finalize(&mwc.mutex);
+        retval = amp_mutex_destroy(mwc.mutex,
+                                   NULL,
+                                   amp_free);
         assert(AMP_SUCCESS == retval); 
     }
     
@@ -682,7 +701,10 @@ SUITE(amp_raw_condition_variable)
         
         mwc.state = state_initialized_flag;
         
-        int retval = amp_raw_mutex_init(&mwc.mutex);
+        int retval = amp_mutex_create(&mwc.mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_raw_condition_variable_init(&mwc.cond);
@@ -728,14 +750,14 @@ SUITE(amp_raw_condition_variable)
             retval = amp_raw_condition_variable_broadcast(&mwc.cond);
             CHECK_EQUAL(AMP_SUCCESS, retval);
             
-            int rv = amp_raw_mutex_lock(&mwc.mutex);
+            int rv = amp_mutex_lock(mwc.mutex);
             assert(AMP_SUCCESS == rv);
             
             if (state_awake_after_waiting_flag == mwc.state) {
                 waiting_thread_is_awake = true;
             }
             
-            rv = amp_raw_mutex_unlock(&mwc.mutex);
+            rv = amp_mutex_unlock(mwc.mutex);
             assert(AMP_SUCCESS == rv);
             
             // Give the waiting thread a greater chance to get the mutex.
@@ -762,7 +784,9 @@ SUITE(amp_raw_condition_variable)
         retval = amp_raw_condition_variable_finalize(&mwc.cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_finalize(&mwc.mutex);
+        retval = amp_mutex_destroy(mwc.mutex,
+                                   NULL,
+                                   amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -771,7 +795,7 @@ SUITE(amp_raw_condition_variable)
     namespace {
         
         struct multi_cond_wait_threads_common_context_s {
-            struct amp_raw_mutex_s mutex;
+            amp_mutex_t mutex;
             struct amp_raw_condition_variable_s cond;
             amp_semaphore_t all_threads_about_to_wait_for_cond_sem;
             std::size_t thread_count;
@@ -796,7 +820,7 @@ SUITE(amp_raw_condition_variable)
             for (std::size_t i = 0; i < context->common->wait_cycles_count; ++i) {
             
             
-                int retval = amp_raw_mutex_lock(&context->common->mutex);
+                int retval = amp_mutex_lock(context->common->mutex);
                 assert(AMP_SUCCESS == retval);
                 
                 context->state = state_waiting_flag;
@@ -820,11 +844,11 @@ SUITE(amp_raw_condition_variable)
                 }
                 
                 retval = amp_raw_condition_variable_wait(&context->common->cond, 
-                                                         &context->common->mutex);
+                                                         context->common->mutex);
                 assert(AMP_SUCCESS == retval);
                 context->state = state_awake_after_waiting_flag;
                 
-                retval = amp_raw_mutex_unlock(&context->common->mutex);
+                retval = amp_mutex_unlock(context->common->mutex);
                 assert(AMP_SUCCESS == retval);
                 
                 retval = amp_semaphore_wait(context->let_thread_proceed_to_next_wait_cycle_sem);
@@ -841,7 +865,10 @@ SUITE(amp_raw_condition_variable)
             :   threads_common_context()
             ,   thread_contexts(NULL)
             {
-                int retval = amp_raw_mutex_init(&threads_common_context.mutex);
+                int retval = amp_mutex_create(&threads_common_context.mutex,
+                                              NULL,
+                                              amp_malloc,
+                                              amp_free);
                 assert(AMP_SUCCESS == retval);
                 
                 retval = amp_raw_condition_variable_init(&threads_common_context.cond);
@@ -899,7 +926,9 @@ SUITE(amp_raw_condition_variable)
                 retval = amp_raw_condition_variable_finalize(&threads_common_context.cond);
                 assert(AMP_SUCCESS == retval);
                 
-                retval = amp_raw_mutex_finalize(&threads_common_context.mutex);
+                retval = amp_mutex_destroy(threads_common_context.mutex,
+                                           NULL,
+                                           amp_free);
                 assert(AMP_SUCCESS == retval);
             }
             
@@ -971,13 +1000,13 @@ SUITE(amp_raw_condition_variable)
         
 
         // Broadcast from within the mutex.    
-        retval = amp_raw_mutex_lock(&threads_common_context.mutex);
+        retval = amp_mutex_lock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         {
             retval = amp_raw_condition_variable_broadcast(&threads_common_context.cond);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
-        retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
+        retval = amp_mutex_unlock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         
         
@@ -1025,7 +1054,7 @@ SUITE(amp_raw_condition_variable)
             retval = amp_raw_condition_variable_broadcast(&threads_common_context.cond);
             CHECK_EQUAL(AMP_SUCCESS, retval);
             
-            retval = amp_raw_mutex_lock(&threads_common_context.mutex);
+            retval = amp_mutex_lock(threads_common_context.mutex);
             assert(AMP_SUCCESS == retval);
             {
                 
@@ -1046,7 +1075,7 @@ SUITE(amp_raw_condition_variable)
                 }
                 
             }
-            retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
+            retval = amp_mutex_unlock(threads_common_context.mutex);
             assert(AMP_SUCCESS == retval);
             
             // Give the waiting thread a greater chance to get the mutex.
@@ -1143,7 +1172,7 @@ SUITE(amp_raw_condition_variable)
         
         // Signal cond var twice from inside mutex.
         std::size_t const first_wait_cycle_signal_count = 2;
-        retval = amp_raw_mutex_lock(&threads_common_context.mutex);
+        retval = amp_mutex_lock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         {
             retval = amp_raw_condition_variable_signal(&threads_common_context.cond);
@@ -1152,7 +1181,7 @@ SUITE(amp_raw_condition_variable)
             retval = amp_raw_condition_variable_signal(&threads_common_context.cond);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
-        retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
+        retval = amp_mutex_unlock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         
         // Wait until both signaled threads are truly awake.
@@ -1174,13 +1203,13 @@ SUITE(amp_raw_condition_variable)
         
         
         // Broadcast from within the mutex. 
-        retval = amp_raw_mutex_lock(&threads_common_context.mutex);
+        retval = amp_mutex_lock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         {
             retval = amp_raw_condition_variable_broadcast(&threads_common_context.cond);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
-        retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
+        retval = amp_mutex_unlock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         
         // Let all threads proceed to the next wait cycle.
@@ -1231,7 +1260,7 @@ SUITE(amp_raw_condition_variable)
             retval = amp_raw_condition_variable_broadcast(&threads_common_context.cond);
             CHECK_EQUAL(AMP_SUCCESS, retval);
             
-            retval = amp_raw_mutex_lock(&threads_common_context.mutex);
+            retval = amp_mutex_lock(threads_common_context.mutex);
             assert(AMP_SUCCESS == retval);
             {
                 
@@ -1252,7 +1281,7 @@ SUITE(amp_raw_condition_variable)
                 }
                 
             }
-            retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
+            retval = amp_mutex_unlock(threads_common_context.mutex);
             assert(AMP_SUCCESS == retval);
             
             // Give the waiting thread a greater chance to get the mutex.
@@ -1295,13 +1324,13 @@ SUITE(amp_raw_condition_variable)
         // Signal cond var twice from inside mutex.
         std::size_t const third_wait_cycle_signal_count = 1;
         
-        retval = amp_raw_mutex_lock(&threads_common_context.mutex);
+        retval = amp_mutex_lock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         {
             retval = amp_raw_condition_variable_signal(&threads_common_context.cond);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
-        retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
+        retval = amp_mutex_unlock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         
         // Wait until both signaled threads are truly awake.
@@ -1323,13 +1352,13 @@ SUITE(amp_raw_condition_variable)
         
         
         // Broadcast from within the mutex. 
-        retval = amp_raw_mutex_lock(&threads_common_context.mutex);
+        retval = amp_mutex_lock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         {
             retval = amp_raw_condition_variable_broadcast(&threads_common_context.cond);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
-        retval = amp_raw_mutex_unlock(&threads_common_context.mutex);
+        retval = amp_mutex_unlock(threads_common_context.mutex);
         assert(AMP_SUCCESS == retval);
         
 

@@ -33,62 +33,18 @@
 /**
  * @file
  *
- * Simple non-recursive mutex and a shallow wrapper around the platforms mutex 
- * or critical section primitive.
- *
- * amp_raw_mutex guarantees that only one thread can lock it at a time.
- * amp_raw_mutex offers a way to synchronize access to a so called critical
- * section wrapped in a mutex lock and unlock operation. As only one thread
- * can be inside the critical section at a time, all shared resources
- * accessed are protected from race conditions that could happen if another
- * thread would run the instructions of the critical section concurrently.
- *
- * The thread locking the mutex attains its ownership and needs to unlock
- * it, too. As long as a thread holds the mutex lock no other thread can
- * lock it and will block and wait on the mutex to be unlocked. The moment 
- * the mutex is unlocked from its previous holder thread one thread that is 
- * blocked on the mutex will be woken up and it - or anothread that slips 
- * in calling lock - gets the lock. If the just woken up thread doesn't get 
- * the lock it will be blocked and waits on the lock again.
- * Which thread actually attain the lock is non-deterministic and platform
- * dependent. Don't rely on any order.
- * 
- * Before using a mutex it must be initialized via amp_raw_mutex_init once.
- * Don't forget to finalize the mutex and free its memory and OS internal
- * resources by calling amp_raw_mutex_finalize at the end of the mutex
- * lifetime.
- *
- * All functions working on mutexes return error codes. Check these return
- * codes and don't enter a critical section or use a mutex if the return
- * value isn't AMP_SUCCESS.
- *
+ * Backend specific definition of amp mutex to allow placing a mutex on the 
+ * stack though platform specific headers will be included.
  *
  * @attention Don't copy a variable of type amp_raw_mutex_s - copying a pointer
  *            to this type or a amp_raw_mutex_t variable is ok though.
- *
- * @attention If the thread already holding the mutex lock calls
- *            amp_raw_mutex_lock recursively the behavior is undefined
- *            and might lead to a deadlock.
- *
- * @attention If a thread that isn't holding a mutex lock tries to unlock the
- *            mutex behavior is undefined.
- *
- * @attention If a invalid mutex is passed to any function behavior is 
- *            undefined. More specifically, never pass an uninitialized (or 
- *            after initialization finalized) mutex to any function other than
- *            amp_raw_mutex_init. Never pass an initialized mutex to 
- *            amp_raw_mutex_init.
- *
- *
- * TODO: @todo Rework the documentation to be more concise. 
- *
- * TODO: @todo At least on Windows store the locking threads id to detect
- *             if wrong thread tries to unlock in debug mode.
  */
 
 
 #ifndef AMP_amp_raw_mutex_H
 #define AMP_amp_raw_mutex_H
+
+#include <amp/amp_mutex.h>
 
 
 
@@ -113,7 +69,10 @@ extern "C" {
 
     /**
      * Simple non-recursive mutex to synchronization inside the owning process.
-     * No inter-process snycing supported.
+     * No inter-process syncing supported.
+     *
+     * Treat definition and size as opaque as these can change without a 
+     * warning in future versions of amp.
      *
      * @attention Don't copy or move an amp_raw_mutex instance or behavior is
      *            undefined - use pointers to an amp_raw_mutex instead.
@@ -136,122 +95,20 @@ extern "C" {
 #endif
     };
     
-    /**
-     * Simple non-recursive mutex.
-     * See amp_raw_mutex_s.
-     * Can be moved or copied - but every copy identifies the same mutex - 
-     * manage ownership and reference counts yourself.
-     */
-    typedef struct amp_raw_mutex_s *amp_raw_mutex_t;
+
     
     /**
-     * Initialize amp_raw_mutex_t before using it.
-     *
-     * Calling amp_raw_mutex_init on an already initialized and non-finalized
-     * mutex results in undefined behavior.
-     *
-     * @attention The platform-specific init function called might use malloc
-     *            or other resource management functions internally.
-     *
-     * @attention Don't pass an already initialized mutex to amp_raw_mutex_init
-     *            as it could result in undefined behavior and resource leaks.
-     *
-     * @return AMP_SUCCESS is returned on successful initialization of mutex.
-     *         EAGAIN is returned if the system temporarily has insufficent 
-     *                resources.
-     *         ENOMEM is returned if memory is insufficient.
-     *         Other error codes might be returned to signal errors while
-     *         initializing, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
+     * Like amp_mutex_create but does not allocate memory for the amp mutex
+     * other than indirectly via the platform API to create a platform mutex.
      */
-    int amp_raw_mutex_init(amp_raw_mutex_t mutex);
+    int amp_raw_mutex_init(amp_mutex_t mutex);
     
     /**
-     * Finalizes the mutex.
-     * Don't use after finalization anymore or initialize it again.
-     *
-     * @return AMP_SUCCESS on successful finalization of the mutex.
-     *         Error codes might be returned to signal errors while
-     *         finalizing, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the mutex attribute isn't valid, e.g. not initialized.
-     *         EBUSY if the mutex is locked by a thread.
-     *
-     * @attention Only call for successfully initialized mutexes, otherwise
-     *            behavior is undefined.
-     *
-     * @attention Only call for mutexes which aren't locked by any thread and 
-     *            for which no threads are blocked waiting on the lock,
-     *            otherwise behavior is undefined.
-     *
-     * @attention The platform-specific finalize function called might use free
-     *            or other resource management functions internally.
+     * Like amp_mutex_destroy but does not free memory for the amp mutex
+     * other than indirectly via the platform API to destroy a platform mutex.
      */
-    int amp_raw_mutex_finalize(amp_raw_mutex_t mutex);
+    int amp_raw_mutex_finalize(amp_mutex_t mutex);
     
-    /**
-     * Locks the mutex or, if another thread holds the lock, blocks waiting 
-     * until it gathers the mutex lock.
-     *
-     * @return AMP_SUCCESS is returned if locking is successful.
-     *         Error codes might be returned to signal errors while
-     *         locking, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EDEADLK if the thread already holding the lock attempts to lock
-     *         again (recursively).
-     *         EINVAL if the mutex is invalid, e.g. not initialized.
-     *
-     * @attention Trying to recursively locking a mutex from the same thread
-     *            results in undefined behavior. Never lock recursively.
-     */
-    int amp_raw_mutex_lock(amp_raw_mutex_t mutex);
-    
-    /**
-     * Locks the mutex or, if the mutex is already locked by another thread,
-     * returns with an error code.
-     *
-     * @return AMP_SUCCESS if the lock has been taken.
-     *         EBUSY if lock hasn't been taken because it is locked by another 
-     *         thread.
-     *         Error codes might be returned to signal errors while
-     *         trying to lock, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the mutex isn't valid, e.g. not initialized.
-     *         EDEADLK if trying to lock recursively (probably EBUSY is returned
-     *         instead).
-     *
-     * @attention Don't enter the critical section if an error code is returned
-     *            because the lock hasn't been taken.
-     *
-     * @attention Trying to recursively locking a mutex from the same thread
-     *            results in undefined behavior. Never lock recursively.
-     */
-    int amp_raw_mutex_trylock(amp_raw_mutex_t mutex);
-    
-    /**
-     * Unlocks the mutex, other threads trying to lock it or which are blocked
-     * waiting on the lock will get it in non-deterministic order one after the
-     * other afterwards.
-     *
-     * @return AMP_SUCCESS after successful unlocking.
-     *         Error codes might be returned to signal errors while
-     *         unlocking, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the mutex isn't valid, e.g. not initialized.
-     *         EPERM if a thread not holding the lock tries to unlock the mutex.
-     *
-     * @attention Only the thread holding the lock is allowed to unlock it, 
-     *            otherwise behavior is undefined.
-     *
-     * @attention Trying to unlock an already unlocked mutex results in 
-     *            undefined behavior.
-     */
-    int amp_raw_mutex_unlock(amp_raw_mutex_t mutex);
     
 
 #if defined(__cplusplus)

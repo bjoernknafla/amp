@@ -43,40 +43,44 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
 
-
-#include <amp/amp_raw_mutex.h>
+#include <amp/amp_stddef.h>
 #include <amp/amp_thread.h>
 #include <amp/amp_thread_array.h>
-#include <amp/amp_stddef.h>
+#include <amp/amp_mutex.h>
 
 
-
-SUITE(amp_raw_mutex)
+SUITE(amp_mutex)
 {
     
     
     TEST(single_thread_init_lock_unlock_finalize)
     {
-        struct amp_raw_mutex_s mutex;
+        amp_mutex_t mutex;
         
-        int retval = amp_raw_mutex_init(&mutex);
+        int retval = amp_mutex_create(&mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         {
             int const milliseconds = 50;
             UNITTEST_TIME_CONSTRAINT(milliseconds);
             
-            retval = amp_raw_mutex_lock(&mutex);
+            retval = amp_mutex_lock(mutex);
             CHECK_EQUAL(AMP_SUCCESS, retval);
             {
                 // Critical section. Nothing to do.
             }
-            retval = amp_raw_mutex_unlock(&mutex);
+            retval = amp_mutex_unlock(mutex);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
         
-        retval = amp_raw_mutex_finalize(&mutex);
+        retval = amp_mutex_destroy(mutex,
+                                   NULL,
+                                   amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -84,25 +88,30 @@ SUITE(amp_raw_mutex)
     
     TEST(single_thread_init_trylock_unlock_finalize)
     {
-        struct amp_raw_mutex_s mutex;
+        amp_mutex_t mutex;
         
-        int retval = amp_raw_mutex_init(&mutex);
+        int retval = amp_mutex_create(&mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         {
             int const milliseconds = 50;
             UNITTEST_TIME_CONSTRAINT(milliseconds);
             
-            retval = amp_raw_mutex_trylock(&mutex);
+            retval = amp_mutex_trylock(mutex);
             CHECK_EQUAL(AMP_SUCCESS, retval);
             {
                 // Critical section. Nothing to do.
             }
-            retval = amp_raw_mutex_unlock(&mutex);
+            retval = amp_mutex_unlock(mutex);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
         
-        retval = amp_raw_mutex_finalize(&mutex);
+        retval = amp_mutex_destroy(mutex,
+                                   NULL,
+                                   amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -114,33 +123,38 @@ SUITE(amp_raw_mutex)
 #if 0
     TEST(check_recursive_locking_not_allowed)
     {
-        struct amp_raw_mutex_s mutex;
+        amp_mutex_t mutex;
         
-        int retval = amp_raw_mutex_init(&mutex);
+        int retval = amp_mutex_create(&mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         {
             int const milliseconds = 50;
             UNITTEST_TIME_CONSTRAINT(milliseconds);
             
-            retval = amp_raw_mutex_lock(&mutex);
+            retval = amp_mutex_lock(mutex);
             CHECK_EQUAL(AMP_SUCCESS, retval);
             {
                 // Try to lock recursively - should return an error code.
                 // If this deadlocks there is no way for the unit test to 
                 // recover.
-                int rv = amp_raw_mutex_lock(&mutex);
+                int rv = amp_mutex_lock(mutex);
                 CHECK_EQUAL(EDEADLK, rv);
                 
-                rv = amp_raw_mutex_trylock(&mutex);
+                rv = amp_mutex_trylock(mutex);
                 CHECK(EBUSY == rv);
                 
             }
-            retval = amp_raw_mutex_unlock(&mutex);
+            retval = amp_mutex_unlock(mutex);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
         
-        retval = amp_raw_mutex_finalize(&mutex);
+        retval = amp_mutex_destroy(mutex,
+                                   NULL,
+                                   amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -157,7 +171,7 @@ SUITE(amp_raw_mutex)
         
         
         struct mutex_and_one_check_flag_s {
-            struct amp_raw_mutex_s mutex;
+            amp_mutex_t mutex;
             check_flag_t check_flag;
         };
         
@@ -168,7 +182,7 @@ SUITE(amp_raw_mutex)
                 static_cast<struct mutex_and_one_check_flag_s*>(ctxt);
             
             // Should be unable to get the lock.
-            int retval = amp_raw_mutex_trylock(&context->mutex);
+            int retval = amp_mutex_trylock(context->mutex);
             if ((EBUSY == retval) || (EDEADLK == retval)) {
                 context->check_flag = CHECK_FLAG_SET;
             }
@@ -182,10 +196,13 @@ SUITE(amp_raw_mutex)
         struct mutex_and_one_check_flag_s mutex_and_flag;
         mutex_and_flag.check_flag = CHECK_FLAG_UNSET;
         
-        int retval = amp_raw_mutex_init(&mutex_and_flag.mutex);
+        int retval = amp_mutex_create(&mutex_and_flag.mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_lock(&mutex_and_flag.mutex);
+        retval = amp_mutex_lock(mutex_and_flag.mutex);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -207,11 +224,13 @@ SUITE(amp_raw_mutex)
         CHECK_EQUAL(CHECK_FLAG_SET, mutex_and_flag.check_flag);
         
         
-        retval = amp_raw_mutex_unlock(&mutex_and_flag.mutex);
+        retval = amp_mutex_unlock(mutex_and_flag.mutex);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
-        retval = amp_raw_mutex_finalize(&mutex_and_flag.mutex);
+        retval = amp_mutex_destroy(mutex_and_flag.mutex,
+                                   NULL,
+                                   amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -228,7 +247,7 @@ SUITE(amp_raw_mutex)
             struct mutex_and_one_check_flag_s *context = 
             static_cast<struct mutex_and_one_check_flag_s*>(ctxt);
             
-            int retval = amp_raw_mutex_unlock(&(context->mutex));
+            int retval = amp_mutex_unlock(context->mutex);
             if (EPERM == retval || AMP_SUCCESS != retval) {
                 context->check_flag = CHECK_FLAG_SET;
             }
@@ -243,10 +262,13 @@ SUITE(amp_raw_mutex)
         struct mutex_and_one_check_flag_s mutex_and_flag;
         mutex_and_flag.check_flag = CHECK_FLAG_UNSET;
         
-        int retval = amp_raw_mutex_init(&(mutex_and_flag.mutex));
+        int retval = amp_mutex_create(&mutex_and_flag.mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_lock(&(mutex_and_flag.mutex));
+        retval = amp_mutex_lock(mutex_and_flag.mutex);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -267,11 +289,13 @@ SUITE(amp_raw_mutex)
         
         CHECK_EQUAL(CHECK_FLAG_SET, mutex_and_flag.check_flag);
         
-        retval = amp_raw_mutex_unlock(&(mutex_and_flag.mutex));
+        retval = amp_mutex_unlock(mutex_and_flag.mutex);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
-        retval = amp_raw_mutex_finalize(&(mutex_and_flag.mutex));
+        retval = amp_mutex_destroy(mutex_and_flag.mutex,
+                                   NULL,
+                                   amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);      
     } 
 #endif // 0
@@ -280,7 +304,7 @@ SUITE(amp_raw_mutex)
     {
         
         struct staggered_data_s {
-            struct amp_raw_mutex_s *mutex_p;
+            amp_mutex_t *mutex_p;
             size_t *lock_counter_p;
             
             size_t count_at_lock;
@@ -298,7 +322,7 @@ SUITE(amp_raw_mutex)
             
             context->return_code = AMP_SUCCESS;
             
-            int retval = amp_raw_mutex_lock(context->mutex_p);
+            int retval = amp_mutex_lock(*context->mutex_p);
             if (AMP_SUCCESS != retval) {
                 context->return_code = retval;
                 return;
@@ -307,7 +331,7 @@ SUITE(amp_raw_mutex)
                 // Critical section.
                 context->count_at_lock = ++(*(context->lock_counter_p));
             }
-            retval = amp_raw_mutex_unlock(context->mutex_p);
+            retval = amp_mutex_unlock(*context->mutex_p);
             if (AMP_SUCCESS != retval) {
                 context->return_code = retval;
                 return;
@@ -330,11 +354,14 @@ SUITE(amp_raw_mutex)
         // Check that all threads successfully entered the mutex-protected
         // critical section and that every thread saw another counter.
         
-        struct amp_raw_mutex_s mutex;
-        int retval = amp_raw_mutex_init(&mutex);
+        amp_mutex_t mutex;
+        int retval = amp_mutex_create(&mutex,
+                                      NULL,
+                                      amp_malloc,
+                                      amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_raw_mutex_lock(&mutex);
+        retval = amp_mutex_lock(mutex);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -379,7 +406,7 @@ SUITE(amp_raw_mutex)
         // Unlock the mutex to allow staggered access to the critical section
         // by the threads (that might already been blocked while trying to lock
         // it).
-        retval = amp_raw_mutex_unlock(&mutex);
+        retval = amp_mutex_unlock(mutex);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
 
@@ -426,12 +453,14 @@ SUITE(amp_raw_mutex)
         }
         
         
-        retval = amp_raw_mutex_finalize(&mutex);
+        retval = amp_mutex_destroy(mutex,
+                                   NULL,
+                                   amp_free);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
     }
     
     
     
-} // SUITE(amp_raw_mutex)
+} // SUITE(amp_mutex)
 

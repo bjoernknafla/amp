@@ -64,8 +64,8 @@
 #include <stddef.h>
 
 #include "amp_stddef.h"
-#include "amp_raw_mutex.h"
 #include "amp_internal_winthreads_critical_section_config.h"
+#include "amp_raw_mutex.h"
 
 
 
@@ -389,7 +389,7 @@ int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
 
 
 int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
-                                    struct amp_raw_mutex_s *mutex)
+                                    amp_mutex_t mutex)
 {
     /*
      * TODO: @todo Rewrite this function to prevent duplication of error 
@@ -427,7 +427,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
      * Current mutex implementation should assert in debug mode and not
      * return any error in non-debug mode.
      */
-    int retval = amp_raw_mutex_unlock(mutex);
+    int retval = amp_mutex_unlock(mutex);
 #if !defined(NDEBUG)
     assert(EINVAL != retval && "Mutex is invalid.");
     assert(EPERM != retval && "Mutex is owned by another thread.");
@@ -463,7 +463,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
         LeaveCriticalSection(&cond->access_waiting_threads_count_critsec);
         LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
         
-        int retval = amp_raw_mutex_lock(mutex);
+        int retval = amp_mutex_lock(mutex);
         /* Error would surface earlier */
         assert(EINVAL != retval && "Mutex is invalid.");
         /* Error would surface earlier */
@@ -525,7 +525,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
              * Current mutex implementation should assert in debug mode and not
              * return any error in non-debug mode.
              */
-            int retval = amp_raw_mutex_lock(mutex);
+            int retval = amp_mutex_lock(mutex);
             /* Error would surface earlier */
             assert(EINVAL != retval && "Mutex is invalid.");
             /* Error would surface earlier */
@@ -543,7 +543,7 @@ int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
      * Current mutex implementation should assert in debug mode and not
      * return any error in non-debug mode.
      */
-    retval = amp_raw_mutex_lock(mutex);
+    retval = amp_mutex_lock(mutex);
     /* Error would surface earlier */
     assert(EINVAL != retval && "Mutex is invalid.");
     /* Error would surface earlier */

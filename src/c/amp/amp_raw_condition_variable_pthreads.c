@@ -115,7 +115,7 @@ int amp_raw_condition_variable_signal(amp_raw_condition_variable_t cond)
 
 
 int amp_raw_condition_variable_wait(amp_raw_condition_variable_t cond,
-                                    amp_raw_mutex_t mutex)
+                                    amp_mutex_t mutex)
 {
     assert(NULL != cond);
     assert(NULL != mutex);
