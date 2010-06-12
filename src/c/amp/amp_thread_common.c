@@ -37,7 +37,7 @@
  * Look into the different amp_raw_thread_  backend source files for
  * the platform / backend specific implementations.
  *
- * TODO: @todo Decide if to rename the file to amp_raw_thread_shared.c
+ * TODO: @todo Decide if to rename the file to amp_thread_shared.c
  */
 
 #include "amp_raw_thread.h"

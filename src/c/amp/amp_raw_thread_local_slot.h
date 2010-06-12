@@ -33,13 +33,16 @@
 /**
  * @file
  *
- * Shallow wrapper around Pthreads thread-specific data or Windows thread-local
- * storage.
+ * Definition of amp_raw_thread_local_slot_key containing backend 
+ * dependencies.
  */
-
 
 #ifndef AMP_amp_raw_thread_local_slot_H
 #define AMP_amp_raw_thread_local_slot_H
+
+#include <amp/amp_thread_local_slot.h>
+
+
 
 #if defined(AMP_USE_PTHREADS)
 #   include <pthread.h>
@@ -77,82 +80,23 @@ extern "C" {
 #endif
     };
     
-    typedef struct amp_raw_thread_local_slot_key_s amp_raw_thread_local_slot_key_t;
+        
     
     /**
-     * Creates a thread-local slot for all threads (including the main thread)
-     * whose value can be accessed via the identifier stored in @a key. The 
-     * initial value in the slot belonging to key is NULL.
-     *
-     * Each thread has to set the value of its own slot.
-     *
-     * @return AMP_SUCCESS on successful slot creation.
-     *         EAGAIN if system resource are insufficient or the max slot count
-     *         has been exceeded.
-     *         ENOMEM if the system has insufficient memory to create the key.
-     *         Error codes might be returned to signal errors while
-     *         finalization, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the key can't be stored in the argument.
-     *
-     * @attention key mustn't be NULL.
+     * Like amp_thread_local_slot_create but does not allocate memory for 
+     * the thread-specific storage other than indirectly via the platform API to 
+     * create thread-specific storage.
      */
-    int amp_raw_thread_local_slot_init(amp_raw_thread_local_slot_key_t *key);
+    int amp_raw_thread_local_slot_init(amp_thread_local_slot_key_t key);
+    
     
     /**
-     * Invalidates @a key.
-     *
-     * Finalizing a slot doesn't deallocate the memory that might be
-     * associated with the data stored in the different thread local slots,
-     * therefore remove the data on all threads first if necessary.
-     *
-     * @return AMP_SUCCESS on successful finalization.
-     *         Error codes might be returned to signal errors while
-     *         finalization, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the key is invalid.
-     *
-     * @attention Trying to access a slot via an invalid, e.g. finalized key,
-     *            results in undefined behavior.
+     * Like amp_thread_local_slot_destroy but does not free memory other 
+     * than indirectly via the platform API to destroy the thread-specific 
+     * storage.
      */
-    int amp_raw_thread_local_slot_finalize(amp_raw_thread_local_slot_key_t key);
-    
-    /**
-     * Store a value in the slot identified by key.
-     *
-     * @return AMP_SUCCESS on success.
-     *         ENOMEM if the system has insufficient memory to associate the
-     *         value with the key.
-     *         Error codes might be returned to signal errors while
-     *         setting the value, too. These are programming errors and mustn't 
-     *         occur in release code. When @em amp is compiled without NDEBUG
-     *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the key is invalid.
-     *
-     * @attention NULL is a special value - for @em amp it means that the slot
-     *            is empty.
-     *
-     * @attention Trying to access a slot via an invalid, e.g. finalized key,
-     *            results in undefined behavior.
-     */
-    int amp_raw_thread_local_slot_set_value(amp_raw_thread_local_slot_key_t key,
-                                                      void *value);
+    int amp_raw_thread_local_slot_finalize(amp_thread_local_slot_key_t key);
 
-    /**
-     * Query the slot via its key for its value.
-     *
-     * @return Current value stored in the slot associated with the key for the
-     *         thread calling the function or NULL if the slot is empty.
-     *
-     * @attention Trying to access a slot via an invalid, e.g. finalized key,
-     *            results in undefined behavior.
-     */
-    void* amp_raw_thread_local_slot_get_value(amp_raw_thread_local_slot_key_t key);
-    
-    
-    
     
     
 #if defined(__cplusplus)

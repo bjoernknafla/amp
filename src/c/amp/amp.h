@@ -79,7 +79,6 @@
 #include <amp/amp_thread.h>
 #include <amp/amp_thread_array.h>
 #include <amp/amp_thread_local_slot.h>
-#include <amp/amp_once.h>
 #include <amp/amp_semaphore.h>
 #include <amp/amp_mutex.h>
 #include <amp/amp_condition_variable.h>

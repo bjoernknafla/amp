@@ -48,7 +48,8 @@
 #include "amp_stddef.h"
 
 
-int amp_raw_thread_local_slot_init(amp_raw_thread_local_slot_key_t *key)
+
+int amp_raw_thread_local_slot_init(amp_thread_local_slot_key_t key)
 {
     assert(NULL != key);
     
@@ -69,9 +70,9 @@ int amp_raw_thread_local_slot_init(amp_raw_thread_local_slot_key_t *key)
 
 
 
-int amp_raw_thread_local_slot_finalize(amp_raw_thread_local_slot_key_t key)
+int amp_raw_thread_local_slot_finalize(amp_thread_local_slot_key_t key)
 {
-    int const retval = pthread_key_delete(key.key);
+    int const retval = pthread_key_delete(key->key);
     assert(EINVAL != retval && "Key is invalid.");
     assert(0 == retval && "Unexpected error.");
     
@@ -84,10 +85,10 @@ int amp_raw_thread_local_slot_finalize(amp_raw_thread_local_slot_key_t key)
 
 
 
-int amp_raw_thread_local_slot_set_value(amp_raw_thread_local_slot_key_t key,
-                                                  void *value)
+int amp_thread_local_slot_set_value(amp_thread_local_slot_key_t key,
+                                    void *value)
 {
-    int const retval = pthread_setspecific(key.key, value);
+    int const retval = pthread_setspecific(key->key, value);
     assert(EINVAL != retval && "Key is invalid.");
     assert( (0 == retval || ENOMEM == retval) && "Unexpected error.");
     
@@ -100,13 +101,13 @@ int amp_raw_thread_local_slot_set_value(amp_raw_thread_local_slot_key_t key,
 
 
 
-void* amp_raw_thread_local_slot_get_value(amp_raw_thread_local_slot_key_t key)
+void* amp_thread_local_slot_value(amp_thread_local_slot_key_t key)
 {
     /**
      * TODO: @todo Add a debug status flag to check if a key has been 
      * initialized correctly.
      */
-    return pthread_getspecific(key.key);
+    return pthread_getspecific(key->key);
 }
 
 

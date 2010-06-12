@@ -57,7 +57,7 @@
 #include "amp_stddef.h"
 
 
-int amp_raw_thread_local_slot_init(amp_raw_thread_local_slot_key_t *key)
+int amp_raw_thread_local_slot_init(amp_thread_local_slot_key_t key)
 {
     assert(NULL != key);
 
@@ -82,9 +82,9 @@ int amp_raw_thread_local_slot_init(amp_raw_thread_local_slot_key_t *key)
 
 
 
-int amp_raw_thread_local_slot_finalize(amp_raw_thread_local_slot_key_t key)
+int amp_raw_thread_local_slot_finalize(amp_thread_local_slot_key_t key)
 {
-    BOOL const free_retval = TlsFree(key.tls_index);
+    BOOL const free_retval = TlsFree(key->tls_index);
     
     if (FALSE == free_retval) {
         assert(TRUE == free_retval && "Unknown error.");
@@ -99,10 +99,10 @@ int amp_raw_thread_local_slot_finalize(amp_raw_thread_local_slot_key_t key)
 
 
 
-int amp_raw_thread_local_slot_set_value(amp_raw_thread_local_slot_key_t key,
-                                        void *value)
+int amp_thread_local_slot_set_value(amp_thread_local_slot_key_t key,
+                                    void *value)
 {
-    BOOL const set_retval = TlsSetValue(key.tls_index, value);
+    BOOL const set_retval = TlsSetValue(key->tls_index, value);
     
     if (FALSE == set_retval) {
         assert(TRUE == set_retval && "Unknown error.");
@@ -117,8 +117,11 @@ int amp_raw_thread_local_slot_set_value(amp_raw_thread_local_slot_key_t key,
 
 
 
-void* amp_raw_thread_local_slot_get_value(amp_raw_thread_local_slot_key_t key)
+void* amp_raw_thread_local_slot_value(amp_thread_local_slot_key_t key)
 {
+    assert(NULL != key);
+    assert(NULL != value);
+    
     /**
      * TODO: @todo Add a debug status flag to check if a key has been 
      * initialized correctly.
@@ -127,11 +130,10 @@ void* amp_raw_thread_local_slot_get_value(amp_raw_thread_local_slot_key_t key)
      * everything is alright - Pthreads doesn't detect errors but might lead
      * to undefined behavior when using an invalid key.
      */
-    void *retval =  TlsGetValue(key.tls_index);
-    
-    assert((NULL != retval || ERROR_SUCCESS == GetLastError())
+    void *retval =  TlsGetValue(key->tls_index);
+    DWORD const last_error = GetLastError();
+    assert((NULL != retval || ERROR_SUCCESS == last_error)
            && "Unknown error.");
-    
     
     return retval;
 }
