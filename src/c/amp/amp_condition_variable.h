@@ -91,6 +91,10 @@ extern "C" {
      * Only call from one thread when the condition variable isn't in use
      * anymore.
      *
+     * allocator_context and dealloc_func must be capable of freeing the memory
+     * allocated via the create function otherwise behavior is undefined and
+     * resources might be leaked.
+     *
      * @return AMP_SUCCESS if the condition variable was successfully destroyed.
      *         Error codes might be returned to signal errors while
      *         finalizing, too. These are programming errors and mustn't 

@@ -241,7 +241,8 @@ int amp_thread_create_and_launch(amp_thread_t *thread,
     if (AMP_SUCCESS == retval) {
         *thread = local_thread;
     } else {
-        dealloc_func(allocator_context, local_thread);
+        int const rc = dealloc_func(allocator_context, local_thread);
+        assert(AMP_SUCCESS == rc);
     }
     
     return retval;
@@ -265,7 +266,8 @@ int amp_thread_join_and_destroy(amp_thread_t thread,
     int retval = amp_raw_thread_join(thread);
     
     if (AMP_SUCCESS == retval) {
-        dealloc_func(allocator_context, thread);
+        retval = dealloc_func(allocator_context, thread);
+        assert(AMP_SUCCESS == retval);
     }
     
     return retval;

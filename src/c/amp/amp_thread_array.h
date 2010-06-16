@@ -104,7 +104,9 @@ extern "C" {
      *
      * allocator_context and dealloc_func must be able to free the memory 
      * allocated by the allocator_context and alloc_func arguments used when 
-     * calling amp_thread_array_create in thread_array.
+     * calling amp_thread_array_create in thread_array otherwise behavior is
+     * undefined. Error codes might be returned but the thread_array might be
+     * in an invalid and non-rescueable state. Memory might be leaked.
      *
      * @return AMP_SUCCESS is returned on successful finalization of the thread
      *         array and after its memory is freed. On error the following error

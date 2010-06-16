@@ -141,6 +141,10 @@ extern "C" {
      *         EINVAL if the mutex attribute isn't valid, e.g. not initialized.
      *         EBUSY if the mutex is locked by a thread.
      *
+     * allocator_context and dealloc_func must be capable of freeing the memory
+     * allocated via the create function otherwise behavior is undefined and
+     * resources might be leaked.
+     *
      * @attention Only call for successfully initialized mutexes, otherwise
      *            behavior is undefined.
      *

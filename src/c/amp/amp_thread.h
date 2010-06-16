@@ -130,6 +130,10 @@ extern "C" {
      * If joining with a thread was not successful the memory of thread will not
      * be freed.
      *
+     * allocator_context and dealloc_func must be capable of freeing the memory
+     * allocated via the create function otherwise behavior is undefined and
+     * resources might be leaked.
+     *
      * @return AMP_SUCCESS after succesfully joining with the thread.
      *         Other error codes might be returned to signal errors while
      *         joining, too. These are programming errors and mustn't 

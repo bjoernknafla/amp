@@ -126,6 +126,10 @@ extern "C" {
      * On destruction the semaphore counter must be equal to the init count
      * set on creation, therefore balance signaling and waiting.
      *
+     * allocator_context and dealloc_func must be capable of freeing the memory
+     * allocated via the create function otherwise behavior is undefined and
+     * resources might be leaked.
+     *
      * @return AMP_SUCCESS on successful finalization and destruction.
      *         ENOSYS if the backend doesn't support semaphores.
      *         Error codes might be returned to signal errors while

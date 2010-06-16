@@ -123,9 +123,9 @@ namespace {
         
         ctxt->deallocated_memory += *ptr;
         
-        amp_free(NULL, ptr);
+        int const retval = amp_free(NULL, ptr);
         
-        return AMP_SUCCESS;
+        return retval;
     }
     
     

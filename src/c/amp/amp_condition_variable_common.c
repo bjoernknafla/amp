@@ -35,8 +35,9 @@ int amp_condition_variable_create(amp_condition_variable_t *cond,
     if (AMP_SUCCESS == retval) {
         *cond = tmp_cond;
     } else {
-        dealloc_func(allocator_context,
-                     tmp_cond);
+        int const rc = dealloc_func(allocator_context,
+                                    tmp_cond);
+        assert(AMP_SUCCESS == rc);
     }
     
     return retval;
@@ -57,10 +58,10 @@ int amp_condition_variable_destroy(amp_condition_variable_t cond,
         return EINVAL;
     }
     
-    int const retval = amp_raw_condition_variable_finalize(cond);
+    int retval = amp_raw_condition_variable_finalize(cond);
     if (AMP_SUCCESS == retval) {
-        dealloc_func(allocator_context,
-                     cond);
+        retval = dealloc_func(allocator_context,
+                              cond);
     }
     
     return retval;

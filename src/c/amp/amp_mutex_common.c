@@ -72,9 +72,9 @@ int amp_mutex_create(amp_mutex_t *mutex,
     if (AMP_SUCCESS == retval) {
         *mutex = tmp_mutex;
     } else {
-        dealloc_func(allocator_context,
-                     tmp_mutex);
-        tmp_mutex = NULL;
+        int const rc = dealloc_func(allocator_context,
+                                    tmp_mutex);
+        assert(AMP_SUCCESS == rc);
     }
     
     return retval;
@@ -95,10 +95,10 @@ int amp_mutex_destroy(amp_mutex_t mutex,
         return EINVAL;
     }
     
-    int const retval = amp_raw_mutex_finalize(mutex);
+    int retval = amp_raw_mutex_finalize(mutex);
     if (AMP_SUCCESS == retval) {
-        dealloc_func(allocator_context,
-                     mutex);
+        retval = dealloc_func(allocator_context,
+                              mutex);
     }
     
     return retval;

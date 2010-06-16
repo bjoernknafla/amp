@@ -374,7 +374,8 @@ int amp_internal_platform_win_system_logical_processor_information(struct* amp_i
         
         assert(TRUE == query_successful);
         
-        dealloc_func(allocator_context, sysinfo_buffer);
+        int const rc = dealloc_func(allocator_context, sysinfo_buffer);
+        assert(AMP_SUCCESS == rc);
         
         return EAGAIN;
     }
@@ -426,7 +427,8 @@ int amp_internal_platform_win_system_logical_processor_information(struct* amp_i
         ++sysinfo;
     }
     
-    dealloc_func(allocator_context, sysinfo_buffer);
+    int const rc = dealloc_func(allocator_context, sysinfo_buffer);
+    assert(AMP_SUCCESS == rc);
     
     
     info->installed_core_count = (size_t)core_count;;

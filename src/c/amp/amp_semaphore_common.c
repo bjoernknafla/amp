@@ -78,7 +78,8 @@ int amp_semaphore_create(amp_semaphore_t *semaphore,
     if (AMP_SUCCESS == retval) {
         *semaphore = tmp_sema;
     } else {
-        dealloc_func(allocator_context, tmp_sema);
+        int const rc = dealloc_func(allocator_context, tmp_sema);
+        assert(AMP_SUCCESS == rc);
     }
     
     return retval;
@@ -99,10 +100,10 @@ int amp_semaphore_destroy(amp_semaphore_t semaphore,
         return EINVAL;
     }
     
-    int const retval = amp_raw_semaphore_finalize(semaphore);
+    int retval = amp_raw_semaphore_finalize(semaphore);
     if (AMP_SUCCESS == retval) {
-        dealloc_func(allocator_context,
-                     semaphore);
+        retval = dealloc_func(allocator_context,
+                              semaphore);
     }
     
     return retval;

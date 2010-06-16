@@ -76,8 +76,9 @@ int amp_thread_local_slot_create(amp_thread_local_slot_key_t *key,
     if (AMP_SUCCESS == retval) {
         *key = tmp_key;
     } else {
-        dealloc_func(allocator_context,
-                     tmp_key);
+        int const rc = dealloc_func(allocator_context,
+                                    tmp_key);
+        assert(AMP_SUCCESS == rc);
     }
     
     return retval;
@@ -98,10 +99,10 @@ int amp_thread_local_slot_destroy(amp_thread_local_slot_key_t key,
         return EINVAL;
     }
     
-    int const retval = amp_raw_thread_local_slot_finalize(key);
+    int retval = amp_raw_thread_local_slot_finalize(key);
     if (AMP_SUCCESS == retval) {
-        dealloc_func(allocator_context,
-                     key);
+        retval = dealloc_func(allocator_context,
+                              key);
     }
     
     return retval;

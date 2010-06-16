@@ -137,10 +137,13 @@ int amp_thread_array_destroy(amp_thread_array_t thread_array,
         return EBUSY;
     }
     
-    dealloc_func(allocator_context, thread_array->threads);
-    dealloc_func(allocator_context, thread_array);
+    int retval = dealloc_func(allocator_context, thread_array->threads);
+    if (AMP_SUCCESS == retval) {
+        thread_array->threads = NULL;
+        retval =  dealloc_func(allocator_context, thread_array);
+    }
     
-    return AMP_SUCCESS;
+    return retval;
 }
 
 
