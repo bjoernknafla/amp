@@ -34,6 +34,8 @@
 
 #include <stdlib.h>
 
+#include "amp_stddef.h"
+
 
 
 void* amp_malloc(void *dummy_allocator_context, 
@@ -45,12 +47,14 @@ void* amp_malloc(void *dummy_allocator_context,
 }
 
 
-void amp_free(void *dummy_allocator_context,
+int amp_free(void *dummy_allocator_context,
               void *pointer)
 {
     (void)dummy_allocator_context;
     
     free(pointer);
+    
+    return AMP_SUCCESS;
 }
 
 

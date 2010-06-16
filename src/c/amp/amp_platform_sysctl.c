@@ -39,8 +39,8 @@
  * update - the use of NSProcessInfo is safer but does not support detection of
  * simultaneous multithreading (SMT - Hyper-Threading in Intel-lingo).
  *
- * amp_raw_platform_init and amp_raw_platform_finalize are implemented in 
- * amp_raw_platform_common.c.
+ * amp_platform_create and amp_platform_destroy are implemented in 
+ * amp_platform_common.c.
  *
  * See http://developer.apple.com/mac/library/releasenotes/Performance/RN-AffinityAPI/
  *
@@ -57,7 +57,7 @@
  * See http://lists.apple.com/archives/cocoa-dev/2009/Nov/msg00687.html
  */
 
-#include "amp_raw_platform.h"
+#include "amp_platform.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -102,7 +102,7 @@ static size_t amp_internal_query_sysctlbyname(char const* query_term)
 
 
 
-int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_installed_core_count(amp_platform_t descr, 
                                     size_t* result)
 {
     assert(NULL != descr);
@@ -122,7 +122,7 @@ int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr,
 
 
 
-int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_core_count(amp_platform_t descr, 
                                            size_t* result)
 {
     assert(NULL != descr);
@@ -142,7 +142,7 @@ int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr,
 
 
 
-int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
                                         size_t* result)
 {
     assert(NULL != descr);
@@ -162,7 +162,7 @@ int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* des
 
 
 
-int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result)
 {
     assert(NULL != descr);

@@ -33,57 +33,121 @@
 /**
  * @file
  *
- * Implementation of amp_raw_platform functionality used by all platform 
- * specific implementations.
+ * Platform hardware detection via get_nprocs_conf and get_nprocs from the 
+ * GNU C library.
+ *
+ * amp_platform_create and amp_platform_destroy are implemented in 
+ * amp_platform_common.c.
+ *
+ * See http://www.gnu.org/s/libc/manual/html_node/Processor-Resources.html
  */
 
-#include "amp_raw_platform.h"
+#include "amp_platform.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include <sys/sysinfo.h>
 
 
-int amp_raw_platform_init(struct amp_raw_platform_s* descr,
-                          void* allocator_context,
-                          amp_alloc_func_t alloc_func,
-                          amp_dealloc_func_t dealloc_func)
+
+static size_t amp_internal_platform_get_active_core_count(void);
+static size_t amp_internal_platform_get_active_core_count(void)
+{
+    int result = get_nprocs();
+    
+    if (0 >= result) {
+        result = 0;
+    }
+    
+    return (size_t)result;
+}
+
+
+
+static size_t amp_internal_platform_get_core_count(void);
+static size_t amp_internal_platform_get_core_count(void)
+{
+    int result = get_nprocs_conf();
+    
+    if (0 >= result) {
+        result = 0;
+    }
+    
+    return (size_t)result;
+}
+
+
+
+int amp_platform_get_installed_core_count(amp_platform_t descr, 
+                                    size_t* result)
 {
     assert(NULL != descr);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
     
-    if (NULL == descr
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
-        
+    if (NULL == descr) {
         return EINVAL;
     }
     
-    descr->allocator_context = allocator_context;
-    descr->alloc_func = alloc_func;
-    descr->dealloc_func = dealloc_func;
+    
+    if (NULL != result ) {
+        
+        *result = amp_internal_platform_get_core_count();
+    }
     
     return AMP_SUCCESS;
 }
 
 
-int amp_raw_platform_finalize(struct amp_raw_platform_s* descr)
+
+int amp_platform_get_active_core_count(amp_platform_t descr, 
+                                           size_t* result)
 {
     assert(NULL != descr);
     
     if (NULL == descr) {
-        
         return EINVAL;
     }
     
-    descr->allocator_context = NULL;
-    descr->alloc_func = NULL;
-    descr->dealloc_func = NULL;
+    
+    if (NULL != result ) {
+        
+        *result = amp_internal_platform_get_active_core_count();
+    }
     
     return AMP_SUCCESS;
+}
+
+
+
+int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
+                                        size_t* result)
+{
+    (void)result;
+    
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
+        return EINVAL;
+    }
+    
+    return ENOSYS;
+}
+
+
+
+int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
+                                               size_t* result)
+{
+    (void)result;
+    
+    assert(NULL != descr);
+    
+    if (NULL == descr) {
+        return EINVAL;
+    }
+    
+    return ENOSYS;
 }
 
 

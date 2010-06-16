@@ -47,9 +47,9 @@
  * @ATTENTION The implementation of GetLogicalProcessorInformation can only 
  *            handle a fixed number of cores or hardware threads - on platforms
  *            that support more cores or hardware threads it (and therefore the
- *            amp_raw_platform query functions) only return informations about the 
+ *            amp_platform query functions) only return informations about the 
  *            processor group of the processor the calling thread executes on at 
- *            the time of the call. Use amp_raw_platform_windows_min_host_sdk_winserver2008_r2_or_windows7.c 
+ *            the time of the call. Use amp_platform_windows_min_host_sdk_winserver2008_r2_or_windows7.c 
  *            for newer Windows platforms to support querying many core
  *            processor hardware.
  *

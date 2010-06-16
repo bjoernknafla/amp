@@ -33,69 +33,43 @@
 /**
  * @file
  *
- * sysconf based platform detection - supported by Linux, BSD, OS X.
- *
- * amp_raw_platform_init and amp_raw_platform_finalize are implemented in 
- * amp_raw_platform_common.c.
- *
- * TODO: @todo Check that the number of supported hardware threads is returned
- *             and not only the number of full cores or even only the number
- *             of processor dies.
- *
- * See http://software.intel.com/en-us/articles/utilizing-processor-performance-in-rich-internet-applications/
+ * Platform hardware detection via Windows GetSystemInfo for 
+ * Windows 2000 Professional and Winows 2000 Server compatibility or, if
+ * available uses GetNativeSystemInfo for compatibility
+ * with Windows XP and Windows Server 2003 (_WIN32_WINNT >= 0x0501) even when
+ * running in a WOW64 environment.
  * 
- * See http://developer.apple.com/mac/library/documentation/Darwin/Reference/ManPages/man3/sysconf.3.html#//apple_ref/doc/man/3/sysconf
+ * Unable to detect hardware threads alas simultaneous multithreading (SMT) and
+ * unable to differentiate between all cores of the queried computer and the 
+ * cores that are active/online during the detection.
  *
- * See http://sources.redhat.com/ml/glibc-linux/1999-q3/msg00036.html
+ * amp_platform_create and amp_platform_destroy are implemented in 
+ * amp_platform_common.c.
  *
- * See http://compute.cnr.berkeley.edu/cgi-bin/man-cgi?sysconf+3
+ * See http://msdn.microsoft.com/en-us/library/ms724381(VS.85).aspx
  *
+ * See http://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
+ *
+ * See http://msdn.microsoft.com/en-us/library/ms724958(VS.85).aspx
+ *
+ * See http://msdn.microsoft.com/en-us/library/ms724953(VS.85).aspx
+ *
+ * See http://msdn.microsoft.com/en-us/library/aa383745(VS.85).aspx
  */
 
-#include "amp_raw_platform.h"
+#include "amp_platform.h"
 
-#include <assert.h>
 #include <errno.h>
+#include <assert.h>
 #include <stddef.h>
 
-#include <unistd.h>
-
-#include <amp_stddef.h>
-
-
-
-static size_t amp_internal_platform_get_core_count(void);
-static size_t amp_internal_platform_get_core_count(void)
-{
-    long result = sysconf(_SC_NPROCESSORS_CONF);
-    
-    if (-1l == result) {
-        result = 0l;
-    }
-    
-    return (size_t)result;
-}
+#include "amp_stddef.h"
+#include "amp_internal_platform_win_system_info.h"
+#include "amp_internal_platform_win_system_logical_processor_information.h"
 
 
 
-static size_t amp_internal_platform_get_active_core_count(void);
-static size_t amp_internal_platform_get_active_core_count(void)
-{
-    /* TODO: @todo Check on Linux if this really works - does not work on 
-     *             Mac OS X 10.6.2, same result for CONF and ONLN. */
-    
-    long result = sysconf(_SC_NPROCESSORS_ONLN);
-    
-    if (-1l == result) {
-        result = 0l;
-    }
-    
-    return (size_t)result;
-}
-
-
-
-int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_installed_core_count(amp_platform_t descr, 
                                     size_t* result)
 {
     assert(NULL != descr);
@@ -105,37 +79,45 @@ int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr,
     }
     
     
+    int return_value = ENOSYS;
+    
     if (NULL != result ) {
         
-        *result = amp_internal_platform_get_core_count();
+        struct amp_internal_platform_win_info_s info;
+        info.installed_core_count = 0;
+        info.active_core_count = 0;
+        info.installed_hwthread_count = 0;
+        info.active_hwthread_count = 0;
+        
+        return_value = amp_internal_platform_win_system_info(&info);
+        
+        if (return_value == AMP_SUCCESS) {
+            *result = info.installed_core_count;
+        }
     }
     
-    return AMP_SUCCESS;
+    return return_value;
 }
 
 
 
-int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_core_count(amp_platform_t descr, 
                                            size_t* result)
 {
+    (void)result;
+    
     assert(NULL != descr);
     
     if (NULL == descr) {
         return EINVAL;
     }
     
-    
-    if (NULL != result ) {
-        
-        *result = amp_internal_platform_get_active_core_count();
-    }
-    
-    return AMP_SUCCESS;
+    return ENOSYS;
 }
 
 
 
-int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
                                         size_t* result)
 {
     (void)result;
@@ -151,7 +133,7 @@ int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* des
 
 
 
-int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result)
 {
     (void)result;
@@ -164,6 +146,5 @@ int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr,
     
     return ENOSYS;
 }
-
 
 

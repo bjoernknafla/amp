@@ -37,15 +37,15 @@
  *
  * Link with the Cocoa Foundation framework to use this file.
  *
- * amp_raw_platform_init and amp_raw_platform_finalize are implemented in 
- * amp_raw_platform_common.c.
+ * amp_platform_create and amp_platform_destroy are implemented in
+ * amp_platform_common.c.
  *
  * See http://developer.apple.com/mac/library/documentation/Cocoa/Reference/Foundation/Classes/NSProcessInfo_Class/Reference/Reference.html
  *
  */
 
 
-#include "amp_raw_platform.h"
+#include "amp_platform.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -72,7 +72,7 @@ static size_t amp_internal_platform_get_core_count(void)
 
 
 
-int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_installed_core_count(amp_platform_t descr, 
                                     size_t* result)
 {
     assert(NULL != descr);
@@ -92,7 +92,7 @@ int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr,
 
 
 
-int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_core_count(amp_platform_t descr, 
                                            size_t* result)
 {
     assert(NULL != descr);
@@ -112,7 +112,7 @@ int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr,
 
 
 
-int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
                                         size_t* result)
 {
     (void)result;
@@ -128,7 +128,7 @@ int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* des
 
 
 
-int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result)
 {
     (void)result;

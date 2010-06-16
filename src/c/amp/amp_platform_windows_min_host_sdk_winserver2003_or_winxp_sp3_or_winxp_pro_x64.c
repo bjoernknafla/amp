@@ -33,7 +33,7 @@
 
 #error Untested
 
-#include "amp_raw_platform.h"
+#include "amp_platform.h"
 
 #include <errno.h>
 #include <assert.h>
@@ -46,13 +46,13 @@
 
 
 #if _WIN32_WINNT < 0x0501
-#   error Compile amp_raw_platform_windows_min_host_sdk_win2000.c for support of the target operating system.
+#   error Compile amp_platform_windows_min_host_sdk_win2000.c for support of the target operating system.
 #endif
 
 
 
 
-int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_installed_core_count(amp_platform_t descr, 
                                     size_t* result)
 {
     assert(NULL != descr);
@@ -101,7 +101,7 @@ int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr,
 
 
 
-int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_core_count(amp_platform_t descr, 
                                            size_t* result)
 {
     (void)result;
@@ -117,7 +117,7 @@ int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr,
 
 
 
-int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
                                         size_t* result)
 {
     assert(NULL != descr);
@@ -166,7 +166,7 @@ int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* des
 
 
 
-int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result)
 {
     (void)result;

@@ -82,6 +82,6 @@
 #include <amp/amp_semaphore.h>
 #include <amp/amp_mutex.h>
 #include <amp/amp_condition_variable.h>
-#include <amp/amp_barrier.h>
+/* #include <amp/amp_barrier.h> */
 
 #endif /* AMP_amp_H */

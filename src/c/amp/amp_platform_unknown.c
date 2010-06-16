@@ -33,94 +33,56 @@
 /**
  * @file
  *
- * Platform hardware detection via get_nprocs_conf and get_nprocs from the 
- * GNU C library.
+ * On an unknown platform its concurrency can't be queried.
  *
- * amp_raw_platform_init and amp_raw_platform_finalize are implemented in 
- * amp_raw_platform_common.c.
- *
- * See http://www.gnu.org/s/libc/manual/html_node/Processor-Resources.html
+ * amp_platform_create and amp_platform_destroy are implemented in 
+ * amp_platform_common.c.
  */
 
-#include "amp_raw_platform.h"
+#include "amp_platform.h"
 
-#include <assert.h>
+
 #include <errno.h>
+#include <assert.h>
 #include <stddef.h>
 
-#include <sys/sysinfo.h>
+#include "amp_stddef.h"
 
 
 
-static size_t amp_internal_platform_get_active_core_count(void);
-static size_t amp_internal_platform_get_active_core_count(void)
+int amp_platform_get_installed_core_count(amp_platform_t descr, 
+                                          size_t* result)
 {
-    int result = get_nprocs();
+    (void)result;
     
-    if (0 >= result) {
-        result = 0;
-    }
-    
-    return (size_t)result;
-}
-
-
-
-static size_t amp_internal_platform_get_core_count(void);
-static size_t amp_internal_platform_get_core_count(void)
-{
-    int result = get_nprocs_conf();
-    
-    if (0 >= result) {
-        result = 0;
-    }
-    
-    return (size_t)result;
-}
-
-
-
-int amp_raw_platform_get_installed_core_count(struct amp_raw_platform_s* descr, 
-                                    size_t* result)
-{
     assert(NULL != descr);
     
     if (NULL == descr) {
         return EINVAL;
     }
     
-    
-    if (NULL != result ) {
-        
-        *result = amp_internal_platform_get_core_count();
-    }
-    
-    return AMP_SUCCESS;
+    return ENOSYS;
 }
 
 
 
-int amp_raw_platform_get_active_core_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_core_count(amp_platform_t descr, 
                                            size_t* result)
 {
+    (void)result;
+    
     assert(NULL != descr);
     
     if (NULL == descr) {
         return EINVAL;
     }
     
-    
-    if (NULL != result ) {
-        
-        *result = amp_internal_platform_get_active_core_count();
-    }
-    
-    return AMP_SUCCESS;
+    return ENOSYS;
 }
 
 
 
-int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
                                         size_t* result)
 {
     (void)result;
@@ -136,7 +98,7 @@ int amp_raw_platform_get_installed_hwthread_count(struct amp_raw_platform_s* des
 
 
 
-int amp_raw_platform_get_active_hwthread_count(struct amp_raw_platform_s* descr, 
+int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result)
 {
     (void)result;

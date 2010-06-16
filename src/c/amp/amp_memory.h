@@ -66,17 +66,26 @@ extern "C" {
 
     
     
-    
+    /**
+     * Function type defining an allocation function that allocates memory
+     * using the allocator_context and returns a pointer to the newly allocated
+     * memory of size bytes_to_allocate or NULL if an error occured, e.g. if not
+     * enough memory is available in the allocator_context to service the 
+     * allocation request.
+     */
     typedef void* (*amp_alloc_func_t)(void *allocator_context, size_t bytes_to_allocate);
     
     /**
-     * 
+     * Function type defining a deallocation function that frees the memory
+     * pointed to by pointer that belongs to the allocator_context.
      *
      * Only call to free  memory allocated via the associated alloc function and
-     * allocator context.
+     * allocator context otherwise behavior might be undefined.
+     *
+     * Returns AMP_SUCCESS on successfull deallocation.
      */
-    typedef void (*amp_dealloc_func_t)(void *allocator_context, void *pointer);
-    
+    typedef int (*amp_dealloc_func_t)(void *allocator_context, void *pointer);
+
     
     
     /**
@@ -89,11 +98,13 @@ extern "C" {
     
     
     /**
-     * Shallow wrapper around C std malloc which ignores allocator context.
+     * Shallow wrapper around C std free which ignores allocator context.
      *
      * Only thread-safe if C's std free is thread-safe.
+     *
+     * Always returns AMP_SUCCESS.
      */
-    void amp_free(void *dummy_allocator_context, void *pointer);
+    int amp_free(void *dummy_allocator_context, void *pointer);
     
     
 #if defined(__cplusplus)   
