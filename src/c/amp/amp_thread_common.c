@@ -219,6 +219,8 @@ int amp_thread_create_and_launch(amp_thread_t *thread,
     assert(NULL != dealloc_func);
     assert(NULL != func);
     
+    *thread = AMP_THREAD_UNINITIALIZED;
+    
     if (NULL == thread
         || NULL == alloc_func
         || NULL == dealloc_func

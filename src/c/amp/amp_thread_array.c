@@ -73,6 +73,8 @@ int amp_thread_array_create(amp_thread_array_t *thread_array,
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
+    *thread_array = AMP_THREAD_ARRAY_UNINITIALIZED;
+    
     if (NULL == thread_array
         || 0 == thread_count
         || NULL == alloc_func

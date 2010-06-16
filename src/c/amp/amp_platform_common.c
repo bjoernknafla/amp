@@ -99,6 +99,8 @@ int amp_platform_create(amp_platform_t* descr,
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
+    *descr = AMP_PLATFORM_UNINITIALIZED;
+    
     if (NULL == descr
         || NULL == alloc_func
         || NULL == dealloc_func) {

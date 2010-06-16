@@ -73,6 +73,8 @@ extern "C" {
 #endif
         
     
+#define AMP_PLATFORM_UNINITIALIZED NULL
+    
     /**
      * Opaque data type to enable querying platform information.
      */

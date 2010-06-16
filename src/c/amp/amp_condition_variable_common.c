@@ -18,6 +18,8 @@ int amp_condition_variable_create(amp_condition_variable_t *cond,
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
+    *cond = AMP_CONDITION_VARIABLE_UNINITIALIZED;
+    
     if (NULL == cond
         || NULL == alloc_func
         || NULL == dealloc_func) {

@@ -51,6 +51,8 @@
 #ifndef AMP_amp_thread_local_slot_H
 #define AMP_amp_thread_local_slot_H
 
+#include <stddef.h>
+
 #include <amp/amp_memory.h>
 
 
@@ -59,6 +61,8 @@
 extern "C" {
 #endif
 
+    
+#define AMP_THREAD_LOCAL_SLOT_UNINITIALIZED NULL
     
     typedef struct amp_raw_thread_local_slot_key_s *amp_thread_local_slot_key_t;
     
@@ -74,8 +78,8 @@ extern "C" {
      *         EAGAIN if system resource are insufficient or the max slot count
      *         has been exceeded.
      *         ENOMEM if the system has insufficient memory to create the key.
-     *         Error codes might be returned to signal errors while
-     *         finalization, too. These are programming errors and mustn't 
+     *         Other error codes might be returned to signal errors while
+     *         creating, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
      *         EINVAL if the key can't be stored in the argument.

@@ -47,6 +47,7 @@
 #ifndef AMP_amp_semaphore_H
 #define AMP_amp_semaphore_H
 
+#include <stddef.h>
 
 #include <amp/amp_stdint.h>
 #include <amp/amp_memory.h>
@@ -58,6 +59,7 @@ extern "C" {
 #endif
 
 
+#define AMP_SEMAPHORE_UNINITIALIZED NULL
     
     typedef struct amp_raw_semaphore_s *amp_semaphore_t;
     

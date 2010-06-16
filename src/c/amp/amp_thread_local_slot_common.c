@@ -59,6 +59,8 @@ int amp_thread_local_slot_create(amp_thread_local_slot_key_t *key,
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
+    *key = AMP_THREAD_LOCAL_SLOT_UNINITIALIZED;
+    
     if (NULL == key
         || NULL == alloc_func
         || NULL == dealloc_func) {

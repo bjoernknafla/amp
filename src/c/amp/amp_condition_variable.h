@@ -49,6 +49,8 @@
 #ifndef AMP_amp_condition_variable_H
 #define AMP_amp_condition_variable_H
 
+#include <stddef.h>
+
 #include <amp/amp_mutex.h>
 #include <amp/amp_memory.h>
 
@@ -57,6 +59,8 @@
 extern "C" {
 #endif
 
+#define AMP_CONDITION_VARIABLE_UNINITIALIZED NULL
+    
     typedef struct amp_raw_condition_variable_s *amp_condition_variable_t;
     
     

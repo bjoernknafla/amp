@@ -30,14 +30,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @file
- *
- * Implementation shared by all amp semaphore backends.
- */
+ /**
+  * @file
+  *
+  * Common implementation of amp_barrier shared between all backends.
+  */
 
-#include "amp_semaphore.h"
-#include "amp_raw_semaphore.h"
+#include "amp_raw_barrier.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -46,69 +45,66 @@
 
 
 
-int amp_semaphore_create(amp_semaphore_t *semaphore,
-                         amp_semaphore_counter_t init_count,
-                         void *allocator_context,
-                         amp_alloc_func_t alloc_func,
-                         amp_dealloc_func_t dealloc_func)
+int amp_barrier_create(amp_barrier_t* barrier,
+                       amp_barrier_count_t init_count,
+                       void* allocator_context,
+                       amp_alloc_func_t alloc_func,
+                       amp_dealloc_func_t dealloc_func)
 {
-    assert(NULL != semaphore);
-    assert((amp_semaphore_counter_t)0 <= init_count);
-    assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
+    assert(NULL != barrier);
+    assert(0 < init_count);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
-    
-    *semaphore = AMP_SEMAPHORE_UNINITIALIZED;
-    
-    if (NULL == semaphore
-        || (amp_semaphore_counter_t)0 > init_count
-        || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count
+
+    if (NULL == barrier
+        || 0 >= init_count
         || NULL == alloc_func
         || NULL == dealloc_func) {
         
         return EINVAL;
     }
     
-    amp_semaphore_t tmp_sema = (amp_semaphore_t)alloc_func(allocator_context,
-                                                           sizeof(struct amp_raw_semaphore_s));
-    if (NULL == tmp_sema) {
+    *barrier = AMP_BARRIER_UNINITIALIZED;
+    
+    amp_barrier_t tmp_barrier = (amp_barrier_t)alloc_func(allocator_context,
+                                                          sizeof(struct amp_raw_barrier_s));
+    if (NULL == tmp_barrier) {
         return ENOMEM;
     }
     
-    int const retval = amp_raw_semaphore_init(tmp_sema,
-                                              init_count);
+    int const retval = amp_raw_barrier_init(tmp_barrier, init_count);
     if (AMP_SUCCESS == retval) {
-        *semaphore = tmp_sema;
+        *barrier = tmp_barrier;
     } else {
-        int const rc = dealloc_func(allocator_context, tmp_sema);
-        assert(AMP_SUCCESS == rc);
+        int const rv = dealloc_func(allocator_context, tmp_barrier);
+        assert(AMP_SUCCESS == rv);
     }
-    
+
     return retval;
 }
 
 
 
-int amp_semaphore_destroy(amp_semaphore_t semaphore,
-                          void *allocator_context,
-                          amp_dealloc_func_t dealloc_func)
+int amp_barrier_destroy(amp_barrier_t barrier,
+                        void* allocator_context,
+                        amp_dealloc_func_t dealloc_func)
 {
-    assert(NULL != semaphore);
+    assert(NULL != barrier);
     assert(NULL != dealloc_func);
     
-    if (NULL == semaphore
+    if (NULL == barrier
         || NULL == dealloc_func) {
         
         return EINVAL;
     }
     
-    int retval = amp_raw_semaphore_finalize(semaphore);
+    int retval = amp_raw_barrier_finalize(barrier);
     if (AMP_SUCCESS == retval) {
-        retval = dealloc_func(allocator_context,
-                              semaphore);
+        retval = dealloc_func(allocator_context, barrier);
     }
     
     return retval;
 }
+
 
 

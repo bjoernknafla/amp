@@ -85,6 +85,8 @@
 #ifndef AMP_amp_mutex_H
 #define AMP_amp_mutex_H
 
+#include <stddef.h>
+
 #include <amp/amp_memory.h>
 
 
@@ -93,6 +95,9 @@
 extern "C" {
 #endif
 
+    
+#define AMP_MUTEX_UNINITIALIZED NULL
+    
     
     /**
      * Simple non-recursive mutex.

@@ -1,10 +1,44 @@
 /*
- *  amp_raw_barrier_generic_broadcast.c
- *  amp
+ * Copyright (c) 2009-2010, Bjoern Knafla
+ * http://www.bjoernknafla.com/
+ * All rights reserved.
  *
- *  Created by Björn Knafla on 14.05.10.
- *  Copyright 2010 Bjoern Knafla Parallelization + AI + Gamedev Consulting. All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are 
+ * met:
  *
+ *   * Redistributions of source code must retain the above copyright 
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright 
+ *     notice, this list of conditions and the following disclaimer in the 
+ *     documentation and/or other materials provided with the distribution.
+ *   * Neither the name of the Bjoern Knafla 
+ *     Parallelization + AI + Gamedev Consulting nor the names of its 
+ *     contributors may be used to endorse or promote products derived from 
+ *     this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * @file
+ *
+ * Implementation of amp_barrier using amp_mutex and amp_condition_variable
+ * using condition variable broadcasting to awake all threads
+ * waiting on the barrier when it is fulfilled.
+ *
+ * amp_barrier_create and amp_barrier_destroy are implemented in 
+ * amp_barrier_common.c.
  */
 
 #include "amp_raw_barrier.h"
@@ -14,7 +48,7 @@
 #include <stddef.h>
 
 #include "amp_stddef.h"
-#include "amp_mutex.h"
+
 
 
 
@@ -29,7 +63,8 @@ enum amp_internal_raw_barrier_lifecycle_state {
 };
 
 
-int amp_raw_barrier_init(struct amp_raw_barrier_s* barrier,
+
+int amp_raw_barrier_init(amp_barrier_t barrier,
                          amp_barrier_count_t init_count)
 {
     assert(NULL != barrier);
@@ -65,7 +100,7 @@ int amp_raw_barrier_init(struct amp_raw_barrier_s* barrier,
 
 
 
-int amp_raw_barrier_finalize(struct amp_raw_barrier_s* barrier)
+int amp_raw_barrier_finalize(amp_barrier_t barrier)
 {
     assert(NULL != barrier);
     assert((int)amp_internal_valid_raw_barrier_lifecycle_state == barrier->valid);
@@ -112,6 +147,7 @@ int amp_raw_barrier_finalize(struct amp_raw_barrier_s* barrier)
     
     return AMP_SUCCESS;
 }
+
 
 
 int amp_barrier_wait(amp_barrier_t barrier)

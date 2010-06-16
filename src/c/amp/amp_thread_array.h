@@ -61,6 +61,9 @@
 extern "C" {
 #endif
     
+    
+#define AMP_THREAD_ARRAY_UNINITIALIZED NULL
+    
     /**
      * Opaque type representing an amp thread array.
      */

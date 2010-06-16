@@ -47,6 +47,8 @@
 #define AMP_amp_thread_H
 
 
+#include <stddef.h>
+
 #include <amp/amp_stdint.h>
 #include <amp/amp_memory.h>
 
@@ -56,6 +58,8 @@
 extern "C" {
 #endif
 
+    
+#define AMP_THREAD_UNINITIALIZED NULL
     
     /**
      * Type of the user function to run on the thread.
