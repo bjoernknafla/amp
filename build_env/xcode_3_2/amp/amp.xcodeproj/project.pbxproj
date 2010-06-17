@@ -100,7 +100,7 @@
 		32C86FD8119DD3A2007577DC /* amp_raw_barrier.h in Headers */ = {isa = PBXBuildFile; fileRef = 32C86FD7119DD3A2007577DC /* amp_raw_barrier.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		32C86FDD119DD785007577DC /* amp_raw_barrier_generic_broadcast.c in Sources */ = {isa = PBXBuildFile; fileRef = 32C86FDB119DD785007577DC /* amp_raw_barrier_generic_broadcast.c */; };
 		32C86FDF119DD785007577DC /* amp_raw_barrier_generic_broadcast.c in Sources */ = {isa = PBXBuildFile; fileRef = 32C86FDB119DD785007577DC /* amp_raw_barrier_generic_broadcast.c */; };
-		32C86FF8119F34FA007577DC /* amp_raw_barrier_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32C86FF7119F34FA007577DC /* amp_raw_barrier_test.cpp */; };
+		32C86FF8119F34FA007577DC /* amp_barrier_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32C86FF7119F34FA007577DC /* amp_barrier_test.cpp */; };
 		32D4A89710F927B100A8FBAC /* amp_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = 3231EC9D10BF178800C61517 /* amp_memory.c */; };
 		32D4A89A10F927FA00A8FBAC /* amp.h in Headers */ = {isa = PBXBuildFile; fileRef = 328D7F0C105921BE003F0E1E /* amp.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		32D4A89B10F9285800A8FBAC /* amp_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = 3231EC9D10BF178800C61517 /* amp_memory.c */; };
@@ -210,7 +210,7 @@
 		32C86FD7119DD3A2007577DC /* amp_raw_barrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = amp_raw_barrier.h; sourceTree = "<group>"; };
 		32C86FDB119DD785007577DC /* amp_raw_barrier_generic_broadcast.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_raw_barrier_generic_broadcast.c; sourceTree = "<group>"; };
 		32C86FF4119F0540007577DC /* amp_raw_barrier_generic_signal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_raw_barrier_generic_signal.c; sourceTree = "<group>"; };
-		32C86FF7119F34FA007577DC /* amp_raw_barrier_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_raw_barrier_test.cpp; sourceTree = "<group>"; };
+		32C86FF7119F34FA007577DC /* amp_barrier_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_barrier_test.cpp; sourceTree = "<group>"; };
 		32E0D609114C26D0000CFE70 /* amp_platform_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_platform_test.cpp; sourceTree = "<group>"; };
 		32F240E410713F88009ABE70 /* amp_condition_variable_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = amp_condition_variable_test.cpp; sourceTree = "<group>"; };
 		32F60DE810623C1E00CA43D5 /* amp_mutex_winthreads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_mutex_winthreads.c; sourceTree = "<group>"; };
@@ -362,7 +362,7 @@
 				322409F410B46D170051F7D0 /* amp_thread_array_test.cpp */,
 				32100A4A10B85F2900971F59 /* amp_stddef_test.cpp */,
 				32E0D609114C26D0000CFE70 /* amp_platform_test.cpp */,
-				32C86FF7119F34FA007577DC /* amp_raw_barrier_test.cpp */,
+				32C86FF7119F34FA007577DC /* amp_barrier_test.cpp */,
 			);
 			name = test;
 			path = ../../../test;
@@ -683,7 +683,7 @@
 				32100A4B10B85F2900971F59 /* amp_stddef_test.cpp in Sources */,
 				32746D4410BDBF2900534B9A /* amp_thread_array_test.cpp in Sources */,
 				32E0D60A114C26D0000CFE70 /* amp_platform_test.cpp in Sources */,
-				32C86FF8119F34FA007577DC /* amp_raw_barrier_test.cpp in Sources */,
+				32C86FF8119F34FA007577DC /* amp_barrier_test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

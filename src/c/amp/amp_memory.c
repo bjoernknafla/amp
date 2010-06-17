@@ -38,7 +38,10 @@
 
 
 
-void* amp_malloc(void *dummy_allocator_context, 
+void* amp_default_allocator = NULL;
+
+
+void* amp_default_alloc(void *dummy_allocator_context, 
                  size_t bytes_to_allocate)
 {
     (void)dummy_allocator_context;
@@ -47,7 +50,7 @@ void* amp_malloc(void *dummy_allocator_context,
 }
 
 
-int amp_free(void *dummy_allocator_context,
+int amp_default_dealloc(void *dummy_allocator_context,
               void *pointer)
 {
     (void)dummy_allocator_context;

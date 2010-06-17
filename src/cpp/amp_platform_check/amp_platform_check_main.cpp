@@ -103,8 +103,8 @@ int main(int argc, char *argv[])
     
     int const error_code_create = amp_platform_create(&platform, 
                                                       allocator_context, 
-                                                      &amp_malloc, 
-                                                      &amp_free);
+                                                      &amp_default_alloc, 
+                                                      &amp_default_dealloc);
     exit_on_error(error_code_create);
     
     // Extract numbers from platform description.
@@ -130,8 +130,8 @@ int main(int argc, char *argv[])
     
     int const error_code_destroy = amp_platform_destroy(platform,
                                                         allocator_context,
-                                                        amp_malloc,
-                                                        amp_free);
+                                                        &amp_default_alloc,
+                                                        &amp_default_dealloc);
     exit_on_error(error_code_destroy);
     
     

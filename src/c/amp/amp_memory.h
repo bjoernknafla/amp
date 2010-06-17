@@ -64,6 +64,10 @@ extern "C" {
 #endif
     
 
+    extern void* amp_default_allocator;
+    
+    
+#define AMP_DEFAULT_ALLOCATOR amp_default_allocator
     
     
     /**
@@ -93,7 +97,7 @@ extern "C" {
      *
      * Only thread-safe if C's std malloc is thread-safe.
      */
-    void* amp_malloc(void *dummy_allocator_context, size_t bytes_to_allocate);
+    void* amp_default_alloc(void *dummy_allocator_context, size_t bytes_to_allocate);
     
     
     
@@ -104,7 +108,7 @@ extern "C" {
      *
      * Always returns AMP_SUCCESS.
      */
-    int amp_free(void *dummy_allocator_context, void *pointer);
+    int amp_default_dealloc(void *dummy_allocator_context, void *pointer);
     
     
 #if defined(__cplusplus)   

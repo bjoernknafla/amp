@@ -64,9 +64,9 @@ SUITE(amp_semaphore)
         amp_semaphore_t sem = NULL;
         int retval = amp_semaphore_create(&sem, 
                                           1,
-                                          NULL,
-                                          amp_malloc,
-                                          amp_free);
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          &amp_default_alloc,
+                                          &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         {
@@ -78,8 +78,8 @@ SUITE(amp_semaphore)
         }
         
         retval = amp_semaphore_destroy(sem,
-                                       NULL,
-                                       amp_free);
+                                       AMP_DEFAULT_ALLOCATOR,
+                                       &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         sem = NULL;
     }
@@ -98,9 +98,9 @@ SUITE(amp_semaphore)
         amp_semaphore_t sem = NULL;
         int retval = amp_semaphore_create(&sem, 
                                           0,
-                                          NULL,
-                                          amp_malloc,
-                                          amp_free);
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          &amp_default_alloc,
+                                          &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_semaphore_signal(sem);
@@ -115,8 +115,8 @@ SUITE(amp_semaphore)
         }
         
         retval = amp_semaphore_destroy(sem,
-                                       NULL,
-                                       amp_free);
+                                       AMP_DEFAULT_ALLOCATOR,
+                                       &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         sem = NULL;
     }
@@ -154,9 +154,9 @@ SUITE(amp_semaphore)
         struct semaphore_flag_s sem_flag;
         int retval = amp_semaphore_create(&sem_flag.sem, 
                                           1,
-                                          NULL,
-                                          amp_malloc,
-                                          amp_free);
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          &amp_default_alloc,
+                                          &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         sem_flag.check_flag = CHECK_FLAG_UNSET;
@@ -164,25 +164,25 @@ SUITE(amp_semaphore)
         
         amp_thread_t thread = NULL;
         retval = amp_thread_create_and_launch(&thread,
-                                              NULL,
-                                              amp_malloc,
-                                              amp_free,
+                                              AMP_DEFAULT_ALLOCATOR,
+                                              &amp_default_alloc,
+                                              &amp_default_dealloc,
                                               &sem_flag, 
                                               &wait_on_semaphore_and_set_flag_func);
         assert(AMP_SUCCESS == retval);
         
         // Joins after the thread waited and passed the semaphore.
         retval = amp_thread_join_and_destroy(thread,
-                                             NULL,
-                                             amp_free);
+                                             AMP_DEFAULT_ALLOCATOR,
+                                             &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         thread = NULL;
         
         CHECK_EQUAL(CHECK_FLAG_SET, sem_flag.check_flag);
         
         retval = amp_semaphore_destroy(sem_flag.sem,
-                                       NULL,
-                                       amp_free);
+                                       AMP_DEFAULT_ALLOCATOR,
+                                       &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         sem_flag.sem = NULL;
     }
@@ -194,9 +194,9 @@ SUITE(amp_semaphore)
         struct semaphore_flag_s sem_flag;
         int retval = amp_semaphore_create(&sem_flag.sem, 
                                           0,
-                                          NULL,
-                                          amp_malloc,
-                                          amp_free);
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          &amp_default_alloc,
+                                          &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         sem_flag.check_flag = CHECK_FLAG_UNSET;
@@ -204,9 +204,9 @@ SUITE(amp_semaphore)
         
         amp_thread_t thread = NULL;
         retval = amp_thread_create_and_launch(&thread,
-                                              NULL,
-                                              amp_malloc,
-                                              amp_free,
+                                              AMP_DEFAULT_ALLOCATOR,
+                                              &amp_default_alloc,
+                                              &amp_default_dealloc,
                                               &sem_flag, 
                                               &wait_on_semaphore_and_set_flag_func);
         assert(AMP_SUCCESS == retval);
@@ -219,16 +219,16 @@ SUITE(amp_semaphore)
         
         // Joins after the thread waited and passed the semaphore.
         retval = amp_thread_join_and_destroy(thread,
-                                             NULL,
-                                             amp_free);
+                                             AMP_DEFAULT_ALLOCATOR,
+                                             &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         thread = NULL;
         
         CHECK_EQUAL(CHECK_FLAG_SET, sem_flag.check_flag);
         
         retval = amp_semaphore_destroy(sem_flag.sem,
-                                       NULL,
-                                       amp_free);
+                                       AMP_DEFAULT_ALLOCATOR,
+                                       &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         sem_flag.sem = NULL;
     }
@@ -267,9 +267,9 @@ SUITE(amp_semaphore)
         amp_semaphore_t sem = NULL;
         int retval = amp_semaphore_create(&sem,
                                           0,
-                                          NULL,
-                                          amp_malloc,
-                                          amp_free);
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          &amp_default_alloc,
+                                          &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -285,9 +285,9 @@ SUITE(amp_semaphore)
         amp_thread_array_t threads = NULL;
         retval = amp_thread_array_create(&threads,
                                          threads_to_wait_count,
-                                         NULL,
-                                         amp_malloc,
-                                         amp_free);
+                                         AMP_DEFAULT_ALLOCATOR,
+                                         &amp_default_alloc,
+                                         &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         
         for (std::size_t i = 0; i < threads_to_wait_count; ++i) {
@@ -332,8 +332,8 @@ SUITE(amp_semaphore)
         assert(0 == joinable_count);
         
         retval = amp_thread_array_destroy(threads,
-                                          NULL,
-                                          amp_free);
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         
         // Check value of check flags.
@@ -342,8 +342,8 @@ SUITE(amp_semaphore)
         }
         
         retval = amp_semaphore_destroy(sem,
-                                       NULL,
-                                       amp_free);
+                                       AMP_DEFAULT_ALLOCATOR,
+                                       &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         sem = NULL;
     }

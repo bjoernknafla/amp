@@ -59,8 +59,8 @@ SUITE(amp_thread_local_slot)
         amp_thread_local_slot_key_t key;
         
         int retval = amp_thread_local_slot_destroy(key,
-                                                   NULL,
-                                                   amp_free);
+                                                   AMP_DEFAULT_ALLOCATOR,
+                                                   &amp_default_dealloc);
         CHECK(AMP_SUCCESS != retval);
         
         int set_value = 23;
@@ -77,16 +77,16 @@ SUITE(amp_thread_local_slot)
         amp_thread_local_slot_key_t key;
         
         int retval = amp_thread_local_slot_create(&key,
-                                                  NULL,
-                                                  amp_malloc,
-                                                  amp_free);
+                                                  AMP_DEFAULT_ALLOCATOR,
+                                                  &amp_default_alloc,
+                                                  &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         // Finalize immediately and check that the slot is invalid for 
         // later use afterwards.
         retval = amp_thread_local_slot_destroy(key,
-                                               NULL,
-                                               amp_free);
+                                               AMP_DEFAULT_ALLOCATOR,
+                                               &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -94,8 +94,8 @@ SUITE(amp_thread_local_slot)
         
         
         retval = amp_thread_local_slot_destroy(key,
-                                               NULL,
-                                               amp_free);
+                                               AMP_DEFAULT_ALLOCATOR,
+                                               &amp_default_dealloc);
         CHECK(AMP_SUCCESS != retval);
         
         int value = 23;
@@ -112,9 +112,9 @@ SUITE(amp_thread_local_slot)
         amp_thread_local_slot_key_t key;
         
         int retval = amp_thread_local_slot_create(&key,
-                                                  NULL,
-                                                  amp_malloc,
-                                                  amp_free);
+                                                  AMP_DEFAULT_ALLOCATOR,
+                                                  &amp_default_alloc,
+                                                  &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         CHECK(NULL == amp_thread_local_slot_value(key));
@@ -129,8 +129,8 @@ SUITE(amp_thread_local_slot)
         CHECK_EQUAL(*((int*)result_data), data0);
         
         retval = amp_thread_local_slot_destroy(key,
-                                               NULL,
-                                               amp_free);
+                                               AMP_DEFAULT_ALLOCATOR,
+                                               &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -142,9 +142,9 @@ SUITE(amp_thread_local_slot)
         amp_thread_local_slot_key_t key;
         
         int retval = amp_thread_local_slot_create(&key,
-                                                  NULL,
-                                                  amp_malloc,
-                                                  amp_free);
+                                                  AMP_DEFAULT_ALLOCATOR,
+                                                  &amp_default_alloc,
+                                                  &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         CHECK(NULL == amp_thread_local_slot_value(key));
@@ -178,8 +178,8 @@ SUITE(amp_thread_local_slot)
         
         
         retval = amp_thread_local_slot_destroy(key,
-                                               NULL,
-                                               amp_free);
+                                               AMP_DEFAULT_ALLOCATOR,
+                                               &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -234,9 +234,9 @@ SUITE(amp_thread_local_slot)
         // finds its own stored data in the slot.
         amp_thread_local_slot_key_t key;
         int retval = amp_thread_local_slot_create(&key,
-                                                  NULL,
-                                                  amp_malloc,
-                                                  amp_free);
+                                                  AMP_DEFAULT_ALLOCATOR,
+                                                  &amp_default_alloc,
+                                                  &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -249,9 +249,9 @@ SUITE(amp_thread_local_slot)
         amp_thread_array_t threads;
         retval = amp_thread_array_create(&threads,
                                          thread_count,
-                                         NULL,
-                                         amp_malloc,
-                                         amp_free);
+                                         AMP_DEFAULT_ALLOCATOR,
+                                         &amp_default_alloc,
+                                         &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         
         
@@ -284,8 +284,8 @@ SUITE(amp_thread_local_slot)
         assert(0 == joinable_count);
         
         retval = amp_thread_array_destroy(threads,
-                                          NULL,
-                                          amp_free);
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         
         for (size_t i = 0; i < thread_count; ++i) {
@@ -293,8 +293,8 @@ SUITE(amp_thread_local_slot)
         }
         
         retval = amp_thread_local_slot_destroy(key,
-                                               NULL,
-                                               amp_free);
+                                               AMP_DEFAULT_ALLOCATOR,
+                                               &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     

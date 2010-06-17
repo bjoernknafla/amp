@@ -59,9 +59,9 @@ namespace {
         :   platform(NULL)
         {
             int const error_code = amp_platform_create(&platform,
-                                                       NULL,
-                                                       &amp_malloc,
-                                                       &amp_free);
+                                                       AMP_DEFAULT_ALLOCATOR,
+                                                       &amp_default_alloc,
+                                                       &amp_default_dealloc);
             assert(AMP_SUCCESS == error_code);
             
         }
@@ -70,9 +70,9 @@ namespace {
         virtual ~amp_platform_test_fixture()
         {
             int const error_code = amp_platform_destroy(platform,
-                                                        NULL,
-                                                        &amp_malloc,
-                                                        &amp_free);
+                                                        AMP_DEFAULT_ALLOCATOR,
+                                                        &amp_default_alloc,
+                                                        &amp_default_dealloc);
             
             assert(AMP_SUCCESS == error_code);
             platform = NULL;
@@ -103,7 +103,8 @@ namespace {
         
         ctxt->allocated_memory += size;
         
-        std::size_t* ptr = (std::size_t*)amp_malloc(NULL, size + sizeof(std::size_t));
+        std::size_t* ptr = (std::size_t*)amp_default_alloc(AMP_DEFAULT_ALLOCATOR, 
+                                                           size + sizeof(std::size_t));
         
         *ptr = size;
         
@@ -123,7 +124,7 @@ namespace {
         
         ctxt->deallocated_memory += *ptr;
         
-        int const retval = amp_free(NULL, ptr);
+        int const retval = amp_default_dealloc(AMP_DEFAULT_ALLOCATOR, ptr);
         
         return retval;
     }
