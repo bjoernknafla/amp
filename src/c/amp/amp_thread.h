@@ -181,6 +181,10 @@ extern "C" {
      * Hints the operating system that it might be benificial to context switch
      * to another thread.
      *
+     * Based on the platform/backend an immediate context switch can occur - or 
+     * not. The POSIX/Pthreads backend and the Windows threads backend will
+     * context switch immediately, other backends might behave differently.
+     *
      * Suggestion from David R. Butenhof's book 
      * "Programming with POSIX threads", p. 316 : call before locking a mutex to 
      * minimize the chance of a context switch while the mutex is locked.
