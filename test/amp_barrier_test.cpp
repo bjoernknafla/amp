@@ -140,7 +140,7 @@ SUITE(amp_barrier)
         for (unsigned int i = 0; i < thread_count; ++i) {
             retval = amp_thread_array_configure(threads,
                                                 i,
-                                                i + 1,
+                                                1,
                                                 &thread_contexts[i],
                                                 &parallel_wait_thread_func);
             assert(AMP_SUCCESS == retval);
@@ -392,7 +392,7 @@ SUITE(amp_barrier)
         for (std::size_t i = 0; i < a_third_of_thread_count; ++i) {
             retval = amp_thread_array_configure(threads,
                                                 i,
-                                                i + 1,
+                                                1,
                                                 &thread_contexts[i],
                                                 &wait_wake_others_wait);
             assert(AMP_SUCCESS == retval);
@@ -400,7 +400,7 @@ SUITE(amp_barrier)
         for (std::size_t i = a_third_of_thread_count; i < 2 * a_third_of_thread_count; ++i) {
             retval = amp_thread_array_configure(threads,
                                                 i,
-                                                i + 1,
+                                                1,
                                                 &thread_contexts[i],
                                                 &wait_only);
             assert(AMP_SUCCESS == retval);
@@ -408,7 +408,7 @@ SUITE(amp_barrier)
         for (std::size_t i = 2 * a_third_of_thread_count; i < 3 * a_third_of_thread_count; ++i) {
             retval = amp_thread_array_configure(threads,
                                                 i,
-                                                i + 1,
+                                                1,
                                                 &thread_contexts[i],
                                                 &sleep_then_wait);
             assert(AMP_SUCCESS == retval);

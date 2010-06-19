@@ -128,51 +128,64 @@ extern "C" {
                                  amp_dealloc_func_t dealloc_func);
     
     /**
-     * Sets all thread array thread contexts starting at index_begin and ending
-     * one index before index_end to shared_context.
+     * Sets range_length thread array thread contexts starting at index 
+     * range_begin to shared_context.
      *
      * If an error is returned it us not defined if or which of the thread
      * contexts of the array have been changed.
      *
+     * range_length must not be greater than the size of thread_array.
+     * range_length must not be 0.
+     * All indices from range_begin inside range_length must be inside the 
+     * index range of thread_array.
+     *
      * Do not call after launching and before joining with a thread array.
      */
     int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
-                                            size_t index_begin,
-                                            size_t index_end, /* exclusive */
+                                            size_t range_begin,
+                                            size_t range_length,
                                             void *shared_context);
     
     /**
-     * Sets all thread array thread functions starting at index_begin and ending
-     * one index before index_end to shared_function.
+     * Sets range_length thread array thread functions starting at index 
+     * range_begin to shared_function.
      *
      * If an error is returned it us not defined if or which of the thread
      * functions of the array have been changed.
      *
+     * range_length must not be greater than the size of thread_array.
+     * range_length must not be 0.
+     * All indices from range_begin inside range_length must be inside the 
+     * index range of thread_array.
+     * shared_function must not be NULL or invalid.
+     *
      * Do not call after launching and before joining with a thread array.
      */
     int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
-                                             size_t index_begin,
-                                             size_t index_end, /* exclusive */
+                                             size_t range_begin,
+                                             size_t range_length,
                                              amp_thread_func_t shared_function);
     
     /**
-     * Sets all thread array thread contexts and functions starting at 
-     * index_begin and ending one index before index_end to shared_context and
-     * shared_function.
+     * Sets range_length thread array thread contexts and functions starting at 
+     * index range_begin to shared_context and shared_function.
      *
      * If an error is returned it us not defined if or which of the thread
      * contexts or functions of the array have been changed.
      *
+     * range_length must not be greater than the size of thread_array.
+     * range_length must not be 0.
+     * All indices from range_begin inside range_length must be inside the 
+     * index range of thread_array.
+     * shared_function must not be NULL or invalid.
+     *
      * Do not call after launching and before joining with a thread array.
      */
     int amp_thread_array_configure(amp_thread_array_t thread_array,
-                                   size_t index_begin,
-                                   size_t index_end, /* exclusive */
+                                   size_t range_begin,
+                                   size_t range_length,
                                    void *shared_context,
                                    amp_thread_func_t shared_function);
-    
-    
-    
     
     
     /**

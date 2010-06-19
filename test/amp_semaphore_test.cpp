@@ -293,7 +293,7 @@ SUITE(amp_semaphore)
         for (std::size_t i = 0; i < threads_to_wait_count; ++i) {
             retval = amp_thread_array_configure(threads,
                                                 i,
-                                                i + 1,
+                                                1,
                                                 &checks[i],
                                                 &thread_to_wait_func);
             assert(AMP_SUCCESS == retval);

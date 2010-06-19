@@ -389,7 +389,7 @@ SUITE(amp_mutex)
             
             int const retv = amp_thread_array_configure(threads,
                                                         i, 
-                                                        i + 1,
+                                                        1,
                                                         &thread_contexts[i],
                                                         staggered_locking_thread_func);
             assert(AMP_SUCCESS == retv);

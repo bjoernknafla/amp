@@ -54,6 +54,234 @@ SUITE(amp_thread_array)
 {
     namespace {
         
+        class configure_range_check_context {
+        public:
+            configure_range_check_context()
+            :   value_(0)
+            {}
+            
+            configure_range_check_context(configure_range_check_context const& other)
+            :   value_(other.value_)
+            {}
+            
+            configure_range_check_context& operator=(configure_range_check_context const& other) {
+                value_ = other.value_;
+                
+                return *this;
+            }
+            
+            void set_value_to_one() {
+                value_ = 1;
+            }
+            
+            
+            void set_value_to_two() {
+                value_ = 2;
+            }
+            
+            int value() const {
+                return value_;
+            }
+
+        private:
+            int value_;
+        };
+        
+        
+        void configure_range_check_set_to_one_func(void* ctxt);
+        void configure_range_check_set_to_one_func(void* ctxt)
+        {
+            configure_range_check_context* context = static_cast<configure_range_check_context*>(ctxt);
+            
+            context->set_value_to_one();
+        }
+        
+        
+        void configure_range_check_set_to_two_func(void* ctxt);
+        void configure_range_check_set_to_two_func(void* ctxt)
+        {
+            configure_range_check_context* context = static_cast<configure_range_check_context*>(ctxt);
+            
+            context->set_value_to_two();
+        }
+    } // anonymous namespace
+    
+    
+    
+#if 0 /* Re-enable tests the moment wrong configuration arguments do no trigger 
+       * assert but just return error codes.
+       */
+    TEST(configure_context_with_zero_range_length_must_not_change_anything)
+    {
+        amp_thread_array_t thread_array;
+        
+        size_t const thread_count = 16;
+        int retval = amp_thread_array_create(&thread_array,
+                                             thread_count,
+                                             AMP_DEFAULT_ALLOCATOR,
+                                             amp_default_alloc,
+                                             amp_default_dealloc);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        
+        
+        std::vector<configure_range_check_context> thread_contexts(thread_count);
+        
+        for (std::size_t i = 0; i < thread_count; ++i) {
+            
+            retval = amp_thread_array_configure(thread_array,
+                                                i,
+                                                1,
+                                                &thread_contexts[i], 
+                                                &configure_range_check_set_to_one_func);
+            CHECK_EQUAL(AMP_SUCCESS, retval);
+            
+            // Now run a non-succeeding configure for the contexts.
+            retval = amp_thread_array_configure_contexts(thread_array,
+                                                         i,
+                                                         0,
+                                                         NULL);
+            CHECK_EQUAL(EINVAL, retval);
+        }
+        
+        std::size_t joinable_count = 0;
+        retval = amp_thread_array_launch_all(thread_array,
+                                             &joinable_count);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        CHECK_EQUAL(thread_count, joinable_count);
+        
+        retval = amp_thread_array_join_all(thread_array,
+                                           &joinable_count);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        CHECK_EQUAL(static_cast<std::size_t>(0), joinable_count);
+        
+        retval = amp_thread_array_destroy(thread_array,
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          amp_default_dealloc);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        
+        
+        for (std::size_t i = 0; i < thread_count; ++i) {
+            CHECK_EQUAL(1, thread_contexts[i].value());
+        }
+    }
+
+    
+    
+    TEST(configure_function_with_zero_range_length_must_not_change_anything)
+    {
+        amp_thread_array_t thread_array;
+        
+        size_t const thread_count = 16;
+        int retval = amp_thread_array_create(&thread_array,
+                                             thread_count,
+                                             AMP_DEFAULT_ALLOCATOR,
+                                             amp_default_alloc,
+                                             amp_default_dealloc);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        
+        
+        std::vector<configure_range_check_context> thread_contexts(thread_count);
+        
+        for (std::size_t i = 0; i < thread_count; ++i) {
+            
+            retval = amp_thread_array_configure(thread_array,
+                                                i,
+                                                1,
+                                                &thread_contexts[i], 
+                                                &configure_range_check_set_to_one_func);
+            CHECK_EQUAL(AMP_SUCCESS, retval);
+            
+            // Now run a non-succeeding configure for the contexts.
+            retval = amp_thread_array_configure_functions(thread_array,
+                                                         i,
+                                                         0,
+                                                         &configure_range_check_set_to_two_func);
+            CHECK_EQUAL(EINVAL, retval);
+        }
+        
+        std::size_t joinable_count = 0;
+        retval = amp_thread_array_launch_all(thread_array,
+                                             &joinable_count);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        CHECK_EQUAL(thread_count, joinable_count);
+        
+        retval = amp_thread_array_join_all(thread_array,
+                                           &joinable_count);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        CHECK_EQUAL(static_cast<std::size_t>(0), joinable_count);
+        
+        retval = amp_thread_array_destroy(thread_array,
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          amp_default_dealloc);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        
+        
+        for (std::size_t i = 0; i < thread_count; ++i) {
+            CHECK_EQUAL(1, thread_contexts[i].value());
+        }
+    }
+
+                                            
+          
+    TEST(configure_with_zero_range_length_must_not_change_anything)
+    {
+        amp_thread_array_t thread_array;
+        
+        size_t const thread_count = 16;
+        int retval = amp_thread_array_create(&thread_array,
+                                             thread_count,
+                                             AMP_DEFAULT_ALLOCATOR,
+                                             amp_default_alloc,
+                                             amp_default_dealloc);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        
+        
+        std::vector<configure_range_check_context> thread_contexts(thread_count);
+        
+        for (std::size_t i = 0; i < thread_count; ++i) {
+            
+            retval = amp_thread_array_configure(thread_array,
+                                                i,
+                                                1,
+                                                &thread_contexts[i], 
+                                                &configure_range_check_set_to_one_func);
+            CHECK_EQUAL(AMP_SUCCESS, retval);
+            
+            // Now run a non-succeeding configure for the contexts.
+            retval = amp_thread_array_configure(thread_array,
+                                                i,
+                                                0,
+                                                NULL,
+                                                &configure_range_check_set_to_two_func);
+            CHECK_EQUAL(EINVAL, retval);
+        }
+        
+        std::size_t joinable_count = 0;
+        retval = amp_thread_array_launch_all(thread_array,
+                                             &joinable_count);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        CHECK_EQUAL(thread_count, joinable_count);
+        
+        retval = amp_thread_array_join_all(thread_array,
+                                           &joinable_count);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        CHECK_EQUAL(static_cast<std::size_t>(0), joinable_count);
+        
+        retval = amp_thread_array_destroy(thread_array,
+                                          AMP_DEFAULT_ALLOCATOR,
+                                          amp_default_dealloc);
+        CHECK_EQUAL(AMP_SUCCESS, retval);
+        
+        
+        for (std::size_t i = 0; i < thread_count; ++i) {
+            CHECK_EQUAL(1, thread_contexts[i].value());
+        }
+    }
+#endif /* 0 */
+    
+    
+    namespace {
+        
         int const fortytwo = 42;
         
         void set_int_context_to_fortytwo(void *ctxt)
@@ -91,6 +319,8 @@ SUITE(amp_thread_array)
         }
     
     } // anonymous namespace
+
+    
     
     
     TEST(create_launch_join_destroy)
@@ -130,7 +360,7 @@ SUITE(amp_thread_array)
             
             retval = amp_thread_array_configure(thread_array,
                                                 i, 
-                                                i + 1,
+                                                1,
                                                 &context_vector[i], 
                                                 thread_function_vector[i]);
             CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -205,7 +435,7 @@ SUITE(amp_thread_array)
         for (size_t i = 0; i < thread_count; ++i) {
             retval = amp_thread_array_configure_contexts(thread_array,
                                                          i,
-                                                         i + 1,
+                                                         1,
                                                          &context_vector[i]);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }

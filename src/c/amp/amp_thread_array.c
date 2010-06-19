@@ -151,20 +151,24 @@ int amp_thread_array_destroy(amp_thread_array_t thread_array,
 
 
 int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
-                                        size_t index_begin,
-                                        size_t index_end, /* exclusive */
+                                        size_t range_begin,
+                                        size_t range_length,
                                         void *shared_context)
 {
     assert(NULL != thread_array);
-    assert(index_begin < thread_array->thread_count);
-    assert(index_end <= thread_array->thread_count);
+    assert(range_begin < thread_array->thread_count);
+    assert(range_length > 0);
+    assert(range_length <= thread_array->thread_count);
+    assert(range_begin <= thread_array->thread_count - range_length);
     assert(0 == thread_array->joinable_count);
     
     size_t const thread_count = thread_array->thread_count;
     
     if (NULL == thread_array
-        || index_begin >= thread_count
-        || index_end > thread_count) {
+        || range_begin >= thread_count
+        || range_length <= 0
+        || range_length > thread_count
+        || range_begin > thread_count - range_length) {
         
         return EINVAL;
     }
@@ -174,7 +178,9 @@ int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
     
     struct amp_raw_thread_s *threads = thread_array->threads;
     
-    for (size_t i = index_begin; i < index_end; ++i) {
+    size_t const range_end = range_begin - 1 + range_length;
+    
+    for (size_t i = range_begin; i <= range_end; ++i) {
         int const errc = amp_internal_thread_configure_context(&threads[i],
                                                                shared_context);
         if (AMP_SUCCESS != errc) {
@@ -188,20 +194,26 @@ int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
 
 
 int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
-                                         size_t index_begin,
-                                         size_t index_end, /* exclusive */
+                                         size_t range_begin,
+                                         size_t range_length,
                                          amp_thread_func_t shared_function)
 {
     assert(NULL != thread_array);
-    assert(index_begin < thread_array->thread_count);
-    assert(index_end <= thread_array->thread_count);
+    assert(range_begin < thread_array->thread_count);
+    assert(range_length > 0);
+    assert(range_length <= thread_array->thread_count);
+    assert(range_begin <= thread_array->thread_count - range_length);
+    assert(NULL != shared_function);
     assert(0 == thread_array->joinable_count);
     
     size_t const thread_count = thread_array->thread_count;
     
     if (NULL == thread_array
-        || index_begin >= thread_count
-        || index_end > thread_count) {
+        || range_begin >= thread_count
+        || range_length <= 0
+        || range_length > thread_count
+        || range_begin > thread_count - range_length
+        || NULL == shared_function) {
         
         return EINVAL;
     }
@@ -211,7 +223,9 @@ int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
     
     struct amp_raw_thread_s *threads = thread_array->threads;
     
-    for (size_t i = index_begin; i < index_end; ++i) {
+    size_t const range_end = range_begin - 1 + range_length;
+    
+    for (size_t i = range_begin; i <= range_end; ++i) {
         int const errc = amp_internal_thread_configure_function(&threads[i],
                                                                 shared_function);
         if (AMP_SUCCESS != errc) {
@@ -225,21 +239,27 @@ int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
 
 
 int amp_thread_array_configure(amp_thread_array_t thread_array,
-                               size_t index_begin,
-                               size_t index_end, /* exclusive */
+                               size_t range_begin,
+                               size_t range_length,
                                void *shared_context,
                                amp_thread_func_t shared_function)
 {
     assert(NULL != thread_array);
-    assert(index_begin < thread_array->thread_count);
-    assert(index_end <= thread_array->thread_count);
+    assert(range_begin < thread_array->thread_count);
+    assert(range_length > 0);
+    assert(range_length <= thread_array->thread_count);
+    assert(range_begin <= thread_array->thread_count - range_length);
+    assert(NULL != shared_function);
     assert(0 == thread_array->joinable_count);
     
     size_t const thread_count = thread_array->thread_count;
     
     if (NULL == thread_array
-        || index_begin >= thread_count
-        || index_end > thread_count) {
+        || range_begin >= thread_count
+        || range_length <= 0
+        || range_length > thread_count
+        || range_begin > thread_count - range_length
+        || NULL == shared_function) {
         
         return EINVAL;
     }
@@ -249,7 +269,9 @@ int amp_thread_array_configure(amp_thread_array_t thread_array,
     
     struct amp_raw_thread_s *threads = thread_array->threads;
     
-    for (size_t i = index_begin; i < index_end; ++i) {
+    size_t const range_end = range_begin - 1 + range_length;
+    
+    for (size_t i = range_begin; i <= range_end; ++i) {
         int const errc0 = amp_internal_thread_configure_context(&threads[i],
                                                                 shared_context);
         int const errc1 = amp_internal_thread_configure_function(&threads[i],

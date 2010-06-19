@@ -486,7 +486,7 @@ SUITE(amp_condition_variable)
         for (std::size_t i = 0; i < thread_count; ++i) {
             int const rv = amp_thread_array_configure(threads,
                                                       i,
-                                                      i + 1,
+                                                      1,
                                                       &thread_contexts[i],
                                                       &one_cond_wait_multiple_thread_func);
             assert(AMP_SUCCESS == rv);
@@ -1010,7 +1010,7 @@ SUITE(amp_condition_variable)
         for (std::size_t i = 0; i < thread_count; ++i) {
             int const rv = amp_thread_array_configure(threads,
                                                       i,
-                                                      i + 1,
+                                                      1,
                                                       &thread_contexts[i],
                                                       &multi_cond_wait_multiple_thread_func);
             assert(AMP_SUCCESS == rv);
@@ -1177,7 +1177,7 @@ SUITE(amp_condition_variable)
         for (std::size_t i = 0; i < thread_count; ++i) {
             int const rv = amp_thread_array_configure(threads,
                                                       i,
-                                                      i + 1,
+                                                      1,
                                                       &thread_contexts[i],
                                                       &multi_cond_wait_multiple_thread_func);
             assert(AMP_SUCCESS == rv);

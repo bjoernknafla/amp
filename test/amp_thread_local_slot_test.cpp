@@ -265,7 +265,7 @@ SUITE(amp_thread_local_slot)
             
             int const ret = amp_thread_array_configure(threads,
                                                        i,
-                                                       i + 1, 
+                                                       1, 
                                                        &thread_context_values[i],
                                                        &tls_thread_func);
             CHECK_EQUAL(AMP_SUCCESS, ret);
