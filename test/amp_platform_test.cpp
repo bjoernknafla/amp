@@ -56,7 +56,7 @@ namespace {
     public:
         
         amp_platform_test_fixture()
-        :   platform(NULL)
+        :   platform(AMP_PLATFORM_UNINITIALIZED)
         {
             int const error_code = amp_platform_create(&platform,
                                                        AMP_DEFAULT_ALLOCATOR,
@@ -75,7 +75,7 @@ namespace {
                                                         &amp_default_dealloc);
             
             assert(AMP_SUCCESS == error_code);
-            platform = NULL;
+            platform = AMP_PLATFORM_UNINITIALIZED;
         }
         
         

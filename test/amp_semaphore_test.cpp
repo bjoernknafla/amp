@@ -61,7 +61,7 @@ SUITE(amp_semaphore)
         // tests...
         
         
-        amp_semaphore_t sem = NULL;
+        amp_semaphore_t sem = AMP_SEMAPHORE_UNINITIALIZED;
         int retval = amp_semaphore_create(&sem, 
                                           1,
                                           AMP_DEFAULT_ALLOCATOR,
@@ -81,7 +81,7 @@ SUITE(amp_semaphore)
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
-        sem = NULL;
+        sem = AMP_SEMAPHORE_UNINITIALIZED;
     }
     
     
@@ -95,7 +95,7 @@ SUITE(amp_semaphore)
         // tests...
         
         
-        amp_semaphore_t sem = NULL;
+        amp_semaphore_t sem = AMP_SEMAPHORE_UNINITIALIZED;
         int retval = amp_semaphore_create(&sem, 
                                           0,
                                           AMP_DEFAULT_ALLOCATOR,
@@ -118,7 +118,7 @@ SUITE(amp_semaphore)
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
-        sem = NULL;
+        sem = AMP_SEMAPHORE_UNINITIALIZED;
     }
     
     
@@ -162,7 +162,7 @@ SUITE(amp_semaphore)
         sem_flag.check_flag = CHECK_FLAG_UNSET;
 
         
-        amp_thread_t thread = NULL;
+        amp_thread_t thread = AMP_THREAD_UNINITIALIZED;
         retval = amp_thread_create_and_launch(&thread,
                                               AMP_DEFAULT_ALLOCATOR,
                                               &amp_default_alloc,
@@ -176,7 +176,7 @@ SUITE(amp_semaphore)
                                              AMP_DEFAULT_ALLOCATOR,
                                              &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
-        thread = NULL;
+        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(CHECK_FLAG_SET, sem_flag.check_flag);
         
@@ -184,7 +184,7 @@ SUITE(amp_semaphore)
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
-        sem_flag.sem = NULL;
+        sem_flag.sem = AMP_SEMAPHORE_UNINITIALIZED;
     }
     
     
@@ -202,7 +202,7 @@ SUITE(amp_semaphore)
         sem_flag.check_flag = CHECK_FLAG_UNSET;
         
         
-        amp_thread_t thread = NULL;
+        amp_thread_t thread = AMP_THREAD_UNINITIALIZED;
         retval = amp_thread_create_and_launch(&thread,
                                               AMP_DEFAULT_ALLOCATOR,
                                               &amp_default_alloc,
@@ -222,7 +222,7 @@ SUITE(amp_semaphore)
                                              AMP_DEFAULT_ALLOCATOR,
                                              &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
-        thread = NULL;
+        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(CHECK_FLAG_SET, sem_flag.check_flag);
         
@@ -230,7 +230,7 @@ SUITE(amp_semaphore)
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
-        sem_flag.sem = NULL;
+        sem_flag.sem = AMP_SEMAPHORE_UNINITIALIZED;
     }
     
     
@@ -264,7 +264,7 @@ SUITE(amp_semaphore)
         // threads now pass one by one and store the check variable in an array
         // that is then tested to contain the correct value per element.
         
-        amp_semaphore_t sem = NULL;
+        amp_semaphore_t sem = AMP_SEMAPHORE_UNINITIALIZED;
         int retval = amp_semaphore_create(&sem,
                                           0,
                                           AMP_DEFAULT_ALLOCATOR,
@@ -282,7 +282,7 @@ SUITE(amp_semaphore)
             checks[i].check_flag = CHECK_FLAG_UNSET;
         }
         
-        amp_thread_array_t threads = NULL;
+        amp_thread_array_t threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         retval = amp_thread_array_create(&threads,
                                          threads_to_wait_count,
                                          AMP_DEFAULT_ALLOCATOR,
@@ -345,7 +345,7 @@ SUITE(amp_semaphore)
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
-        sem = NULL;
+        sem = AMP_SEMAPHORE_UNINITIALIZED;
     }
     
 } // SUITE(amp_raw_semaphore)

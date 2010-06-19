@@ -206,7 +206,7 @@ SUITE(amp_mutex)
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
-        amp_thread_t thread = NULL;
+        amp_thread_t thread = AMP_THREAD_UNINITIALIZED;
         retval = amp_thread_create_and_launch(&thread,
                                               AMP_DEFAULT_ALLOCATOR,
                                               &amp_default_alloc,
@@ -219,7 +219,7 @@ SUITE(amp_mutex)
                                              AMP_DEFAULT_ALLOCATOR,
                                              &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
-        thread = NULL;
+        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(CHECK_FLAG_SET, mutex_and_flag.check_flag);
         
@@ -272,7 +272,7 @@ SUITE(amp_mutex)
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
-        amp_thread_t thread = NULL;
+        amp_thread_t thread = AMP_THREAD_UNINITIALIZED;
         retval = amp_thread_create_and_launch(&thread, 
                                               AMP_DEFAULT_ALLOCATOR,
                                               &amp_default_alloc,
@@ -285,7 +285,7 @@ SUITE(amp_mutex)
                                              AMP_DEFAULT_ALLOCATOR,
                                              &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
-        thread = NULL;
+        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(CHECK_FLAG_SET, mutex_and_flag.check_flag);
         
@@ -371,7 +371,7 @@ SUITE(amp_mutex)
         size_t lock_counter = 0;
         
         
-        amp_thread_array_t threads = NULL;
+        amp_thread_array_t threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         retval = amp_thread_array_create(&threads,
                                          thread_count,
                                          AMP_DEFAULT_ALLOCATOR,
@@ -421,7 +421,7 @@ SUITE(amp_mutex)
                                           AMP_DEFAULT_ALLOCATOR,
                                           &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
-        threads = NULL;
+        threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         
         
         // Check that all threads increased the lock counter.

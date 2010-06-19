@@ -188,7 +188,7 @@ SUITE(amp_thread_array)
     TEST(create_single_func_launch_join_destroy)
     {
         
-        amp_thread_array_t thread_array = NULL;
+        amp_thread_array_t thread_array = AMP_THREAD_ARRAY_UNINITIALIZED;
         
         size_t const thread_count = 16;
         typedef std::vector<int> context_vector_type;
