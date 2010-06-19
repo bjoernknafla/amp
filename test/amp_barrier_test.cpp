@@ -329,7 +329,6 @@ SUITE(amp_barrier)
         
         retval = amp_platform_destroy(platform,
                                       AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
                                       &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         

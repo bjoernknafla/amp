@@ -132,15 +132,12 @@ int amp_platform_create(amp_platform_t* descr,
 
 int amp_platform_destroy(amp_platform_t descr,
                          void* allocator_context,
-                         amp_alloc_func_t alloc_func,
                          amp_dealloc_func_t dealloc_func)
 {
     assert(NULL != descr);
-    assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
     if (NULL == descr
-        || NULL == alloc_func
         || NULL == dealloc_func) {
         
         return EINVAL;

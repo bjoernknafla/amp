@@ -130,7 +130,6 @@ int main(int argc, char *argv[])
     
     int const error_code_destroy = amp_platform_destroy(platform,
                                                         allocator_context,
-                                                        &amp_default_alloc,
                                                         &amp_default_dealloc);
     exit_on_error(error_code_destroy);
     

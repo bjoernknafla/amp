@@ -110,13 +110,12 @@ extern "C" {
      * Finalizes descr (invalidates it).
      *
      * Returns AMP_SUCCESS on successful destruction of descr, otherwise
-     * another error code is returned and if allocator_context, alloc_func, and
+     * another error code is returned and if allocator_context, and
      * dealloc_func aren't valid to deallocate descr behavior is undefined and
      * descr will very likely be in an unusable and non-rescueable state.
      */
     int amp_platform_destroy(amp_platform_t descr,
                              void* allocator_context,
-                             amp_alloc_func_t alloc_func,
                              amp_dealloc_func_t dealloc_func);
     
     

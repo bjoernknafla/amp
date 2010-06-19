@@ -71,7 +71,6 @@ namespace {
         {
             int const error_code = amp_platform_destroy(platform,
                                                         AMP_DEFAULT_ALLOCATOR,
-                                                        &amp_default_alloc,
                                                         &amp_default_dealloc);
             
             assert(AMP_SUCCESS == error_code);
@@ -245,7 +244,6 @@ SUITE(amp_platform)
         
         error_code = amp_platform_destroy(platform,
                                           &allocator,
-                                          &statistics_collecting_alloc,
                                           &statistics_collecting_dealloc);
         assert(AMP_SUCCESS == error_code);
         
