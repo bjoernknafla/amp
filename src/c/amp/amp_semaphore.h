@@ -112,9 +112,9 @@ extern "C" {
      * TODO: @todo See how many of the backend specific error codes are really
      *             needed.
      */
-    int amp_semaphore_create(amp_semaphore_t *semaphore,
+    int amp_semaphore_create(amp_semaphore_t* semaphore,
                              amp_semaphore_counter_t init_count,
-                             void *allocator_context,
+                             void* allocator_context,
                              amp_alloc_func_t alloc_func,
                              amp_dealloc_func_t dealloc_func);
     
@@ -149,8 +149,8 @@ extern "C" {
      * @attention Don't call on a blocked semaphore, otherwise behavior is 
      *            undefined.
      */
-    int amp_semaphore_destroy(amp_semaphore_t semaphore,
-                              void *allocator_context,
+    int amp_semaphore_destroy(amp_semaphore_t* semaphore,
+                              void* allocator_context,
                               amp_dealloc_func_t dealloc_func);
     
     

@@ -43,9 +43,10 @@
 #include <errno.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_mutex.h"
 
+#error File at which I stopped moving amp to use new error handling and where MSVC will only see C89
 
 int amp_raw_mutex_init(amp_mutex_t mutex)
 {
@@ -56,8 +57,12 @@ int amp_raw_mutex_init(amp_mutex_t mutex)
     pthread_mutexattr_t mutex_attributes;
     retval = pthread_mutexattr_init(&mutex_attributes);
     if (0 != retval) {
-        /* assert(ENOMEN != retval && "Insufficient memory for mutex attributes."); */
-        return retval;
+        if (ENOMEM == retval) {
+            /* assert(ENOMEN != retval && "Insufficient memory for mutex attributes."); */
+            return AMP_NOMEM;
+        } else {
+            return AMP_ERROR;
+        }
     }
     
     /* Use an error checking mutex while asserts/debug mode are enabled. */

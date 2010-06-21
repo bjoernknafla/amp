@@ -49,8 +49,7 @@
 extern "C" {
 #endif
     
-    
-#define AMP_SUCCESS ((int)0)
+
     
     
 #if !defined(AMP_BOOL)

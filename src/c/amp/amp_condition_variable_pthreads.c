@@ -39,11 +39,11 @@
 
 #include "amp_condition_variable.h"
 
-#include <errno.h>
 #include <assert.h>
+#include <errno.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_mutex.h"
 #include "amp_raw_mutex.h"
 #include "amp_raw_condition_variable.h"
@@ -54,16 +54,29 @@ int amp_raw_condition_variable_init(amp_condition_variable_t cond)
 {
     assert(NULL != cond);
     
-    if (NULL == cond) {
-        return EINVAL;
-    }
-    
     int retval = pthread_cond_init(&cond->cond, NULL);
-    assert(EINVAL != retval && "Condition variable attribute is invalid.");
-    assert(EBUSY != retval && "Condition variable is already initialized.");
-    
-    assert( (0 == retval || EAGAIN == retval || ENOMEM == retval) 
-           && "Unexpected error.");
+    switch (retval){
+        case 0:
+            retval = AMP_SUCCESS;
+            break;
+        case ENOMEM: /* No enough memory to allocate condvar */
+            retval = AMP_NOMEM;
+            break;
+        case EAGAIN: /* Platform resources not available */
+            retval = AMP_ERROR;
+            break;
+        case EBUSY: /* Condition variable in use must not be initialized */
+            assert(0);
+            retval = AMP_BUSY;
+            break;
+        case EINVAL: /* Invalid attribute must not happen - internal error */
+            assert(0);
+            retval = AMP_ERROR;
+            break;
+        default:
+            assert(0);
+            retval = AMP_ERROR;
+    }
     
     return retval;
 }
@@ -74,15 +87,23 @@ int amp_raw_condition_variable_finalize(amp_condition_variable_t cond)
 {
     assert(NULL != cond);
     
-    if ( NULL == cond) {
-        return EINVAL;
-    }
-    
     int retval = pthread_cond_destroy(&cond->cond);
-    assert(EBUSY != retval && "Condition variable is in use.");
-    assert(EINVAL != retval && "Condition variable is invalid.");
-    
-    assert(0 == retval && "Unexpected error.");
+    switch (retval){
+        case 0:
+            retval = AMP_SUCCESS;
+            break;
+        case EBUSY: /* Condition variable in use must not be finalized */
+            assert(0);
+            retval = AMP_BUSY;
+            break;
+        case EINVAL: /* Condition variable is invalid which must not happen */
+            assert(0);
+            retval = AMP_ERROR;
+            break;
+        default:
+            assert(0);
+            retval = AMP_ERROR;
+    }
     
     return retval;
 }
@@ -94,9 +115,11 @@ int amp_condition_variable_broadcast(amp_condition_variable_t cond)
     assert(NULL != cond);
     
     int retval = pthread_cond_broadcast(&cond->cond);
-    assert(EINVAL != retval && "Condition variable is invlaid.");
-    
-    assert(0 == retval && "Unexpected error.");
+    if (0 != retval) {
+        /* Condition variable is invalid which must not happen */
+        assert(0);
+        retval = AMP_ERROR;
+    }
     
     return retval;
 }
@@ -108,9 +131,11 @@ int amp_condition_variable_signal(amp_condition_variable_t cond)
     assert(NULL != cond);
     
     int retval = pthread_cond_signal(&cond->cond);
-    assert(EINVAL != retval && "Condition variable is invalid.");
-    
-    assert(0 == retval && "Unexpected error.");
+    if (0 != retval) {
+        /* Condition variable is invalid which must not happen */
+        assert(0);
+        retval = AMP_ERROR;
+    }
     
     return retval;
 }
@@ -124,10 +149,11 @@ int amp_condition_variable_wait(amp_condition_variable_t cond,
     assert(NULL != mutex);
 
     int retval = pthread_cond_wait(&cond->cond, &mutex->mutex);
-
-    assert(EINVAL != retval && "Condition variable or mutex is invalid or different mutexes for concurrent waits or mutex is not owned by calling thread.");
-
-    assert(0 == retval && "Unexpected error.");
+    if (0 != retval) {
+        /* Condition variable or mutex are invalid which must not happen */
+        assert(0);
+        retval = AMP_ERROR;
+    }
     
     return retval;
 }

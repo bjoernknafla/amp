@@ -60,13 +60,12 @@
 #include "amp_platform.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 
 
 
@@ -103,14 +102,9 @@ static size_t amp_internal_query_sysctlbyname(char const* query_term)
 
 
 int amp_platform_get_installed_core_count(amp_platform_t descr, 
-                                    size_t* result)
+                                          size_t* result)
 {
     assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
     
     if (NULL != result ) {
         
@@ -123,14 +117,9 @@ int amp_platform_get_installed_core_count(amp_platform_t descr,
 
 
 int amp_platform_get_active_core_count(amp_platform_t descr, 
-                                           size_t* result)
+                                       size_t* result)
 {
     assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
     
     if (NULL != result ) {
         
@@ -143,14 +132,9 @@ int amp_platform_get_active_core_count(amp_platform_t descr,
 
 
 int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
-                                        size_t* result)
+                                              size_t* result)
 {
     assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
     
     if (NULL != result ) {
         
@@ -163,14 +147,9 @@ int amp_platform_get_installed_hwthread_count(amp_platform_t descr,
 
 
 int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
-                                               size_t* result)
+                                           size_t* result)
 {
     assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
     
     if (NULL != result ) {
         

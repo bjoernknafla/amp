@@ -74,6 +74,7 @@
 
 #include <amp/amp_stddef.h>
 #include <amp/amp_stdint.h>
+#include <amp/amp_return_code.h>
 #include <amp/amp_memory.h>
 #include <amp/amp_platform.h>
 #include <amp/amp_thread.h>

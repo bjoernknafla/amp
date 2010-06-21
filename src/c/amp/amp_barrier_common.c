@@ -85,22 +85,28 @@ int amp_barrier_create(amp_barrier_t* barrier,
 
 
 
-int amp_barrier_destroy(amp_barrier_t barrier,
+int amp_barrier_destroy(amp_barrier_t* barrier,
                         void* allocator_context,
                         amp_dealloc_func_t dealloc_func)
 {
     assert(NULL != barrier);
+    assert(NULL != *barrier);
     assert(NULL != dealloc_func);
     
     if (NULL == barrier
+        || NULL == *barrier
         || NULL == dealloc_func) {
         
         return EINVAL;
     }
     
-    int retval = amp_raw_barrier_finalize(barrier);
+    int retval = amp_raw_barrier_finalize(*barrier);
     if (AMP_SUCCESS == retval) {
-        retval = dealloc_func(allocator_context, barrier);
+        retval = dealloc_func(allocator_context, *barrier);
+        assert(AMP_SUCCESS == retval);
+        if (AMP_SUCCESS == retval) {
+            *barrier = AMP_BARRIER_UNINITIALIZED;
+        }
     }
     
     return retval;

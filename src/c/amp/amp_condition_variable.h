@@ -61,7 +61,7 @@ extern "C" {
 
 #define AMP_CONDITION_VARIABLE_UNINITIALIZED NULL
     
-    typedef struct amp_raw_condition_variable_s *amp_condition_variable_t;
+    typedef struct amp_raw_condition_variable_s* amp_condition_variable_t;
     
     
     /**
@@ -84,8 +84,8 @@ extern "C" {
      *         EINVAL is the condition variable is invalid or already 
      *         initialized.
      */
-    int amp_condition_variable_create(amp_condition_variable_t *cond,
-                                      void *allocator_context,
+    int amp_condition_variable_create(amp_condition_variable_t* cond,
+                                      void* allocator_context,
                                       amp_alloc_func_t alloc_func,
                                       amp_dealloc_func_t dealloc_func);
     
@@ -107,8 +107,8 @@ extern "C" {
      *         EINVAL the condition variable is invalid.
      *         EBUSY the condition variable is in use.
      */
-    int amp_condition_variable_destroy(amp_condition_variable_t cond,
-                                       void *allocator_context,
+    int amp_condition_variable_destroy(amp_condition_variable_t* cond,
+                                       void* allocator_context,
                                        amp_dealloc_func_t dealloc_func);
     
     /**

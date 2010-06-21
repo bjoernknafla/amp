@@ -41,27 +41,22 @@
 
 #include "amp_platform.h"
 
-
-#include <errno.h>
 #include <assert.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 
 
 
 int amp_platform_get_installed_core_count(amp_platform_t descr, 
                                           size_t* result)
-{
+{    
+    assert(NULL != descr);
+ 
+    /* Functionality not supported, no value returned. */
     (void)result;
     
-    assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
-    return ENOSYS;
+    return AMP_UNSUPPORTED;
 }
 
 
@@ -69,15 +64,12 @@ int amp_platform_get_installed_core_count(amp_platform_t descr,
 int amp_platform_get_active_core_count(amp_platform_t descr, 
                                            size_t* result)
 {
+    assert(NULL != descr); 
+    
+    /* Functionality not supported, no value returned. */
     (void)result;
-    
-    assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
-    return ENOSYS;
+        
+    return AMP_UNSUPPORTED;
 }
 
 
@@ -85,15 +77,12 @@ int amp_platform_get_active_core_count(amp_platform_t descr,
 int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
                                         size_t* result)
 {
-    (void)result;
-    
     assert(NULL != descr);
     
-    if (NULL == descr) {
-        return EINVAL;
-    }
+    /* Functionality not supported, no value returned. */
+    (void)result;
     
-    return ENOSYS;
+    return AMP_UNSUPPORTED;
 }
 
 
@@ -101,15 +90,12 @@ int amp_platform_get_installed_hwthread_count(amp_platform_t descr,
 int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result)
 {
-    (void)result;
-    
     assert(NULL != descr);
     
-    if (NULL == descr) {
-        return EINVAL;
-    }
+    /* Functionality not supported, no value returned. */
+    (void)result;
     
-    return ENOSYS;
+    return AMP_UNSUPPORTED;
 }
 
 

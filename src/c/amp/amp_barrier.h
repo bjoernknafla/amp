@@ -143,7 +143,7 @@ extern "C" {
      *         EBUSY might be returned if threads are waiting on the barrier.
      *             
      */
-    int amp_barrier_destroy(amp_barrier_t barrier,
+    int amp_barrier_destroy(amp_barrier_t* barrier,
                             void* allocator_context,
                             amp_dealloc_func_t dealloc_func);
     

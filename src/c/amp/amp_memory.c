@@ -34,7 +34,7 @@
 
 #include <stdlib.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 
 
 

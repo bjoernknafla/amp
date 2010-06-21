@@ -50,8 +50,8 @@
 
 
 
-int amp_thread_local_slot_create(amp_thread_local_slot_key_t *key,
-                                 void *allocator_context,
+int amp_thread_local_slot_create(amp_thread_local_slot_key_t* key,
+                                 void* allocator_context,
                                  amp_alloc_func_t alloc_func,
                                  amp_dealloc_func_t dealloc_func)
 {
@@ -88,23 +88,29 @@ int amp_thread_local_slot_create(amp_thread_local_slot_key_t *key,
 
 
 
-int amp_thread_local_slot_destroy(amp_thread_local_slot_key_t key,
-                                  void *allocator_context,
+int amp_thread_local_slot_destroy(amp_thread_local_slot_key_t* key,
+                                  void* allocator_context,
                                   amp_dealloc_func_t dealloc_func)
 {
     assert(NULL != key);
+    assert(NULL != *key);
     assert(NULL != dealloc_func);
     
     if (NULL == key
+        || NULL == *key
         || NULL == dealloc_func) {
         
         return EINVAL;
     }
     
-    int retval = amp_raw_thread_local_slot_finalize(key);
+    int retval = amp_raw_thread_local_slot_finalize(*key);
     if (AMP_SUCCESS == retval) {
         retval = dealloc_func(allocator_context,
-                              key);
+                              *key);
+        assert(AMP_SUCCESS == retval);
+        if (AMP_SUCCESS == retval) {
+            *key = AMP_THREAD_LOCAL_SLOT_UNINITIALIZED;
+        }
     }
     
     return retval;

@@ -59,27 +59,21 @@
 
 #include "amp_platform.h"
 
-#include <errno.h>
 #include <assert.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_internal_platform_win_system_info.h"
 #include "amp_internal_platform_win_system_logical_processor_information.h"
 
 
 
 int amp_platform_get_installed_core_count(amp_platform_t descr, 
-                                    size_t* result)
+                                          size_t* result)
 {
+    int return_value = AMP_UNSUPPORTED;
+    
     assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
-    
-    int return_value = ENOSYS;
     
     if (NULL != result ) {
         
@@ -104,15 +98,12 @@ int amp_platform_get_installed_core_count(amp_platform_t descr,
 int amp_platform_get_active_core_count(amp_platform_t descr, 
                                            size_t* result)
 {
-    (void)result;
-    
     assert(NULL != descr);
     
-    if (NULL == descr) {
-        return EINVAL;
-    }
+    /* Functionality not supported, no value returned. */
+    (void)result;
     
-    return ENOSYS;
+    return AMP_UNSUPPORTED;
 }
 
 
@@ -120,15 +111,12 @@ int amp_platform_get_active_core_count(amp_platform_t descr,
 int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
                                         size_t* result)
 {
-    (void)result;
-    
     assert(NULL != descr);
     
-    if (NULL == descr) {
-        return EINVAL;
-    }
+    /* Functionality not supported, no value returned. */
+    (void)result;
     
-    return ENOSYS;
+    return AMP_UNSUPPORTED;
 }
 
 
@@ -136,15 +124,12 @@ int amp_platform_get_installed_hwthread_count(amp_platform_t descr,
 int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result)
 {
-    (void)result;
-    
     assert(NULL != descr);
     
-    if (NULL == descr) {
-        return EINVAL;
-    }
+    /* Functionality not supported, no value returned. */
+    (void)result;
     
-    return ENOSYS;
+    return AMP_UNSUPPORTED;
 }
 
 

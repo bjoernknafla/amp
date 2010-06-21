@@ -35,11 +35,10 @@
 
 #include "amp_platform.h"
 
-#include <errno.h>
 #include <assert.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_internal_platform_win_system_info.h"
 #include "amp_internal_platform_win_system_logical_processor_information.h"
 
@@ -53,50 +52,47 @@
 
 
 int amp_platform_get_installed_core_count(amp_platform_t descr, 
-                                    size_t* result)
+                                          size_t* result)
 {
+    struct amp_internal_platform_win_info_s info;
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != descr);
     
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
-    struct amp_internal_platform_win_info_s info;
     info.installed_core_count = 0;
     info.active_core_count = 0;
     info.installed_hwthread_count = 0;
     info.active_hwthread_count = 0;
     
-    
-    int return_value = amp_internal_platform_win_system_logical_processor_information(&info,
-                                                                                      descr->allocator_context,
-                                                                                      descr->alloc_func,
-                                                                                      descr->dealloc_func);
+    retval = amp_internal_platform_win_system_logical_processor_information(&info,
+                                                                            descr->allocator_context,
+                                                                            descr->alloc_func,
+                                                                            descr->dealloc_func);
     
     /* Fall back on Win2000 compatible platform query function if 
      * the last call returned ENOSYS to indicate that the current platform
      * does not support the query method.
      */
-    if (ENOSYS == return_value) {
+    if (AMP_UNSUPPORTED == retval) {
         
-        return_value = amp_internal_platform_win_system_info(&info);
+        retval = amp_internal_platform_win_system_info(&info);
     }
     
-    if (AMP_SUCCESS == return_value) {
+    if (AMP_SUCCESS == retval) {
         
         if (0 == info.installed_core_count) {
-            return_value = ENOSYS;
+            retval = AMP_UNSUPPORTED;
         } else {
-            return_value = AMP_SUCCESS;
+            retval = AMP_SUCCESS;
         }
         
-        if (NULL != result && AMP_SUCCESS == return_value) {
+        if (NULL != result && AMP_SUCCESS == retval) {
             
             *result = info.installed_core_count;
         }
     }
     
-    return return_value;
+    return retval;
 }
 
 
@@ -104,80 +100,71 @@ int amp_platform_get_installed_core_count(amp_platform_t descr,
 int amp_platform_get_active_core_count(amp_platform_t descr, 
                                            size_t* result)
 {
-    (void)result;
-    
     assert(NULL != descr);
     
-    if (NULL == descr) {
-        return EINVAL;
-    }
+    /* Functionality not supported, no value returned. */
+    (void)result;
     
-    return ENOSYS;
+    return AMP_UNSUPPORTED;
 }
 
 
 
 int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
-                                        size_t* result)
+                                              size_t* result)
 {
+    struct amp_internal_platform_win_info_s info;
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != descr);
     
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
-    struct amp_internal_platform_win_info_s info;
     info.installed_core_count = 0;
     info.active_core_count = 0;
     info.installed_hwthread_count = 0;
     info.active_hwthread_count = 0;
     
-    
-    int return_value = amp_internal_platform_win_system_logical_processor_information(&info,
-                                                                                      descr->allocator_context,
-                                                                                      descr->alloc_func,
-                                                                                      descr->dealloc_func);
+    retval = amp_internal_platform_win_system_logical_processor_information(&info,
+                                                                            descr->allocator_context,
+                                                                            descr->alloc_func,
+                                                                            descr->dealloc_func);
     
     /* Fall back on Win2000 compatible platform query function if 
      * the last call returned ENOSYS to indicate that the current platform
      * does not support the query method.
      */
-    if (ENOSYS == return_value) {
+    if (AMP_UNSUPPORTED == retval) {
         
-        return_value = amp_internal_platform_win_system_info(&info);
+        retval = amp_internal_platform_win_system_info(&info);
     }
     
-    if (AMP_SUCCESS == return_value) {
+    if (AMP_SUCCESS == retval) {
         
         if (0 == info.installed_hwthread_count) {
-            return_value = ENOSYS;
+            retval = AMP_UNSUPPORTED;
         } else {
-            return_value = AMP_SUCCESS;
+            retval = AMP_SUCCESS;
         }
         
-        if (NULL != result && AMP_SUCCESS == return_value) {
+        if (NULL != result && AMP_SUCCESS == retval) {
             
             *result = info.installed_hwthread_count;
         }
     }
     
-    return return_value;
+    return retval;
 }
 
 
 
 int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
-                                               size_t* result)
+                                           size_t* result)
 {
+    assert(NULL != descr);
+ 
+    /* Functionality not supported, no value returned. */
     (void)result;
     
-    assert(NULL != descr);
-    
-    if (NULL == descr) {
-        return EINVAL;
-    }
-    
-    return ENOSYS;
+    return AMP_UNSUPPORTED;
 }
 
 

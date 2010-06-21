@@ -40,10 +40,9 @@
 #include "amp_platform.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_platform.h"
 
 
@@ -57,13 +56,6 @@ int amp_raw_platform_init(amp_platform_t descr,
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
-    if (NULL == descr
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
     descr->allocator_context = allocator_context;
     descr->alloc_func = alloc_func;
     descr->dealloc_func = dealloc_func;
@@ -75,11 +67,6 @@ int amp_raw_platform_init(amp_platform_t descr,
 int amp_raw_platform_finalize(amp_platform_t descr)
 {
     assert(NULL != descr);
-    
-    if (NULL == descr) {
-        
-        return EINVAL;
-    }
     
     descr->allocator_context = NULL;
     descr->alloc_func = NULL;
@@ -95,29 +82,25 @@ int amp_platform_create(amp_platform_t* descr,
                         amp_alloc_func_t alloc_func,
                         amp_dealloc_func_t dealloc_func)
 {
+    amp_platform_t tmp_platform = AMP_PLATFORM_UNINITIALIZED;
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != descr);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
     *descr = AMP_PLATFORM_UNINITIALIZED;
     
-    if (NULL == descr
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
-    amp_platform_t tmp_platform = (amp_platform_t)alloc_func(allocator_context,
-                                                             sizeof(struct amp_raw_platform_s));
+    tmp_platform = (amp_platform_t)alloc_func(allocator_context,
+                                              sizeof(*tmp_platform));
     if (NULL == tmp_platform) {
-        return ENOMEM;
+        return AMP_NOMEM;
     }
     
-    int const retval = amp_raw_platform_init(tmp_platform,
-                                             allocator_context,
-                                             alloc_func,
-                                             dealloc_func);
+    retval = amp_raw_platform_init(tmp_platform,
+                                   allocator_context,
+                                   alloc_func,
+                                   dealloc_func);
     if (AMP_SUCCESS == retval) {
         *descr = tmp_platform;
     } else {
@@ -130,24 +113,25 @@ int amp_platform_create(amp_platform_t* descr,
 
 
 
-int amp_platform_destroy(amp_platform_t descr,
+int amp_platform_destroy(amp_platform_t* descr,
                          void* allocator_context,
                          amp_dealloc_func_t dealloc_func)
 {
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != descr);
+    assert(NULL != *descr);
     assert(NULL != dealloc_func);
     
-    if (NULL == descr
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
-    int retval = amp_raw_platform_finalize(descr);
+    retval = amp_raw_platform_finalize(*descr);
     if (AMP_SUCCESS == retval) {
         retval = dealloc_func(allocator_context,
-                                    descr);
-        assert(AMP_SUCCESS == retval);
+                              *descr);
+        if (AMP_SUCCESS == retval) {
+            *descr = AMP_PLATFORM_UNINITIALIZED;
+        } else {
+            retval = AMP_ERROR;
+        }
     }
     
     return retval;

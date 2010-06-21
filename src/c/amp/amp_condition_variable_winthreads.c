@@ -59,11 +59,10 @@
 #include "amp_condition_variable.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <limits.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_internal_winthreads_critical_section_config.h"
 #include "amp_mutex.h"
 #include "amp_raw_mutex.h"
@@ -73,38 +72,34 @@
 
 int amp_raw_condition_variable_init(amp_condition_variable_t cond)
 {
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != cond);
     
-    if (NULL == cond) {
-        return EINVAL;
-    }
-    
-    
-
-    
-    int retval = InitializeCriticalSectionAndSpinCount(&cond->access_waiting_threads_count_critsec,
+    retval = InitializeCriticalSectionAndSpinCount(&cond->access_waiting_threads_count_critsec,
                                                    AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT | AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000);
     
     if (FALSE == retval) {
-        
-        
-        return ENOMEM;
+        DWORD const last_error = GetLastError();
+        /**
+         * TODO: @todo Differentiate between no-memory and other errors.
+         */
+        return AMP_ERROR;
     }
-    
 
-    
     retval = InitializeCriticalSectionAndSpinCount(&cond->wake_waiting_threads_critsec,
                                                    AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT | AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000);
     if (FALSE  == retval) {
-        /* GetLastError has more infos. */
+        DWORD const last_error = GetLastError();
+        /**
+         * TODO: @todo Differentiate between no-memory and other errors.
+         */
+        
         DeleteCriticalSection(&cond->access_waiting_threads_count_critsec);
         
-        return EAGAIN;
+        return AMP_ERROR;
     }
-    
-    
-    
-    
+
     /* Assuming that less threads exist than max possible semaphore count.
      */
     cond->waking_waiting_threads_count_control_sem = CreateSemaphore(NULL, /* No inheritance to child processes */
@@ -114,31 +109,14 @@ int amp_raw_condition_variable_init(amp_condition_variable_t cond)
     
     if (NULL == cond->waking_waiting_threads_count_control_sem) {
         DWORD const last_error = GetLastError();
+        assert(ERROR_ALREADY_EXISTS != last_error);
         
         DeleteCriticalSection(&cond->wake_waiting_threads_critsec);
         DeleteCriticalSection(&cond->access_waiting_threads_count_critsec);
         
-        int ret_error_code = AMP_SUCCESS;
-        
-        switch (last_error) {
-            case ERROR_TOO_MANY_SEMAPHORES:
-                ret_error_code = EAGAIN;
-                break;
-            default:
-                /* TODO: @todo Check which code to use to flag an unknown error. 
-                 */
-                assert(false && "Unknown error.");
-                ret_error_code = EINVAL;
-                break;
-        }
-        
-        return ret_error_code;
+        return AMP_ERROR;
     }
-    
-    
-    
-    
-    
+
     cond->finished_waking_waiting_threads_event = CreateEvent(NULL, /* Default security and no inheritance to child processes */
                                                               FALSE, /* No manual reset */
                                                               0, /* Initially not signaled */
@@ -146,52 +124,25 @@ int amp_raw_condition_variable_init(amp_condition_variable_t cond)
                                                               );
     
     if (NULL == cond->finished_waking_waiting_threads_event) {
-        
+        BOOL close_retval = FALSE;
         DWORD const create_event_error = GetLastError();
+        assert(ERROR_ALREADY_EXISTS != last_error);
         
         DeleteCriticalSection(&cond->wake_waiting_threads_critsec);
         DeleteCriticalSection(&cond->access_waiting_threads_count_critsec);
 
-        BOOL const close_retval = CloseHandle(&cond->waking_waiting_threads_count_control_sem);
-        int ret_error_code = AMP_SUCCESS;
+        close_retval = CloseHandle(&cond->waking_waiting_threads_count_control_sem);
         
         if (FALSE == close_retval) {
             DWORD const close_handle_error = GetLastError();
-            
-            switch (close_handle_error) {
-                case ERROR_SEM_IS_SET:
-                    /* TODO: @todo Need a Windows dev expert to check if this is the 
-                     * right error code interpretation. 
-                     */
-                    assert(false && "Semaphore is in use.");
-                    
-                    ret_error_code = EBUSY;
-                    break;
-                case ERROR_SEM_OWNER_DIED:
-                    /* TODO: @todo Check if this error can really happen. */
-                    assert(false 
-                           && "It shouldn't happen that the previous ownership of the semaphore has ended.");
-                    ret_error_code = EINVAL;
-                    break;
-                case ERROR_SEM_NOT_FOUND:
-                    assert(false && "It shouldn't happen that the (not) specified system semaphore name wasn't found.");
-                    ret_error_code = EINVAL;
-                    break;
-                default:
-                    /* TODO: @todo Check which code to use to flag an unknown error. 
-                     */
-                    assert(false && "Unknown error.");
-                    ret_error_code = EINVAL;
-                    break;
-            }
-            
-            return ret_error_code;
+            assert(ERROR_INVALID_HANDLE != close_handle_error);
+            assert(0);
         }
         
         /* I don't know the possible return values of GetLastError if event
          * creation didn't work - just returning an error code.
          */
-        return EAGAIN;
+        return AMP_ERROR;
     }
     
     
@@ -217,62 +168,34 @@ int amp_raw_condition_variable_init(amp_condition_variable_t cond)
 
 int amp_raw_condition_variable_finalize(amp_condition_variable_t cond)
 {
-    assert(NULL != cond);
+    BOOL close_sem = FALSE;
+    DWORD close_sem_error = 0;
+    BOOL close_event = FALSE;
+    DWORD close_event_error = 0;
+    int ret_error_code = AMP_SUCCESS;
     
-    if (NULL == cond) {
-        return EINVAL;
-    }
+    assert(NULL != cond);
     
     DeleteCriticalSection(&cond->wake_waiting_threads_critsec);
     DeleteCriticalSection(&cond->access_waiting_threads_count_critsec);
     
-    BOOL const close_sem = CloseHandle(cond->waking_waiting_threads_count_control_sem);
-    DWORD const close_sem_error = GetLastError();
-    BOOL const close_event = CloseHandle(cond->finished_waking_waiting_threads_event);
-    DWORD const close_event_error = GetLastError();
-    
-    int ret_error_code = AMP_SUCCESS;
-    
+    close_sem = CloseHandle(cond->waking_waiting_threads_count_control_sem);
+    close_sem_error = GetLastError();
+    close_event = CloseHandle(cond->finished_waking_waiting_threads_event);
+    close_event_error = GetLastError();
     
     /* If multiple handle closing functions return an error the semaphore error 
      * will hide the event error.
      */
-    if (FALSE == close_event) {
+    if (FALSE == close_event || FALSE == close_sem) {
         /*
          * TODO: @todo Find out which error codes GetLastError returns when
          *             closing and event handler fails.
          */
-        
-        ret_error_code = EINVAL;
-    }
-    
-    if (FALSE == close_sem) {
-        switch (close_sem_error) {
-            case ERROR_SEM_IS_SET:
-                /* TODO: @todo Need a Windows dev expert to check if this is the 
-                 * right error code interpretation. 
-                 */
-                assert(false && "Semaphore is in use.");
-                
-                ret_error_code = EBUSY;
-                break;
-            case ERROR_SEM_OWNER_DIED:
-                /* TODO: @todo Check if this error can really happen. */
-                assert(false 
-                       && "It shouldn't happen that the previous ownership of the semaphore has ended.");
-                ret_error_code = EINVAL;
-                break;
-            case ERROR_SEM_NOT_FOUND:
-                assert(false && "It shouldn't happen that the (not) specified system semaphore name wasn't found.");
-                ret_error_code = EINVAL;
-                break;
-            default:
-                /* TODO: @todo Check which code to use to flag an unknown error. 
-                 */
-                assert(false && "Unknown error.");
-                ret_error_code = EINVAL;
-                break;
-        }
+        assert(ERROR_INVALID_HANDLE != close_sem_error);
+        assert(ERROR_INVALID_HANDLE != close_event_error);
+        assert(0);
+        ret_error_code = AMP_ERROR;
     }
         
     return ret_error_code;
@@ -282,55 +205,85 @@ int amp_raw_condition_variable_finalize(amp_condition_variable_t cond)
 
 int amp_condition_variable_broadcast(amp_condition_variable_t cond)
 {
+    LONG waiting_thread_count = 0l;
+    
     assert(NULL != cond);
     
     EnterCriticalSection(&cond->wake_waiting_threads_critsec);
 
-    
-    
-    LONG const waiting_thread_count =  cond->waiting_thread_count;
+    waiting_thread_count =  cond->waiting_thread_count;
     
     if (0 < waiting_thread_count) {
         
+        LONG prev_sem_count = 0l;
+        BOOL release_retval = FALSE;
+        DWORD wait_retval = 0;
+        
         cond->broadcast_in_progress = TRUE;
 
-        /* Assuming that less threads exist than max possible semaphore count.
+        /* Assuming that less threads exist than configured max semaphore count.
+         *
+         * The next assert is just for documentation purposes - as 
+         * waiting_thread_count has type LONG the greater or equal comparison
+         * with LONG_MAX will never trigger.
+         *
          * TODO: @todo Decide if to spin here if the assumption doesn't hold
          *             true in the future?
          */
-        assert(waiting_thread_count <= LONG_MAX 
-               && "Assuming that less threads exist than max possible semaphore count.");
+        assert(waiting_thread_count <= LONG_MAX);
         
         /* Releasing the sem here and waiting on it should update the memory of 
          * the waiting threads to see that a broadcast is in progress.
+         *
+         * TODO: @todo Add a specific error condition assertion to handle a
+         *             possible error even if not in debug mode.
          */
-        LONG prev_sem_count = 0;
-        BOOL const release_retval = ReleaseSemaphore(cond->waking_waiting_threads_count_control_sem,
-                                                     waiting_thread_count,
-                                                     &prev_sem_count /* No interest in the previous sem count. */
-                                                     );
-#if !defined(NDEBUG)
+        release_retval = ReleaseSemaphore(cond->waking_waiting_threads_count_control_sem,
+                                          waiting_thread_count,
+                                          &prev_sem_count /* No interest in the previous sem count. */
+                                          );
         assert(0l == prev_sem_count);
         assert(TRUE == release_retval);
         if (FALSE == release_retval) {
+            /* Calling GetLastError to help while debugging but otherwise
+             * ignoring it as I have not enough info about possible error codes.
+             */
+            DWORD const last_error = GetLastError();
+            
+            /* If an error occured while releasing the semaphore it is 
+             * unproblematic to return with an error code IF the call had no
+             * side effects - the MSDN documentation does not help here.
+             */
             cond->broadcast_in_progress = FALSE;
             LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
             
-            return EINVAL;
+            return AMP_ERROR;
         }
-#endif
         
-        DWORD const wait_retval = WaitForSingleObject(cond->finished_waking_waiting_threads_event,
-                                                     INFINITE);
-#if !defined(NDEBUG)
+        wait_retval = WaitForSingleObject(cond->finished_waking_waiting_threads_event,
+                                          INFINITE);
         assert(WAIT_OBJECT_0 == wait_retval);
         if (WAIT_OBJECT_0 != wait_retval) {
-            cond->broadcast_in_progress = FALSE;
-            LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
+            /* Calling GetLastError to help while debugging but otherwise
+             * ignoring it as I have not enough info about possible error codes.
+             */
+            DWORD const last_error = GetLastError();
             
-            return EINVAL;
+            /* If an error occurs here the semaphore has already been released,
+             * and there is no way to get the condition variable back into a 
+             * valid state. Therefore the boardcast_in_progress state remains
+             * set to signal in which state something went wrong and the 
+             * critical section is not left. If the user does not check the 
+             * error return code the above measurements might trigger an error
+             * down the road - hopefully near the real culprit.
+             *
+             * cond->broadcast_in_progress = FALSE;
+             * LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
+             */
+            
+            return AMP_ERROR;
         }
-#endif
+
         cond->broadcast_in_progress = FALSE;
         
     }
@@ -344,15 +297,18 @@ int amp_condition_variable_broadcast(amp_condition_variable_t cond)
 
 int amp_condition_variable_signal(amp_condition_variable_t cond)
 {
+    BOOL at_least_one_waiting_thread = FALSE;
+    
     assert(NULL != cond);
 
     EnterCriticalSection(&cond->wake_waiting_threads_critsec);
 
     
-    BOOL at_least_one_waiting_thread = (0l != cond->waiting_thread_count);
+    at_least_one_waiting_thread = (0l != cond->waiting_thread_count);
     
     if (at_least_one_waiting_thread) {
         LONG prev_sem_count = 0;
+        DWORD wait_retval = 0;
         /* Assuming that less threads exist than max possible semaphore count.
          * TODO: @todo Decide if to spin here if the assumption doesn't hold
          *             true in the future?
@@ -361,26 +317,32 @@ int amp_condition_variable_signal(amp_condition_variable_t cond)
                                                      1, 
                                                      &prev_sem_count /* No interest in the previous sem count. */
                                                      );
-#if !defined(NDEBUG)
         assert(0l == prev_sem_count);
         assert(TRUE == release_retval);
         if (FALSE == release_retval) {
             LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
             
-            return EINVAL;
+            return AMP_ERROR;
         }
-#endif
         
-        DWORD const wait_retval = WaitForSingleObject(cond->finished_waking_waiting_threads_event,
-                                                     INFINITE);
-#if !defined(NDEBUG)
+        wait_retval = WaitForSingleObject(cond->finished_waking_waiting_threads_event,
+                                          INFINITE);
+
         assert(WAIT_OBJECT_0 == wait_retval);
         if (WAIT_OBJECT_0 != wait_retval) {
-            LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
+            /* If an error occurs here the semaphore has already been released,
+             * and there is no way to get the condition variable back into a 
+             * valid state. Therefore the 
+             * critical section is not left. If the user does not check the 
+             * error return code the above measurements might trigger an error
+             * down the road - hopefully near the real culprit.
+             *
+             * LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
+             */
             
-            return EINVAL;
+            return AMP_ERROR;
         }
-#endif
+
     }
     
     LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
@@ -393,6 +355,12 @@ int amp_condition_variable_signal(amp_condition_variable_t cond)
 int amp_condition_variable_wait(amp_condition_variable_t cond,
                                 amp_mutex_t mutex)
 {
+    int retval = AMP_UNSUPPORTED;
+    DWORD wait_retval = 0;
+    BOOL broadcast_in_progress = FALSE;
+    LONG count = 0;
+    BOOL all_waiting_threads_awake = TRUE;
+    
     /*
      * TODO: @todo Rewrite this function to prevent duplication of error 
      *             handling code. Use goto or nested if-else-branches?
@@ -429,21 +397,15 @@ int amp_condition_variable_wait(amp_condition_variable_t cond,
      * Current mutex implementation should assert in debug mode and not
      * return any error in non-debug mode.
      */
-    int retval = amp_mutex_unlock(mutex);
-#if !defined(NDEBUG)
-    assert(EINVAL != retval && "Mutex is invalid.");
-    assert(EPERM != retval && "Mutex is owned by another thread.");
-    assert(AMP_SUCCESS == retval && "Unexpected error.");
+    retval = amp_mutex_unlock(mutex);
+    assert(AMP_SUCCESS == retval);
     if (AMP_SUCCESS != retval) {
         --(cond->waiting_thread_count);
 
         LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
         
-        /* EINVAL is returned to signal different errors, e.g. not EPERM. */
-        return EINVAL;
+        return AMP_ERROR;
     }
-#endif
-    
     
     LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
     
@@ -451,12 +413,17 @@ int amp_condition_variable_wait(amp_condition_variable_t cond,
      * TODO: @todo Decide if to spin here if the assumption doesn't hold
      *             true in the future?
      */
-    DWORD const wait_retval = WaitForSingleObject(                                                             cond->waking_waiting_threads_count_control_sem, 
-                                                             INFINITE
-                                                             );
-#if !defined(NDEBUG)
+    wait_retval = WaitForSingleObject(                                                             cond->waking_waiting_threads_count_control_sem, 
+                                      INFINITE
+                                      );
     assert(WAIT_OBJECT_0 == wait_retval);
     if (WAIT_OBJECT_0 != wait_retval) {
+        /* If wait_retval indicates an error occured then the semaphore might
+         * be invalid.
+         * Should such an error clean up after itself or not?
+         * This code version tries to clean up after an error and returns an
+         * error code.
+         */
         EnterCriticalSection(&cond->wake_waiting_threads_critsec);
         EnterCriticalSection(&cond->access_waiting_threads_count_critsec);
         {
@@ -465,17 +432,11 @@ int amp_condition_variable_wait(amp_condition_variable_t cond,
         LeaveCriticalSection(&cond->access_waiting_threads_count_critsec);
         LeaveCriticalSection(&cond->wake_waiting_threads_critsec);
         
-        int retval = amp_mutex_lock(mutex);
-        /* Error would surface earlier */
-        assert(EINVAL != retval && "Mutex is invalid.");
-        /* Error would surface earlier */
-        assert(EDEADLK != retval && "Mutex is already locked by this thread.");
-        assert(AMP_SUCCESS == retval && "Unexpected error.");
+        retval = amp_mutex_lock(mutex);
+        assert(AMP_SUCCESS == retval);
         
-        return EINVAL;
+        return AMP_ERROR;
     }
-#endif
-
     
     /* Control and synchronize access to the waiting thread counter. It is only
      * accessed from awoken waiting threads.
@@ -487,8 +448,8 @@ int amp_condition_variable_wait(amp_condition_variable_t cond,
      *             member field is also needed.
      */
 
-    BOOL const broadcast_in_progress = cond->broadcast_in_progress; /* FALSE; */
-    LONG count = 0;
+    broadcast_in_progress = cond->broadcast_in_progress; /* FALSE; */
+    count = 0;
     EnterCriticalSection(&cond->access_waiting_threads_count_critsec);
     {
         count = --(cond->waiting_thread_count);
@@ -502,7 +463,7 @@ int amp_condition_variable_wait(amp_condition_variable_t cond,
     }
     LeaveCriticalSection(&cond->access_waiting_threads_count_critsec);
     
-    BOOL all_waiting_threads_awake = TRUE;
+    all_waiting_threads_awake = TRUE;
     if (TRUE == broadcast_in_progress && count > 0) {
         all_waiting_threads_awake = FALSE;
     }
@@ -513,7 +474,6 @@ int amp_condition_variable_wait(amp_condition_variable_t cond,
          * themselves to the count.
          */
         BOOL const set_event_retval = SetEvent(cond->finished_waking_waiting_threads_event);
-#if !defined(NDEBUG)
         assert(TRUE == set_event_retval);
         if (FALSE == set_event_retval) {
             /* This means that the signal or broadcast call will never return...
@@ -527,16 +487,11 @@ int amp_condition_variable_wait(amp_condition_variable_t cond,
              * Current mutex implementation should assert in debug mode and not
              * return any error in non-debug mode.
              */
-            int retval = amp_mutex_lock(mutex);
-            /* Error would surface earlier */
-            assert(EINVAL != retval && "Mutex is invalid.");
-            /* Error would surface earlier */
-            assert(EDEADLK != retval && "Mutex is already locked by this thread."); 
-            assert(AMP_SUCCESS == retval && "Unexpected error.");
+            retval = amp_mutex_lock(mutex);
+            assert(AMP_SUCCESS == retval);
             
-            return EINVAL;
+            return AMP_ERROR;
         }
-#endif
     }
     
     
@@ -546,11 +501,7 @@ int amp_condition_variable_wait(amp_condition_variable_t cond,
      * return any error in non-debug mode.
      */
     retval = amp_mutex_lock(mutex);
-    /* Error would surface earlier */
-    assert(EINVAL != retval && "Mutex is invalid.");
-    /* Error would surface earlier */
-    assert(EDEADLK != retval && "Mutex is already locked by this thread."); 
-    assert(AMP_SUCCESS == retval && "Unexpected error.");
+    assert(AMP_SUCCESS == retval);
     
     return AMP_SUCCESS;
 }

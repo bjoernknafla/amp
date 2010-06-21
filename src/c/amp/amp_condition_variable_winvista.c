@@ -43,10 +43,9 @@
 #include "amp_condition_variable.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_mutex.h"
 #include "amp_raw_mutex.h"
 #include "amp_raw_condition_variable.h"
@@ -55,10 +54,6 @@
 int amp_raw_condition_variable_init(amp_condition_variable_t cond)
 {
     assert(NULL != cond);
-    
-    if (NULL == cond) {
-        return EINVAL;
-    }
     
     /* No value returned. */
     InitializeConditionVariable(&cond->cond);
@@ -71,10 +66,6 @@ int amp_raw_condition_variable_init(amp_condition_variable_t cond)
 int amp_raw_condition_variable_finalize(amp_condition_variable_t cond)
 {
     assert(NULL != cond);
-    
-    if (NULL == cond) {
-        return EINVAL;
-    }
     
     /* Nothing to do... */
     
@@ -110,13 +101,20 @@ int amp_condition_variable_signal(amp_condition_variable_t cond)
 int amp_condition_variable_wait(amp_condition_variable_t cond,
                                 amp_mutex_t mutex)
 {
+    BOOL retval = FALSE;
+    
     assert(NULL != cond);
     assert(NULL != mutex);
     
-    BOOL retval = SleepConditionVariable(&cond->cond, &mutex->critical_section, INFINITE);
-    assert(FALSE != retval && "Unexpected error.");
-    
-    /* GetLastError has more infos in case of error. */
+    retval = SleepConditionVariableCS(&cond->cond, 
+                                      &mutex->critical_section, 
+                                      INFINITE);
+    if (FALSE == retval) {
+        DWORD const last_error = GetLastError();
+        assert(0);
+        
+        return AMP_ERROR;
+    }
     
     return AMP_SUCCESS;
 }

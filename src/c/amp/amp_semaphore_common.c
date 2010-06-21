@@ -46,9 +46,9 @@
 
 
 
-int amp_semaphore_create(amp_semaphore_t *semaphore,
+int amp_semaphore_create(amp_semaphore_t* semaphore,
                          amp_semaphore_counter_t init_count,
-                         void *allocator_context,
+                         void* allocator_context,
                          amp_alloc_func_t alloc_func,
                          amp_dealloc_func_t dealloc_func)
 {
@@ -89,23 +89,29 @@ int amp_semaphore_create(amp_semaphore_t *semaphore,
 
 
 
-int amp_semaphore_destroy(amp_semaphore_t semaphore,
-                          void *allocator_context,
+int amp_semaphore_destroy(amp_semaphore_t* semaphore,
+                          void* allocator_context,
                           amp_dealloc_func_t dealloc_func)
 {
     assert(NULL != semaphore);
+    assert(NULL != *semaphore);
     assert(NULL != dealloc_func);
     
     if (NULL == semaphore
+        || NULL == semaphore
         || NULL == dealloc_func) {
         
         return EINVAL;
     }
     
-    int retval = amp_raw_semaphore_finalize(semaphore);
+    int retval = amp_raw_semaphore_finalize(*semaphore);
     if (AMP_SUCCESS == retval) {
         retval = dealloc_func(allocator_context,
-                              semaphore);
+                              *semaphore);
+        assert(AMP_SUCCESS == retval);
+        if (AMP_SUCCESS == retval) {
+            *semaphore = AMP_SEMAPHORE_UNINITIALIZED;
+        }
     }
     
     return retval;

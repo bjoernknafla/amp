@@ -39,36 +39,32 @@
 #include "amp_mutex.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_mutex.h"
 
 
-int amp_mutex_create(amp_mutex_t *mutex,
-                     void *allocator_context,
+
+int amp_mutex_create(amp_mutex_t* mutex,
+                     void* allocator_context,
                      amp_alloc_func_t alloc_func,
                      amp_dealloc_func_t dealloc_func)
 {
+    amp_mutex_t tmp_mutex = AMP_MUTEX_UNINITIALIZED;
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != mutex);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
-    if (NULL == mutex
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
     amp_mutex_t tmp_mutex = (amp_mutex_t)alloc_func(allocator_context,
                                                     sizeof(struct amp_raw_mutex_s));
     if (NULL == tmp_mutex) {
-        return ENOMEM;
+        return AMP_NOMEM;
     }
  
-    int const retval = amp_raw_mutex_init(tmp_mutex);
+    retval = amp_raw_mutex_init(tmp_mutex);
     if (AMP_SUCCESS == retval) {
         *mutex = tmp_mutex;
     } else {
@@ -82,23 +78,24 @@ int amp_mutex_create(amp_mutex_t *mutex,
 
 
 
-int amp_mutex_destroy(amp_mutex_t mutex,
-                      void *allocator_context,
+int amp_mutex_destroy(amp_mutex_t* mutex,
+                      void* allocator_context,
                       amp_dealloc_func_t dealloc_func)
 {
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != mutex);
+    assert(NULL != *mutex);
     assert(NULL != dealloc_func);
     
-    if (NULL == mutex
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
-    int retval = amp_raw_mutex_finalize(mutex);
+    retval = amp_raw_mutex_finalize(*mutex);
     if (AMP_SUCCESS == retval) {
         retval = dealloc_func(allocator_context,
-                              mutex);
+                              *mutex);
+        assert(AMP_SUCCESS == retval);
+        if (AMP_SUCCESS == retval) {
+            *mutex = AMP_MUTEX_UNINITIALIZED;
+        }
     }
     
     return retval;

@@ -90,9 +90,9 @@ extern "C" {
      *         
      * TODO: @todo Decide if to allow @c 0 as a thread count.
      */
-    int amp_thread_array_create(amp_thread_array_t *thread_array,
+    int amp_thread_array_create(amp_thread_array_t* thread_array,
                                 size_t thread_count,
-                                void *allocator_context,
+                                void* allocator_context,
                                 amp_alloc_func_t alloc_func,
                                 amp_dealloc_func_t dealloc_func);
     
@@ -123,8 +123,8 @@ extern "C" {
      *         EINVAL is returned if thread_array, alloc_func, or dealloc_func
      *         are NULL.
      */
-    int amp_thread_array_destroy(amp_thread_array_t thread_array,
-                                 void *allocator_context,
+    int amp_thread_array_destroy(amp_thread_array_t* thread_array,
+                                 void* allocator_context,
                                  amp_dealloc_func_t dealloc_func);
     
     /**
@@ -144,7 +144,7 @@ extern "C" {
     int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
                                             size_t range_begin,
                                             size_t range_length,
-                                            void *shared_context);
+                                            void* shared_context);
     
     /**
      * Sets range_length thread array thread functions starting at index 
@@ -184,7 +184,7 @@ extern "C" {
     int amp_thread_array_configure(amp_thread_array_t thread_array,
                                    size_t range_begin,
                                    size_t range_length,
-                                   void *shared_context,
+                                   void* shared_context,
                                    amp_thread_func_t shared_function);
     
     
@@ -239,7 +239,7 @@ extern "C" {
      *         EINVAL is returned if the thread_array is NULL or invalid.
      */
     int amp_thread_array_launch_all(amp_thread_array_t thread_array,
-                                    size_t *joinable_thread_count);
+                                    size_t* joinable_thread_count);
     
     
     
@@ -262,7 +262,7 @@ extern "C" {
      *         amp_raw_thread_join on error.
      */
     int amp_thread_array_join_all(amp_thread_array_t thread_array,
-                                  size_t *joinable_thread_count);
+                                  size_t* joinable_thread_count);
     
     
     /**
@@ -278,7 +278,7 @@ extern "C" {
      *         NULL.
      */
     int amp_thread_array_get_joinable_thread_count(amp_thread_array_t thread_array,
-                                                   size_t *joinable_thread_count);
+                                                   size_t* joinable_thread_count);
     
     
     

@@ -38,7 +38,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "amp_stddef.h"
+#include "amp_return_code.h"
 
 
 
@@ -48,12 +48,15 @@ typedef void (WINAPI *GetNativeSystemInfoFunc)(LPSYSTEM_INFO);
 
 int amp_internal_platform_win_system_info(struct amp_internal_platform_win_info_s* info)
 {
+    SYSTEM_INFO sysinfo;
+    GetNativeSystemInfoFunc get_native_system_info_func;
+    DWORD physical_processor_count;
+    
     assert(NULL != info);
     
-    SYSTEM_INFO sysinfo;
     ZeroMemory(&sysinfo, sizeof(SYSTEM_INFO));
     
-    GetNativeSystemInfoFunc get_native_system_info_func = (GetNativeSystemInfoFunc) GetProcAddress(                                                                                 GetModuleHandle(TEXT("kernel32.dll")), "GetNativeSystemInfo");
+    get_native_system_info_func = (GetNativeSystemInfoFunc) GetProcAddress(                                                                                 GetModuleHandle(TEXT("kernel32.dll")), "GetNativeSystemInfo");
     
     if (NULL != get_native_system_info_func) {
         get_native_system_info_func(&sysinfo);
@@ -61,7 +64,7 @@ int amp_internal_platform_win_system_info(struct amp_internal_platform_win_info_
         GetSystemInfo(&sysinfo);
     }
     
-    DWORD const physical_processor_count = sysinfo.dwNumberOfProcessors;
+    physical_processor_count = sysinfo.dwNumberOfProcessors;
     
     info->installed_core_count = (size_t)physical_processor_count;
     info->active_core_count = 0;

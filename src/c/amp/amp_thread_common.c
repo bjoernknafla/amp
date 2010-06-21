@@ -100,7 +100,7 @@ int amp_internal_thread_configure(amp_thread_t thread,
 
 
 int amp_internal_thread_configure_context(amp_thread_t thread,
-                                          void *context)
+                                          void* context)
 {
     assert(NULL != thread);
     assert(amp_internal_thread_joinable_state != thread->state);
@@ -140,7 +140,7 @@ int amp_internal_thread_configure_function(amp_thread_t thread,
 
 
 int amp_internal_thread_context(amp_thread_t thread,
-                                void **context)
+                                void** context)
 {
     assert(NULL != thread);
     assert(NULL != context);
@@ -159,7 +159,7 @@ int amp_internal_thread_context(amp_thread_t thread,
 
 
 int amp_internal_thread_function(amp_thread_t thread,
-                                 amp_thread_func_t *func)
+                                 amp_thread_func_t* func)
 {
     assert(NULL != thread);
     assert(NULL != func);
@@ -178,7 +178,7 @@ int amp_internal_thread_function(amp_thread_t thread,
 
 
 int amp_raw_thread_launch(amp_thread_t thread, 
-                          void *func_context, 
+                          void* func_context, 
                           amp_thread_func_t func)
 {
     assert(NULL != func);
@@ -207,11 +207,11 @@ int amp_raw_thread_launch(amp_thread_t thread,
 
 
 
-int amp_thread_create_and_launch(amp_thread_t *thread,
-                                 void *allocator_context,
+int amp_thread_create_and_launch(amp_thread_t* thread,
+                                 void* allocator_context,
                                  amp_alloc_func_t alloc_func,
                                  amp_dealloc_func_t dealloc_func,
-                                 void *func_context,
+                                 void* func_context,
                                  amp_thread_func_t func)
 {
     assert(NULL != thread);
@@ -252,24 +252,29 @@ int amp_thread_create_and_launch(amp_thread_t *thread,
 
 
 
-int amp_thread_join_and_destroy(amp_thread_t thread,
-                                void *allocator_context,
+int amp_thread_join_and_destroy(amp_thread_t* thread,
+                                void* allocator_context,
                                 amp_dealloc_func_t dealloc_func)
 {
     assert(NULL != thread);
+    assert(NULL != *thread);
     assert(NULL != dealloc_func);
     
     if (NULL == thread
+        || NULL == *thread
         || NULL == dealloc_func) {
         
         return EINVAL;
     }
     
-    int retval = amp_raw_thread_join(thread);
+    int retval = amp_raw_thread_join(*thread);
     
     if (AMP_SUCCESS == retval) {
-        retval = dealloc_func(allocator_context, thread);
+        retval = dealloc_func(allocator_context, *thread);
         assert(AMP_SUCCESS == retval);
+        if (AMP_SUCCESS == retval) {
+            *thread = AMP_THREAD_UNINITIALIZED;
+        }
     }
     
     return retval;

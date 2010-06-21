@@ -119,11 +119,11 @@ extern "C" {
      *
      * TODO: @todo Add restrict to the pointers and document it.
      */
-    int amp_thread_create_and_launch(amp_thread_t *thread,
-                                     void *allocator_context,
+    int amp_thread_create_and_launch(amp_thread_t* thread,
+                                     void* allocator_context,
                                      amp_alloc_func_t alloc_func,
                                      amp_dealloc_func_t dealloc_func,
-                                     void *func_context,
+                                     void* func_context,
                                      amp_thread_func_t func);
     
     /**
@@ -156,8 +156,8 @@ extern "C" {
      * @attention Don't try to join a thread with itself, otherwise behavior is
      *            undefined.
      */
-    int amp_thread_join_and_destroy(amp_thread_t thread,
-                                    void *allocator_context,
+    int amp_thread_join_and_destroy(amp_thread_t* thread,
+                                    void* allocator_context,
                                     amp_dealloc_func_t dealloc_func);
 
     /**
@@ -175,7 +175,7 @@ extern "C" {
      * @attention Don't pass an non-launched or invalid thread as an argument.
      */
     int amp_thread_id(amp_thread_t thread,
-                      amp_thread_id_t *id);
+                      amp_thread_id_t* id);
     
     /**
      * Hints the operating system that it might be benificial to context switch

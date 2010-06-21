@@ -36,13 +36,13 @@
 #include "amp_internal_platform_win_system_logical_processor_information.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 
 
 
@@ -74,13 +74,12 @@ static DWORD amp_internal_win_version_greater_or_equal(AMP_BOOL* result,
                                                        DWORD major_service_pack,
                                                        DWORD minor_service_pack)
 {
-    assert(NULL != result);
-    
     DWORD error_code = 0;
-    
     OSVERSIONINFOEX os_version_info_ex = {}; /* ZeroMemory(&os_version_info_ex, sizeof(OSVERSIONINFOEX));  */
     DWORDLONG os_query_condition_mask = 0;
     int const comparison_operation = VER_GREATER_EQUAL;
+    
+    assert(NULL != result);
     
     os_version_info_ex.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
     os_version_info_ex.dwMajorVersion = major_version;
@@ -114,7 +113,7 @@ static DWORD amp_internal_win_version_greater_or_equal(AMP_BOOL* result,
                                    | VER_SERVICEPACKMINOR,
                                    os_query_condition_mask)) {
         
-        c*result = AMP_TRUE;
+        result = AMP_TRUE;
         error_code = 0;
         
     } else {        
@@ -170,13 +169,13 @@ static DWORD amp_internal_win_version_greater_or_equal_and_type_equal(AMP_BOOL* 
                                                                       DWORD minor_service_pack,
                                                                       AMP_INTERNAL_WIN_TYPE product_type)
 {
-    assert(NULL != result);
-    
     DWORD error_code = 0;
     
     OSVERSIONINFOEX os_version_info_ex = {}; /* ZeroMemory(&os_version_info_ex, sizeof(OSVERSIONINFOEX));  */
     DWORDLONG os_query_condition_mask = 0;
     int const comparison_operation = VER_GREATER_EQUAL;
+    
+    assert(NULL != result);
     
     os_version_info_ex.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
     os_version_info_ex.dwMajorVersion = major_version;
@@ -320,72 +319,67 @@ int amp_internal_platform_win_system_logical_processor_information(struct* amp_i
                                                                    amp_alloc_func_t alloc_func,
                                                                    amp_dealloc_func_t dealloc_func)
 {
+    
+    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION sysinfo_buffer = NULL;
+    DWORD sysinfo_buffer_size = 0;
+    GetLogicalProcessorInformationFunc get_logical_processor_information_func;
+    BOOL query_successful = FALSE;
+    DWORD get_size_error_code = 0;
+    int core_count = 0;
+    int hwthread_count = 0;
+    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION sysinfo;
+    int error_code = AMP_UNSUPPORTED;
+    
     assert(NULL != info);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
     
-    GetLogicalProcessorInformationFunc get_logical_processor_information_func = (GetLogicalProcessorInformationFunc) GetProcAddress(GetModuleHandle(TEXT("kernel32")),"GetLogicalProcessorInformation");
     
+    get_logical_processor_information_func = (GetLogicalProcessorInformationFunc) GetProcAddress(GetModuleHandle(TEXT("kernel32")),"GetLogicalProcessorInformation");
     if (NULL == get_logical_processor_information_func) {
         
         /* Target computer doesn't run needed windows version. */
         
-        return ENOSYS;
+        return AMP_UNSUPPORTED;
     }
     
-    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION sysinfo_buffer = NULL;
-    DWORD sysinfo_buffer_size = 0;
+   
     
-    BOOL query_successful = get_logical_processor_information_func(NULL,
-                                                                   &sysinfo_buffer_size);
-    DWORD const get_size_error_code = GetLastError();
+    query_successful = get_logical_processor_information_func(NULL,
+                                                              &sysinfo_buffer_size);
+    get_size_error_code = GetLastError();
     
     if (FALSE != query_successful 
         || ERROR_INSUFFICIENT_BUFFER != get_size_error_code
         || 0 == sysinfo_buffer_size) {
         
-        assert(FALSE == query_successful 
-               && "Query with size 0 expected to fail and return needed buffer size.");
-        
-        assert(ERROR_INSUFFICIENT_BUFFER == get_size_error_code 
-               && "Query with size 0 expected to fail and return needed buffer size.");
-        
-        assert(0 != sysinfo_buffer_size 
-               && "Query with size 0 expected to fail and return needed buffer size.");
-        
-        
-        return EAGAIN;
+        return AMP_ERROR;
     }
     
     sysinfo_buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)alloc_func(allocator_context,
                                                                        sysinfo_buffer_size);
     if (NULL == sysinfo_buffer) {
         
-        return ENOMEM;
+        return AMP_NOMEM;
     }
     
     query_successful = get_logical_processor_information_func(sysinfo_buffer, 
                                                               &sysinfo_buffer_size);
     if (FALSE == query_successful) {
         
+        error_code = AMP_UNSUPPORTED;
+        
         /* Query to easily access error code when debugging. */
         DWORD const last_error = GetLastError();
         
-        assert(TRUE == query_successful);
+        error_code = dealloc_func(allocator_context, sysinfo_buffer);
+        assert(AMP_SUCCESS == error_code);
         
-        int const rc = dealloc_func(allocator_context, sysinfo_buffer);
-        assert(AMP_SUCCESS == rc);
-        
-        return EAGAIN;
+        return AMP_ERROR;
     }
     
-    
-    int core_count = 0;
-    int hwthread_count = 0;
-    
-    
-    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION sysinfo = sysinfo_buffer;
+    sysinfo = sysinfo_buffer;
     
     for (size_t i = 0; i < sysinfo_buffer_size; i = i + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION)) {
         
@@ -427,8 +421,8 @@ int amp_internal_platform_win_system_logical_processor_information(struct* amp_i
         ++sysinfo;
     }
     
-    int const rc = dealloc_func(allocator_context, sysinfo_buffer);
-    assert(AMP_SUCCESS == rc);
+    error_code = dealloc_func(allocator_context, sysinfo_buffer);
+    assert(AMP_SUCCESS == error_code);
     
     
     info->installed_core_count = (size_t)core_count;;

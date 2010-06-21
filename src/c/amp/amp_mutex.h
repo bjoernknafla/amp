@@ -130,8 +130,8 @@ extern "C" {
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
      */
-    int amp_mutex_create(amp_mutex_t *mutex,
-                         void *allocator_context,
+    int amp_mutex_create(amp_mutex_t* mutex,
+                         void* allocator_context,
                          amp_alloc_func_t alloc_func,
                          amp_dealloc_func_t dealloc_func);
     
@@ -160,8 +160,8 @@ extern "C" {
      * @attention The platform-specific destruction function called might use 
      *            free or other resource management functions internally.
      */
-    int amp_mutex_destroy(amp_mutex_t mutex,
-                          void *allocator_context,
+    int amp_mutex_destroy(amp_mutex_t* mutex,
+                          void* allocator_context,
                           amp_dealloc_func_t dealloc_func);
     
     /**
