@@ -44,11 +44,10 @@
 #include "amp_raw_barrier.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include "amp_stddef.h"
-
+#include "amp_return_code.h"
 
 
 
@@ -67,22 +66,21 @@ enum amp_internal_raw_barrier_lifecycle_state {
 int amp_raw_barrier_init(amp_barrier_t barrier,
                          amp_barrier_count_t init_count)
 {
+    int errc = AMP_UNSUPPORTED;
+    
     assert(NULL != barrier);
     assert(0 < init_count);
     
-    if (NULL == barrier
-        || 0 == init_count) {
-        return EINVAL;
+    if (0 == init_count) {
+        return AMP_ERROR;
     }
     
-    int errc = amp_raw_mutex_init(&barrier->count_mutex);
-    assert(AMP_SUCCESS == errc);
+    errc = amp_raw_mutex_init(&barrier->count_mutex);
     if (AMP_SUCCESS != errc) {
         return errc;
     }
     
     errc = amp_raw_condition_variable_init(&barrier->waking_condition);
-    assert(AMP_SUCCESS == errc);
     if (AMP_SUCCESS != errc) {
         int const ec = amp_raw_mutex_finalize(&barrier->count_mutex);
         assert(AMP_SUCCESS == ec);
@@ -102,28 +100,34 @@ int amp_raw_barrier_init(amp_barrier_t barrier,
 
 int amp_raw_barrier_finalize(amp_barrier_t barrier)
 {
+    int errc = AMP_UNSUPPORTED;
+    int errc2 = AMP_UNSUPPORTED;
+    
     assert(NULL != barrier);
     assert((int)amp_internal_valid_raw_barrier_lifecycle_state == barrier->valid);
-    if (NULL == barrier
-        || (int)amp_internal_valid_raw_barrier_lifecycle_state != barrier->valid) {
-        return EINVAL;
+    
+    if ((int)amp_internal_valid_raw_barrier_lifecycle_state != barrier->valid) {
+        
+        return AMP_ERROR;
     }
     
-    int errc = ENOSYS;
+    
     
 #if !defined(NDEBUG)
-    amp_barrier_count_t barrier_count = 0;
-    /* Weak check in debug mode that no threads wait for the barrier. */
-    errc = amp_mutex_lock(&barrier->count_mutex);
-    assert(AMP_SUCCESS == errc);
     {
-        barrier_count = barrier->count;
-    }
-    errc = amp_mutex_unlock(&barrier->count_mutex);
-    assert(AMP_SUCCESS == errc);
-
-    if (barrier_count != barrier->init_count) {
-        return EBUSY;
+        amp_barrier_count_t barrier_count = 0;
+        /* Weak check in debug mode that no threads wait for the barrier. */
+        errc = amp_mutex_lock(&barrier->count_mutex);
+        assert(AMP_SUCCESS == errc);
+        {
+            barrier_count = barrier->count;
+        }
+        errc = amp_mutex_unlock(&barrier->count_mutex);
+        assert(AMP_SUCCESS == errc);
+        
+        if (barrier_count != barrier->init_count) {
+            return AMP_BUSY;
+        }
     }
 #endif
     
@@ -132,7 +136,7 @@ int amp_raw_barrier_finalize(amp_barrier_t barrier)
     errc = amp_raw_condition_variable_finalize(&barrier->waking_condition);
     assert(AMP_SUCCESS == errc);
     
-    int errc2 = amp_raw_mutex_finalize(&barrier->count_mutex);
+    errc2 = amp_raw_mutex_finalize(&barrier->count_mutex);
     assert(AMP_SUCCESS == errc2);
     
     /* If one of the finalize functions reported an error there is no
@@ -152,24 +156,30 @@ int amp_raw_barrier_finalize(amp_barrier_t barrier)
 
 int amp_barrier_wait(amp_barrier_t barrier)
 {
+    int return_code = AMP_UNSUPPORTED;
+    int errc = AMP_UNSUPPORTED;
+    
     assert(NULL != barrier);
     assert((int)amp_internal_valid_raw_barrier_lifecycle_state == barrier->valid);
     
     if (NULL == barrier
         || (int)amp_internal_valid_raw_barrier_lifecycle_state != barrier->valid) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
     
-    int return_code = amp_mutex_lock(&barrier->count_mutex);
+    return_code = amp_mutex_lock(&barrier->count_mutex);
     assert(AMP_SUCCESS == return_code);
     if (AMP_SUCCESS != return_code) {
         return return_code;
     }
     {
+        amp_barrier_count_t current_count = 0;
+        
         assert(0 != barrier->count && "Barrier count underflow imminent");
+        
         --(barrier->count);
-        amp_barrier_count_t current_count = barrier->count;
+        current_count = barrier->count;
         
         
         if (current_count == 0) {
@@ -192,7 +202,7 @@ int amp_barrier_wait(amp_barrier_t barrier)
             }
         }
     }
-    int errc = amp_mutex_unlock(&barrier->count_mutex);
+    errc = amp_mutex_unlock(&barrier->count_mutex);
     assert(AMP_SUCCESS == errc);
     
     

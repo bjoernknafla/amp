@@ -45,6 +45,7 @@
 
 // Include AMP_SUCCESS
 #include <amp/amp_stddef.h>
+#include <amp/amp_return_code.h>
 #include <amp/amp_memory.h>
 #include <amp/amp_thread.h>
 
@@ -83,7 +84,7 @@ SUITE(amp_thread)
         }
         
         for (std::size_t i = 0; i < thread_count; ++i) {
-            int retval = amp_thread_join_and_destroy(threads[i],
+            int retval = amp_thread_join_and_destroy(&threads[i],
                                                      AMP_DEFAULT_ALLOCATOR,
                                                      &amp_default_dealloc);
             CHECK_EQUAL(AMP_SUCCESS, retval);

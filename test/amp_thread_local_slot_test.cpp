@@ -37,12 +37,12 @@
  */
 
 #include <cassert>
-#include <cerrno>
 #include <cstddef>
 
 #include <UnitTest++.h>
 
 #include <amp/amp_stddef.h>
+#include <amp/amp_return_code.h>
 #include <amp/amp_thread.h>
 #include <amp/amp_thread_array.h>
 #include <amp/amp_thread_local_slot.h>
@@ -128,7 +128,7 @@ SUITE(amp_thread_local_slot)
         CHECK(result_data == (void*)(&data0));
         CHECK_EQUAL(*((int*)result_data), data0);
         
-        retval = amp_thread_local_slot_destroy(key,
+        retval = amp_thread_local_slot_destroy(&key,
                                                AMP_DEFAULT_ALLOCATOR,
                                                &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -177,7 +177,7 @@ SUITE(amp_thread_local_slot)
         CHECK(result_data == NULL);
         
         
-        retval = amp_thread_local_slot_destroy(key,
+        retval = amp_thread_local_slot_destroy(&key,
                                                AMP_DEFAULT_ALLOCATOR,
                                                &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -283,7 +283,7 @@ SUITE(amp_thread_local_slot)
         assert(AMP_SUCCESS == retval);
         assert(0 == joinable_count);
         
-        retval = amp_thread_array_destroy(threads,
+        retval = amp_thread_array_destroy(&threads,
                                           AMP_DEFAULT_ALLOCATOR,
                                           &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
@@ -292,7 +292,7 @@ SUITE(amp_thread_local_slot)
             CHECK_EQUAL(CHECK_FLAG_SET, thread_context_values[i].check_flag);
         }
         
-        retval = amp_thread_local_slot_destroy(key,
+        retval = amp_thread_local_slot_destroy(&key,
                                                AMP_DEFAULT_ALLOCATOR,
                                                &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);

@@ -182,6 +182,8 @@ extern "C" {
      *            signal mask to not let any signals through.
      *
      * TODO: @todo Decide if os signals should be able to interrupt the waiting.
+     * TODO: @todo Document that a wait can be interrupted by an OS signal and
+     *             will return AMP_ERROR in such a case.
      */
     int amp_semaphore_wait(amp_semaphore_t semaphore);
     

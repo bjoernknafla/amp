@@ -41,9 +41,9 @@
 #include <UnitTest++.h>
 
 #include <assert.h>
-#include <errno.h>
 
 #include <amp/amp_stddef.h>
+#include <amp/amp_return_code.h>
 #include <amp/amp_memory.h>
 #include <amp/amp_thread.h>
 #include <amp/amp_thread_array.h>
@@ -77,7 +77,7 @@ SUITE(amp_semaphore)
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
         
-        retval = amp_semaphore_destroy(sem,
+        retval = amp_semaphore_destroy(&sem,
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -114,7 +114,7 @@ SUITE(amp_semaphore)
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
         
-        retval = amp_semaphore_destroy(sem,
+        retval = amp_semaphore_destroy(&sem,
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -172,7 +172,7 @@ SUITE(amp_semaphore)
         assert(AMP_SUCCESS == retval);
         
         // Joins after the thread waited and passed the semaphore.
-        retval = amp_thread_join_and_destroy(thread,
+        retval = amp_thread_join_and_destroy(&thread,
                                              AMP_DEFAULT_ALLOCATOR,
                                              &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
@@ -180,7 +180,7 @@ SUITE(amp_semaphore)
         
         CHECK_EQUAL(CHECK_FLAG_SET, sem_flag.check_flag);
         
-        retval = amp_semaphore_destroy(sem_flag.sem,
+        retval = amp_semaphore_destroy(&sem_flag.sem,
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -218,7 +218,7 @@ SUITE(amp_semaphore)
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         // Joins after the thread waited and passed the semaphore.
-        retval = amp_thread_join_and_destroy(thread,
+        retval = amp_thread_join_and_destroy(&thread,
                                              AMP_DEFAULT_ALLOCATOR,
                                              &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
@@ -226,7 +226,7 @@ SUITE(amp_semaphore)
         
         CHECK_EQUAL(CHECK_FLAG_SET, sem_flag.check_flag);
         
-        retval = amp_semaphore_destroy(sem_flag.sem,
+        retval = amp_semaphore_destroy(&sem_flag.sem,
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -331,7 +331,7 @@ SUITE(amp_semaphore)
         assert(AMP_SUCCESS == retval);
         assert(0 == joinable_count);
         
-        retval = amp_thread_array_destroy(threads,
+        retval = amp_thread_array_destroy(&threads,
                                           AMP_DEFAULT_ALLOCATOR,
                                           &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
@@ -341,7 +341,7 @@ SUITE(amp_semaphore)
             CHECK_EQUAL(CHECK_FLAG_SET, checks[i].check_flag);
         }
         
-        retval = amp_semaphore_destroy(sem,
+        retval = amp_semaphore_destroy(&sem,
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);

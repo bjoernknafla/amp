@@ -36,6 +36,10 @@ that opened my eyes and made this code more correct and faster. All remaining
 errors in the code are mine.
 
 
+Thanks to Jedd Orion Haberstro for feedback to the documentation of
+`amp_thread_yield` which resulted in a clearer explanation of the function.
+
+
 ### Author(s) and Contact ###
 
 You have got questions, need to critisize me, or just want to say hello? I am 

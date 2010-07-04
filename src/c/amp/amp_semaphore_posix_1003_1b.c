@@ -47,6 +47,7 @@
 #include <unistd.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_semaphore.h"
 
 
@@ -69,26 +70,32 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
     assert((amp_semaphore_counter_t)0 <= init_count);
     assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
     
-    if (NULL == semaphore
-        || (amp_semaphore_counter_t)0 > init_count
+    if ((amp_semaphore_counter_t)0 > init_count
         || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
     
-    /* TODO: @todo Decide if side effect on errno is ok or not.
-     */
     errno = 0;
     int const retval = sem_init(&semaphore->semaphore, 
                                 0, /* Don't share semaphore between processes */
                                 (unsigned int)init_count);
-    assert(EPERM != errno && "Process lacks privileges.");
-    assert( (0 == retval || ENOSYS == errno || EINVAL == errno) 
-           && "Unexpected error.");
-    
     int return_code = AMP_SUCCESS;
     if (0 != retval) {
-        return_code = errno;
+        switch (errno) {
+            case EINVAL: /* init_count exceeds SEM_VALUE_MAX */
+                /* Fallthrough */
+            case ENOSPC: /* Resources exhausted or trying to create more than SEM_NSEMS_MAX semaphore */
+                return_code = AMP_ERROR;
+                break;
+            case ENOSYS:
+                assert(0); /* Use another amp semaphore backend */
+                return_code = AMP_UNSUPPORTED;
+                break;
+            default: /* EPERM - programming error */
+                assert(0);
+                return_code = AMP_ERROR;
+        }
     }
     
     return return_code;
@@ -102,12 +109,17 @@ int amp_raw_semaphore_finalize(amp_semaphore_t semaphore)
     
     errno = 0;
     int retval = sem_destroy(&semaphore->semaphore);
-    assert(EBUSY != errno && "Threads are still blocked on the semaphore.");
-    assert((0 == retval || ENOSYS == errno)&& "Unexpected error.");
-    
     int return_code = AMP_SUCCESS;
     if(0 != retval) {
-        return_code = errno;
+        switch (errno) {
+            case ENOSYS:
+                assert(0); /* Use another amp semaphore backend */
+                return_code = AMP_UNSUPPORTED;
+                break;
+            default: /* EINVAL, EBUSY - programming error */
+                assert(0);
+                return_code = AMP_ERROR;
+        }
     }
 
     return return_code;
@@ -121,20 +133,25 @@ int amp_semaphore_wait(amp_semaphore_t semaphore)
     
     errno = 0;
     int retval = sem_wait(&semaphore->semaphore);
-    assert(EINVAL != errno && "sem->semaphore is not a valid semaphore.");
-    assert(EDEADLK != errno && "A deadlock was detected.");
-    assert( (0 == retval
-             || EINTR == errno 
-             || ENOSYS == errno) 
-           && "Unexpected error.");
-    
     int return_code = AMP_SUCCESS;
     if(0 != retval) {        
-        return_code = errno;
+        switch (errno) {
+            case ENOSYS:
+                assert(0); /* Use another amp semaphore backend */
+                return_code = AMP_UNSUPPORTED;
+                break;
+            case EINTR: /* sem_wait interrupted by a signal */
+                return_code = AMP_ERROR;
+                break;
+            default: /* EINVAL, EDEADLK - programming error */
+                assert(0);
+                return_code = AMP_ERROR;
+        }
     }
     
     return return_code;
 }
+
 
 
 int amp_semaphore_signal(amp_semaphore_t semaphore)
@@ -142,14 +159,18 @@ int amp_semaphore_signal(amp_semaphore_t semaphore)
     assert(NULL != semaphore);
     
     errno = 0;
-    int retval = sem_post(&semaphore->semaphore);
-    assert(EINVAL != errno && "sem->semaphore is not a valid semaphore.");
-    assert((0 == retval || ENOSYS == errno || EOVERFLOW == errno) 
-           && "Unexpected error.");
-    
+    int retval = sem_post(&semaphore->semaphore);    
     int return_code = AMP_SUCCESS;
     if(0 != retval) {        
-        return_code = errno;
+        switch (errno) {
+            case ENOSYS:
+                assert(0); /* Use another amp semaphore backend */
+                return_code = AMP_UNSUPPORTED;
+                break;
+            default:
+                assert(0); /* Programming error */
+                return_code = AMP_ERROR;
+        }
     }
     
     return return_code;    

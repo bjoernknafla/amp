@@ -50,6 +50,7 @@
 #include <process.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_thread.h"
 #include "amp_internal_thread.h"
 
@@ -91,10 +92,6 @@ int amp_internal_native_thread_set_invalid(struct amp_native_thread_s *native_th
 {
     assert(NULL != native_thread);
     
-    if (NULL == native_thread) {
-        return EINVAL;
-    }
-    
     native_thread->thread_handle = AMP_INVALID_THREAD_ID;
     native_thread->thread_id = AMP_INVALID_THREAD_ID;
     
@@ -105,6 +102,10 @@ int amp_internal_native_thread_set_invalid(struct amp_native_thread_s *native_th
 
 int amp_internal_thread_launch_configured(amp_thread_t thread)
 {
+    unsigned int inter_process_thread_id = 0;
+    uintptr_t thread_handle = 0;
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != thread);
     assert(NULL != thread->thread_func);
     assert(amp_internal_thread_prelaunch_state == thread->state);
@@ -117,15 +118,13 @@ int amp_internal_thread_launch_configured(amp_thread_t thread)
     }
     
     /* Thread creation for native code. */
-    unsigned int inter_process_thread_id = 0;
     errno = 0;
-    uintptr_t thread_handle = _beginthreadex(NULL, /* Non-inheritable security attribs. */
-                                             0,  /* Default thread stack size. */
-                                             native_thread_adapter_func, 
-                                             thread, 
-                                             0, /* Start thread running. */
-                                             &inter_process_thread_id);
-    int retval = AMP_SUCCESS;
+    thread_handle = _beginthreadex(NULL, /* Non-inheritable security attribs. */
+                                   0,  /* Default thread stack size. */
+                                   native_thread_adapter_func, 
+                                   thread, 
+                                   0, /* Start thread running. */
+                                   &inter_process_thread_id);
     if (0 != thread_handle) {
         /* Thread launched successfully. */
         thread->native_thread_description.thread_handle = (HANDLE) thread_handle;
@@ -139,23 +138,14 @@ int amp_internal_thread_launch_configured(amp_thread_t thread)
         int const error_code = errno;
         
         switch (error_code) {
-            case EAGAIN:
-                retval = EAGAIN;
+            case EAGAIN: /* Too many threads - might only be valid for _beginthread */
+                retval = AMP_ERROR;
                 break;
-            case EINVAL:
-                assert(false && "Unexpected error.");
-                break;
-            case EACCES:
-                retval = EAGAIN;
-                break;
-            default:
-                assert(false && "Unknown error.");
-                retval = EINVAL;
+            default: /* EINVAL - programming error */
+                assert(0);
+                retval = AMP_ERROR;
         }
     }
-    
-    assert((AMP_SUCCESS == retval || EAGAIN == retval) && "Unexpected error.");
-    
     
     return retval;
 }
@@ -167,6 +157,8 @@ int amp_internal_thread_launch_configured(amp_thread_t thread)
  */
 int amp_raw_thread_join(amp_raw_thread_t *thread)
 {
+    int retval = AMP_UNSUPPORTED;
+    
     assert(0 != thread);
     assert(amp_internal_thread_joinable_state == thread->state);
     
@@ -176,65 +168,60 @@ int amp_raw_thread_join(amp_raw_thread_t *thread)
          */
         if (amp_internal_thread_joined_state == thread->state) {
             /* Thread has already joined. */
-            return EINVAL;
+            return AMP_ERROR;
         } else {
             /* thread doesn't point to valid thread data. */
-            return ESRCH;
+            return AMP_ERROR;
         }
     }
     
-    /* TODO: @todo If WaitForSingleObject detects this error condition itself
-     * don't handle it beforehand.
+    /* Calling thread tries to join with itself.
+     * TODO: @todo If WaitForSingleObject detects this error condition itself
+     *             don't handle it beforehand.
      */
     if (thread->native_thread_description.thread_id == GetCurrentThreadId()) {
-        assert(thread->native_thread_description.thread_id != GetCurrentThreadId()
-               && "Calling thread tries to join with itself.");
+        assert(thread->native_thread_description.thread_id != GetCurrentThreadId());
         
-        return EDEADLK;
+        return AMP_ERROR;
     }
     
-    int retval = AMP_SUCCESS;
     /* TODO: @todo Can this detect waiting on its own thread? */
-    DWORD const wait_retval = WaitForSingleObject(thread->native_thread_description.thread_handle,
-                                                  INFINITE);
-    
-    if (WAIT_OBJECT_0 == wait_retval) {
+    if (WAIT_OBJECT_0 == WaitForSingleObject(thread->native_thread_description.thread_handle,
+                                             INFINITE)) {
         
         /* Currently unused. */
         DWORD exit_code = 0;
+        BOOL close_handle_retval = FALSE;
         BOOL const getexitcode_retval = GetExitCodeThread(thread->native_thread_description.thread_handle,
                                                          &exit_code);
-        /* TODO: @todo Add better error detection and handling. */
-        assert(TRUE == getexitcode_retval && "Unexpected error.");
-        assert(STILL_ACTIVE != exit_code && "Thread didn't end.");
+        if (FALSE == getexitcode_retval
+            || STILL_ACTIVE == exit_code) {
+            
+            /* TODO: @todo Add better error detection and handling. */
+            assert(TRUE == getexitcode_retval && "Unexpected error.");
+            assert(STILL_ACTIVE != exit_code && "Thread didn't end.");
+            
+            return AMP_ERROR;
+        }
         
-        
-        BOOL const close_handle_retval = CloseHandle(thread->native_thread_description.thread_handle);
+        close_handle_retval = CloseHandle(thread->native_thread_description.thread_handle);
         if ( TRUE == close_handle_retval) {
             thread->state = amp_internal_thread_joined_state;
             retval = AMP_SUCCESS;
         } else {
             /* If waiting on the thread was successful this shouldn't happen. */
-            /* DWORD const last_error = GetLastError(); */
-
-            assert(false && "Unknown error.");
+            DWORD const last_error = GetLastError();
+            assert(0);
             
-            retval = EINVAL;
+            retval = AMP_ERROR;
         }
     } else {
-        /* An error occured - handle seems to be invalid, e.g. already closed */
-        assert(WAIT_TIMEOUT == wait_retval && "INFINITE can't timeout.");
+        /* Programming error */
+        DWORD const last_error = GetLastError();
+        assert(0);
         
-        /* DWORD const last_error = GetLastError(); */
-        
-        assert(false && "Unknown error.");
-        
-        retval = EINVAL;
-        
+        retval = AMP_ERROR;
     }
-
-    assert(AMP_SUCCESS == retval && "Unexpected error.");
-    
     
     return retval;
 }
@@ -248,14 +235,15 @@ amp_thread_id_t amp_thread_current_id(void)
 
 
 
-amp_thread_id_t amp_thread_id(amp_thread_t thread)
+int amp_thread_id(amp_thread_t thread,
+                  amp_thread_id_t* id)
 {
     assert(NULL != thread);
     assert(NULL != id);
     
     if (amp_internal_thread_joinable_state != thread->state) {
         *id = AMP_INVALID_THREAD_ID;
-        return ESRCH;
+        return AMP_ERROR;
     }
     
     *id = (amp_thread_id_t)(thread->native_thread_description.thread_id);

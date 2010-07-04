@@ -40,11 +40,11 @@
 
 #include <vector>
 
-#include <stddef.h>
 #include <assert.h>
-#include <errno.h>
+#include <stddef.h>
 
 #include <amp/amp_stddef.h>
+#include <amp/amp_return_code.h>
 #include <amp/amp_thread_array.h>
 #include <amp/amp_memory.h>
 
@@ -397,7 +397,7 @@ SUITE(amp_thread_array)
         CHECK_EQUAL(static_cast<size_t>(0), number_of_joinable_threads);
         
         
-        retval = amp_thread_array_destroy(thread_array,
+        retval = amp_thread_array_destroy(&thread_array,
                                           AMP_DEFAULT_ALLOCATOR,
                                           &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -477,7 +477,7 @@ SUITE(amp_thread_array)
         CHECK_EQUAL(static_cast<size_t>(0), number_of_joinable_threads);
         
         
-        retval = amp_thread_array_destroy(thread_array,
+        retval = amp_thread_array_destroy(&thread_array,
                                           AMP_DEFAULT_ALLOCATOR,
                                           &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);

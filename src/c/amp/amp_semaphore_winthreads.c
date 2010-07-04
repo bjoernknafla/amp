@@ -50,10 +50,10 @@
 #include "amp_semaphore.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_semaphore.h"
 
 
@@ -63,75 +63,40 @@
 int amp_raw_semaphore_init(amp_semaphore_t semaphore,
                            amp_semaphore_counter_t init_count)
 {
+    int retval = AMP_SUCCESS;
+    DWORD last_error = 0;
+    
     assert(NULL != semaphore);
     assert((amp_semaphore_counter_t)0 <= init_count);
     assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
     
-    if (NULL == semaphore
-        || (amp_semaphore_counter_t)0 > init_count
+    if ((amp_semaphore_counter_t)0 > init_count
         || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
-    
-    int retval = AMP_SUCCESS;
-    
+
     semaphore->semaphore_handle = CreateSemaphore(NULL, 
                                                   (long)init_count, 
                                                   (long)AMP_RAW_SEMAPHORE_COUNT_MAX,
                                                   NULL);
-    DWORD const last_error = GetLastError();
+    last_error = GetLastError();
     if (NULL == semaphore->semaphore_handle) {
-        
-        switch (last_error) {
-            case ERROR_TOO_MANY_SEMAPHORES:
-                retval = EAGAIN;
-                break;
-            case ERROR_EXCL_SEM_ALREADY_OWNED:
-                /* TODO: @todo Should this return EPERM? */
-                assert(false 
-                       && "It shouldn't happen that the (not) exclusive semaphore is owned by another process.");
-                retval = EINVAL;
-                break;
-            /*case ERROR_SEM_IS_SET:
-                break;*/
-            /*case ERROR_TOO_MANY_SEM_REQUESTS:
-                break;*/
-            /*case ERROR_INVALID_AT_INTERRUPT_TIME:
-                break;*/
-            case ERROR_SEM_OWNER_DIED:
-                /* TODO: @todo Check if this error can really happen. */
-                assert(false 
-                       && "It shouldn't happen that the previous ownership of the semaphore has ended.");
-                retval = EINVAL;
-                break;
-            /*case ERROR_SEM_TIMEOUT:
-                break;*/
-            case ERROR_SEM_NOT_FOUND:
-                assert(false && "It shouldn't happen that the (not) specified system semaphore name wasn't found.");
-                retval = EINVAL;
-                break;
-            /*case ERROR_TOO_MANY_POSTS:
-                break;*/
-            default:
-                /* TODO: @todo Check which code to use to flag an unknown error. 
-                 */
-                assert(false && "Unknown error.");
-                retval = EINVAL;
-                break;
-        }
+        /* TODO: @todo Find out how to detect if not enough memory was the
+         *             creation problem and return AMP_NOMEM accordingly.
+         */
+        return AMP_ERROR;
     } else {
         if (ERROR_ALREADY_EXISTS == last_error) {
-            assert(ERROR_ALREADY_EXISTS != last_error 
-                   && "Semaphore can't exist when created with name of NULL.");
-            retval = EBUSY;;
+            /* Semaphore can not already exist when created with name of NULL 
+             * TODO: @todo Talk to a Windows expert if this is something that
+             *              could happen otherwise only assert on it, do not use
+             *              an if-then.
+             */
+            assert(0);
+            retval = AMP_ERROR;
         }
     }
-    
-    assert( (AMP_SUCCESS == retval 
-             || EAGAIN == retval) 
-           && "Unexpected error.");
-    
     
     return retval;
 }
@@ -140,64 +105,19 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
 
 int amp_raw_semaphore_finalize(amp_semaphore_t semaphore)
 {
+    int retval = AMP_SUCCESS;
+    
     assert(NULL != semaphore);
     
-    int retval = AMP_SUCCESS;
-    BOOL const close_retval = CloseHandle(semaphore->semaphore_handle);
-    if (FALSE == close_retval) {
+    if ( !CloseHandle(semaphore->semaphore_handle)) {
         DWORD const last_error = GetLastError();
+        /* TODO: @todo Talk to a Windows expert and code more detailed error
+         *             detection and handling.
+         */
         
-        switch (last_error) {
-            case ERROR_INVALID_HANDLE:
-             /* TODO: @todo Check if this error can really happen. */
-                assert(false 
-                       && "The handle is invalid.");
-                retval = EINVAL;
-                break;
-            /*case ERROR_TOO_MANY_SEMAPHORE:
-                retval = EAGAIN;
-                break;*/
-            /*case ERROR_EXCL_SEM_ALREADY_OWNED:
-                assert(false 
-                       && "It shouldn't happen that the (not) exclusive semaphore is owned by another process.");
-                retval = EINVAL;
-                break;*/
-            case ERROR_SEM_IS_SET:
-                /* TODO: @todo Need a Windows dev expert to check if this is the 
-                 * right error code interpretation. 
-                 */
-                assert(false && "Mutex is in use.");
-                
-                retval = EBUSY;
-                break;
-                /*case ERROR_TOO_MANY_SEM_REQUESTS:
-                 break;*/
-                /*case ERROR_INVALID_AT_INTERRUPT_TIME:
-                 break;*/
-            case ERROR_SEM_OWNER_DIED:
-                /* TODO: @todo Check if this error can really happen. */
-                assert(false 
-                       && "It shouldn't happen that the previous ownership of the semaphore has ended.");
-                retval = EINVAL;
-                break;
-                /*case ERROR_SEM_TIMEOUT:
-                 break;*/
-            case ERROR_SEM_NOT_FOUND:
-                assert(false && "It shouldn't happen that the (not) specified system semaphore name wasn't found.");
-                retval = EINVAL;
-                break;
-                /*case ERROR_TOO_MANY_POSTS:
-                 break;*/
-            default:
-                /* TODO: @todo Check which code to use to flag an unknown error. 
-                 */
-                assert(false && "Unknown error.");
-                retval = EINVAL;
-                break;
-        }
+        assert(0); /* Programming error */
+        retval = AMP_ERROR;
     }
-    
-    assert(AMP_SUCCESS == retval && "Unexpected error.");
     
     return retval;
 }
@@ -206,79 +126,21 @@ int amp_raw_semaphore_finalize(amp_semaphore_t semaphore)
 
 int amp_semaphore_wait(amp_semaphore_t semaphore)
 {
-    assert(NULL != semaphore);
-    
     int retval = AMP_SUCCESS;
     
-    DWORD const wait_retval = WaitForSingleObject(semaphore->semaphore_handle,
-                                                  INFINITE);
-    if (WAIT_OBJECT_0 != wait_retval) {
-        assert(WAIT_TIMEOUT != wait_retval 
-               && "INFINITE wait interval shouldn't time out.");
+    assert(NULL != semaphore);
 
-        retval = EINVAL;
+    if (WAIT_OBJECT_0 != WaitForSingleObject(semaphore->semaphore_handle,
+                                             INFINITE)) {
+        /* TODO: @todo Talk to a Windows expert and code more detailed error
+         *             detection and handling.
+         */
         
-#if !defined(NDEBUG)
         DWORD const last_error = GetLastError();
-        
-        switch (last_error) {
-            case ERROR_INVALID_HANDLE:
-             /* TODO: @todo Check if this error can really happen. */
-                assert(false 
-                       && "The handle is invalid.");
-                retval = EINVAL;
-                break;
-                /*case ERROR_TOO_MANY_SEMAPHORE:
-                 retval = EAGAIN;
-                 break;*/
-                /*case ERROR_EXCL_SEM_ALREADY_OWNED:
-                 assert(false 
-                 && "It shouldn't happen that the (not) exclusive semaphore is owned by another process.");
-                 retval = EINVAL;
-                 break;*/
-            /* case ERROR_SEM_IS_SET:
-                assert(false && "Mutex is in use.");
-                
-                retval = EBUSY;
-                break; */
-            case ERROR_TOO_MANY_SEM_REQUESTS:
-                assert(false 
-                       && "Unclear what is meant by requests - overflow in counter for waiting semaphores?");
-                /* retval = EOVERFLOW; */
-                retval = EAGAIN;
-                break;
-                /*case ERROR_INVALID_AT_INTERRUPT_TIME:
-                 break;*/
-            case ERROR_SEM_OWNER_DIED:
-                /* TODO: @todo Check if this error can really happen. */
-                assert(false 
-                       && "It shouldn't happen that the previous ownership of the semaphore has ended.");
-                retval = EINVAL;
-                break;
-            case ERROR_SEM_TIMEOUT:
-                assert(false && "INFINITE wait interval shouldn't time out.");
-                retval = EINVAL;
-                break;
-            case ERROR_SEM_NOT_FOUND:
-                assert(false && "It shouldn't happen that the (not) specified system semaphore name wasn't found.");
-                retval = EINVAL;
-                break;
-            case ERROR_TOO_MANY_POSTS:
-                assert(false && "If POSTS mean signals, then the max semaphore count has been reached.");
-                /* retval = EOVERFLOW; */
-                retval = EAGAIN;
-                break;
-            default:
-                /* TODO: @todo Check which code to use to flag an unknown error. 
-                 */
-                assert(false && "Unknown error.");
-                retval = EINVAL;
-                break;
-        }
-#endif /* !defined(NDEBUG) */
-    }
+        assert(0); /* Programming error */
 
-    assert(AMP_SUCCESS == retval && "Unexpected error.");
+        retval = AMP_ERROR;
+    }
     
     return retval;
 }
@@ -286,76 +148,20 @@ int amp_semaphore_wait(amp_semaphore_t semaphore)
 
 int amp_semaphore_signal(amp_semaphore_t semaphore)
 {
+    int retval = AMP_SUCCESS;
+    
     assert(NULL != semaphore);
     
-    int retval = AMP_SUCCESS;
-    BOOL const release_retval = ReleaseSemaphore(semaphore->semaphore_handle, 1, NULL);
-    
-    if (FALSE == release_retval) {
+    if ( !ReleaseSemaphore(semaphore->semaphore_handle, 1, NULL)) {
+        /* TODO: @todo Talk to a Windows expert and code more detailed error
+         *             detection and handling.
+         */
         
-        
-        retval = EINVAL;
-#if !defined(NDEBUG)
         DWORD const last_error = GetLastError();
         
-        switch (last_error) {
-            case ERROR_INVALID_HANDLE:
-             /* TODO: @todo Check if this error can really happen. */
-                assert(false 
-                       && "The handle is invalid.");
-                retval = EINVAL;
-                break;
-                /*case ERROR_TOO_MANY_SEMAPHORE:
-                 retval = EAGAIN;
-                 break;*/
-                /*case ERROR_EXCL_SEM_ALREADY_OWNED:
-                 assert(false 
-                 && "It shouldn't happen that the (not) exclusive semaphore is owned by another process.");
-                 retval = EINVAL;
-                 break;*/
-            /*case ERROR_SEM_IS_SET:
-                assert(false && "Mutex is in use.");
-                
-                retval = EBUSY;
-                break;*/
-            case ERROR_TOO_MANY_SEM_REQUESTS:
-                assert(false 
-                       && "Unclear what is meant by requests - overflow in counter for waiting semaphores?");
-                /* retval = EOVERFLOW; */
-                retval = EAGAIN;
-                break;
-                /*case ERROR_INVALID_AT_INTERRUPT_TIME:
-                 break;*/
-            case ERROR_SEM_OWNER_DIED:
-                /* TODO: @todo Check if this error can really happen. */
-                assert(false 
-                       && "It shouldn't happen that the previous ownership of the semaphore has ended.");
-                retval = EINVAL;
-                break;
-            case ERROR_SEM_TIMEOUT:
-                assert(false && "INFINITE wait interval shouldn't time out.");
-                retval = EINVAL;
-                break;
-            case ERROR_SEM_NOT_FOUND:
-                assert(false && "It shouldn't happen that the (not) specified system semaphore name wasn't found.");
-                retval = EINVAL;
-                break;
-            case ERROR_TOO_MANY_POSTS:
-                assert(false && "If POSTS mean signals, then the max semaphore count has been reached.");
-                /* retval = EOVERFLOW; */
-                retval = EAGAIN;
-                break;
-            default:
-                /* TODO: @todo Check which code to use to flag an unknown error. 
-                 */
-                assert(false && "Unknown error.");
-                retval = EINVAL;
-                break;
-        }        
-#endif /* !defined(NDEBUG) */
+        assert(0); /* Programming error */
+        retval = AMP_ERROR;
     }
-    
-    assert(AMP_SUCCESS == retval && "Unexpected error.");
     
     return retval;
 }

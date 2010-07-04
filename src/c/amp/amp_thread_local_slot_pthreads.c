@@ -46,6 +46,7 @@
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 
 
 
@@ -53,34 +54,36 @@ int amp_raw_thread_local_slot_init(amp_thread_local_slot_key_t key)
 {
     assert(NULL != key);
     
-    if (NULL == key) {
-        return EINVAL;
+    int retval = pthread_key_create(&(key->key), NULL);
+    switch (retval) {
+        case 0:
+            /* Nothing to do */
+            break;
+        case ENOMEM:
+            retval = AMP_NOMEM;
+            break;
+        case EAGAIN:
+            retval = AMP_ERROR;
+            break;
+        default:
+            assert(0); /* Programming error */
+            retval = AMP_ERROR;
     }
     
-    int const retval = pthread_key_create(&(key->key), NULL);
-    assert( (0 == retval || EAGAIN == retval || ENOMEM == retval) 
-           && "Unexpected error.");
-    
-    if (0 != retval) {
-        return retval;
-    }
-    
-    return AMP_SUCCESS;
+    return retval;
 }
 
 
 
 int amp_raw_thread_local_slot_finalize(amp_thread_local_slot_key_t key)
 {
-    int const retval = pthread_key_delete(key->key);
-    assert(EINVAL != retval && "Key is invalid.");
-    assert(0 == retval && "Unexpected error.");
-    
+    int retval = pthread_key_delete(key->key);
     if (0 != retval) {
-        return retval;
+        assert(0); /* Programming error */
+        retval = AMP_ERROR;
     }
     
-    return AMP_SUCCESS;
+    return retval;
 }
 
 
@@ -88,15 +91,20 @@ int amp_raw_thread_local_slot_finalize(amp_thread_local_slot_key_t key)
 int amp_thread_local_slot_set_value(amp_thread_local_slot_key_t key,
                                     void *value)
 {
-    int const retval = pthread_setspecific(key->key, value);
-    assert(EINVAL != retval && "Key is invalid.");
-    assert( (0 == retval || ENOMEM == retval) && "Unexpected error.");
-    
-    if (0 != retval) {
-        return retval;
+    int retval = pthread_setspecific(key->key, value);
+    switch (retval) {
+        case 0:
+            /* Nothing to do */
+            break;
+        case ENOMEM:
+            retval = AMP_NOMEM;
+            break;
+        default: /* EINVAL - programming error */
+            assert(0);
+            retval = AMP_ERROR;
     }
     
-    return AMP_SUCCESS;
+    return retval;
 }
 
 

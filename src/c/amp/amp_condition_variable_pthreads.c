@@ -57,23 +57,15 @@ int amp_raw_condition_variable_init(amp_condition_variable_t cond)
     int retval = pthread_cond_init(&cond->cond, NULL);
     switch (retval){
         case 0:
-            retval = AMP_SUCCESS;
-            break;
-        case ENOMEM: /* No enough memory to allocate condvar */
-            retval = AMP_NOMEM;
+            /* retval is already equal to AMP_SUCCES */
+            /* Fallthrough */
+        case ENOMEM:
+            /* retval is already equal to AMP_NOMEM */
             break;
         case EAGAIN: /* Platform resources not available */
             retval = AMP_ERROR;
             break;
-        case EBUSY: /* Condition variable in use must not be initialized */
-            assert(0);
-            retval = AMP_BUSY;
-            break;
-        case EINVAL: /* Invalid attribute must not happen - internal error */
-            assert(0);
-            retval = AMP_ERROR;
-            break;
-        default:
+        default: /* EINVAL, EBUSY - programming error */ 
             assert(0);
             retval = AMP_ERROR;
     }
@@ -90,17 +82,9 @@ int amp_raw_condition_variable_finalize(amp_condition_variable_t cond)
     int retval = pthread_cond_destroy(&cond->cond);
     switch (retval){
         case 0:
-            retval = AMP_SUCCESS;
+            /* retval is already equal to AMP_SUCCESS */
             break;
-        case EBUSY: /* Condition variable in use must not be finalized */
-            assert(0);
-            retval = AMP_BUSY;
-            break;
-        case EINVAL: /* Condition variable is invalid which must not happen */
-            assert(0);
-            retval = AMP_ERROR;
-            break;
-        default:
+        default: /* EINVAL, EBUSY - programming error */
             assert(0);
             retval = AMP_ERROR;
     }

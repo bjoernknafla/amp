@@ -40,11 +40,11 @@
 
 
 #include <cassert>
-#include <cerrno>
 #include <cstddef>
 
 
 #include <amp/amp_stddef.h>
+#include <amp/amp_return_code.h>
 #include <amp/amp_memory.h>
 #include <amp/amp_platform.h>
 
@@ -69,7 +69,7 @@ namespace {
         
         virtual ~amp_platform_test_fixture()
         {
-            int const error_code = amp_platform_destroy(platform,
+            int const error_code = amp_platform_destroy(&platform,
                                                         AMP_DEFAULT_ALLOCATOR,
                                                         &amp_default_dealloc);
             
@@ -242,7 +242,7 @@ SUITE(amp_platform)
         error_code = amp_platform_get_active_hwthread_count(platform, &dummy_count);
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         
-        error_code = amp_platform_destroy(platform,
+        error_code = amp_platform_destroy(&platform,
                                           &allocator,
                                           &statistics_collecting_dealloc);
         assert(AMP_SUCCESS == error_code);

@@ -34,6 +34,9 @@
  * Shallow wrapper around the platforms threads. Threads launched must always
  * be joined to prevent resource leaks. Currently threads can't be detached.
  *
+ * Thanks to Jedd Orion Haberstro for feedback to the documentation of
+ * amp_thread_yield which resulted in a clearer explanation of the function.
+ *
  * TODO: @todo Manage threads when using cocoa (create at least one NSTask and 
  *             create an autoreleasepool inside the threads.
  * TODO: @todo Add docu to say how many threads can run at max and if joined 
@@ -178,8 +181,8 @@ extern "C" {
                       amp_thread_id_t* id);
     
     /**
-     * Hints the operating system that it might be benificial to context switch
-     * to another thread.
+     * Tells the operating system that it might be benificial to context switch
+     * to another thread. 
      *
      * Based on the platform/backend an immediate context switch can occur - or 
      * not. The POSIX/Pthreads backend and the Windows threads backend will
@@ -191,6 +194,10 @@ extern "C" {
      *
      * @return AMP_SUCCESS on success, otherwise
      *         ENOSYS is returned if not supported.
+     *
+     * Thanks to Jedd Orion Haberstro i clarified if amp_thread_yield results
+     * in an immediate context switch or if it is merrely a hint (as I 
+     * proclaimed before). Answer: it depends on the platform in use.
      */
     int amp_thread_yield(void);
     

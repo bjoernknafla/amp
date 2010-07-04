@@ -42,10 +42,10 @@
 #include "amp_thread_local_slot.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_thread_local_slot.h"
 
 
@@ -55,26 +55,22 @@ int amp_thread_local_slot_create(amp_thread_local_slot_key_t* key,
                                  amp_alloc_func_t alloc_func,
                                  amp_dealloc_func_t dealloc_func)
 {
+    amp_thread_local_slot_key_t tmp_key = AMP_THREAD_LOCAL_SLOT_UNINITIALIZED;
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != key);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
     *key = AMP_THREAD_LOCAL_SLOT_UNINITIALIZED;
     
-    if (NULL == key
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
-    amp_thread_local_slot_key_t tmp_key = (amp_thread_local_slot_key_t)alloc_func(allocator_context,
-                                                                                  sizeof(struct amp_raw_thread_local_slot_key_s));
+    tmp_key = (amp_thread_local_slot_key_t)alloc_func(allocator_context,
+                                                      sizeof(*tmp_key));
     if (NULL == tmp_key) {
-        return ENOMEM;
+        return AMP_NOMEM;
     }
     
-    int const retval = amp_raw_thread_local_slot_init(tmp_key);
+    retval = amp_raw_thread_local_slot_init(tmp_key);
     if (AMP_SUCCESS == retval) {
         *key = tmp_key;
     } else {
@@ -92,18 +88,13 @@ int amp_thread_local_slot_destroy(amp_thread_local_slot_key_t* key,
                                   void* allocator_context,
                                   amp_dealloc_func_t dealloc_func)
 {
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != key);
     assert(NULL != *key);
     assert(NULL != dealloc_func);
     
-    if (NULL == key
-        || NULL == *key
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
-    int retval = amp_raw_thread_local_slot_finalize(*key);
+    retval = amp_raw_thread_local_slot_finalize(*key);
     if (AMP_SUCCESS == retval) {
         retval = dealloc_func(allocator_context,
                               *key);

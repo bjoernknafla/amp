@@ -39,10 +39,10 @@
 #include "amp_semaphore.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_semaphore.h"
 
 
@@ -50,17 +50,14 @@
 int amp_raw_semaphore_init(amp_semaphore_t semaphore,
                            amp_semaphore_counter_t init_count)
 {
-    /* No way to reliably detect if the sem is already initialized... */
-    
     assert(NULL != semaphore);
     assert((amp_semaphore_counter_t)0 <= init_count);
     assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
     
-    if (NULL == semaphore
-        || (amp_semaphore_counter_t)0 > init_count
+    if ((amp_semaphore_counter_t)0 > init_count
         || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count) {
             
-        return EINVAL;
+        return AMP_ERROR;
     }
     
     /**
@@ -74,7 +71,7 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
     semaphore->semaphore = dispatch_semaphore_create(0l);
 
     if (NULL == semaphore->semaphore) {
-        return ENOMEM;
+        return AMP_NOMEM;
     }
     
     /**
@@ -87,7 +84,6 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
     for (amp_semaphore_counter_t i = 0; i < init_count; ++i) {
         long const signal_retval = dispatch_semaphore_signal(semaphore->semaphore);
         assert(0 == signal_retval && "During creation no thread must wait on the semaphore.");
-        (void) signal_retval;
     }
     
     return AMP_SUCCESS;
@@ -99,15 +95,7 @@ int amp_raw_semaphore_finalize(amp_semaphore_t semaphore)
 {
     assert(NULL != semaphore);
     assert(NULL != semaphore->semaphore);
-    
-    if (NULL == semaphore)  {
-        return EINVAL;
-    }
-    
-    if (NULL == semaphore->semaphore) {
-        return EINVAL;
-    }
-    
+
     dispatch_release(semaphore->semaphore);
     
     return AMP_SUCCESS;
@@ -121,7 +109,6 @@ int amp_semaphore_wait(amp_semaphore_t semaphore)
     assert(NULL != semaphore->semaphore);
 
     long retval = dispatch_semaphore_wait(semaphore->semaphore, DISPATCH_TIME_FOREVER);
-    (void)retval;
     
     assert(0 == retval && "Timeout should not occur when waiting for DISPATCH_TIME_FOREVER.");
     

@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
     error_code = amp_platform_get_active_hwthread_count(platform, &active_hwthread_count);
     exit_on_error_other_than_enosys(error_code);
     
-    int const error_code_destroy = amp_platform_destroy(platform,
+    int const error_code_destroy = amp_platform_destroy(&platform,
                                                         allocator_context,
                                                         &amp_default_dealloc);
     exit_on_error(error_code_destroy);

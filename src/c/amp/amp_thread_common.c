@@ -43,21 +43,19 @@
 #include "amp_raw_thread.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_internal_thread.h"
 
 
 
 int amp_internal_thread_init_for_configuration(amp_thread_t thread)
 {
-    assert(NULL != thread);
+    int retval = AMP_UNSUPPORTED;
     
-    if (NULL == thread) {
-        return EINVAL;
-    }
+    assert(NULL != thread);
     
     thread->func = NULL;
     thread->func_context = NULL;
@@ -65,7 +63,7 @@ int amp_internal_thread_init_for_configuration(amp_thread_t thread)
     thread->reserved1 = 0;
     thread->state = 0; /* Signal not initialized */
     
-    int const retval = amp_internal_native_thread_set_invalid(&thread->native_thread_description);
+    retval = amp_internal_native_thread_set_invalid(&thread->native_thread_description);
     if (AMP_SUCCESS == retval) {
         /* Signal initialized */
             thread->state = (int)amp_internal_thread_prelaunch_state;
@@ -83,13 +81,9 @@ int amp_internal_thread_configure(amp_thread_t thread,
     assert(NULL != thread);
     assert(amp_internal_thread_joinable_state != thread->state);
     
-    if (NULL == thread) {
-        return EINVAL;
-    }
     if (amp_internal_thread_joinable_state == thread->state) {
-        return EBUSY;
+        return AMP_BUSY;
     }
-    
     
     thread->func = func;
     thread->func_context = func_context;
@@ -105,11 +99,8 @@ int amp_internal_thread_configure_context(amp_thread_t thread,
     assert(NULL != thread);
     assert(amp_internal_thread_joinable_state != thread->state);
     
-    if (NULL == thread) {
-        return EINVAL;
-    }
     if (amp_internal_thread_joinable_state == thread->state) {
-        return EBUSY;
+        return AMP_BUSY;
     }
     
     thread->func_context = context;
@@ -125,11 +116,8 @@ int amp_internal_thread_configure_function(amp_thread_t thread,
     assert(NULL != thread);
     assert(amp_internal_thread_joinable_state != thread->state);
     
-    if (NULL == thread) {
-        return EINVAL;
-    }
     if (amp_internal_thread_joinable_state == thread->state) {
-        return EBUSY;
+        return AMP_BUSY;
     }
     
     thread->func = func;
@@ -145,12 +133,6 @@ int amp_internal_thread_context(amp_thread_t thread,
     assert(NULL != thread);
     assert(NULL != context);
     
-    if (NULL == thread
-        || NULL == context) {
-        
-        return EINVAL;
-    }
-    
     *context = thread->func_context;
     
     return AMP_SUCCESS;
@@ -164,12 +146,6 @@ int amp_internal_thread_function(amp_thread_t thread,
     assert(NULL != thread);
     assert(NULL != func);
     
-    if (NULL == thread
-        || NULL == func) {
-        
-        return EINVAL;
-    }
-    
     *func = thread->func;
     
     return AMP_SUCCESS;
@@ -181,13 +157,13 @@ int amp_raw_thread_launch(amp_thread_t thread,
                           void* func_context, 
                           amp_thread_func_t func)
 {
+    int retval = AMP_UNSUPPORTED;
+    
+    assert(NULL != thread);
     assert(NULL != func);
+
     
-    if (NULL == func) {
-        return EINVAL;
-    }
-    
-    int retval = amp_internal_thread_init_for_configuration(thread);
+    retval = amp_internal_thread_init_for_configuration(thread);
     if (AMP_SUCCESS != retval) {
         return retval;
     }
@@ -214,6 +190,9 @@ int amp_thread_create_and_launch(amp_thread_t* thread,
                                  void* func_context,
                                  amp_thread_func_t func)
 {
+    int retval = AMP_UNSUPPORTED;
+    amp_thread_t local_thread = AMP_THREAD_UNINITIALIZED;
+    
     assert(NULL != thread);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
@@ -221,24 +200,16 @@ int amp_thread_create_and_launch(amp_thread_t* thread,
     
     *thread = AMP_THREAD_UNINITIALIZED;
     
-    if (NULL == thread
-        || NULL == alloc_func
-        || NULL == dealloc_func
-        || NULL == func) {
-        
-        return EINVAL;
-    }
-    
-    amp_thread_t local_thread = (amp_thread_t)alloc_func(allocator_context,
-                                                         sizeof(struct amp_raw_thread_s));
+    local_thread = (amp_thread_t)alloc_func(allocator_context,
+                                            sizeof(*local_thread));
     
     if (NULL == local_thread) {
-        return ENOMEM;
+        return AMP_NOMEM;
     }
     
-    int retval = amp_raw_thread_launch(local_thread,
-                                       func_context,
-                                       func);
+    retval = amp_raw_thread_launch(local_thread,
+                                   func_context,
+                                   func);
     
     if (AMP_SUCCESS == retval) {
         *thread = local_thread;
@@ -256,18 +227,13 @@ int amp_thread_join_and_destroy(amp_thread_t* thread,
                                 void* allocator_context,
                                 amp_dealloc_func_t dealloc_func)
 {
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != thread);
     assert(NULL != *thread);
     assert(NULL != dealloc_func);
     
-    if (NULL == thread
-        || NULL == *thread
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
-    int retval = amp_raw_thread_join(*thread);
+    retval = amp_raw_thread_join(*thread);
     
     if (AMP_SUCCESS == retval) {
         retval = dealloc_func(allocator_context, *thread);

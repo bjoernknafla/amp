@@ -47,35 +47,27 @@
 #include "amp_mutex.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_mutex.h"
 #include "amp_internal_winthreads_critical_section_config.h"
 
 
 
 int amp_raw_mutex_init(amp_mutex_t mutex)
-{
-    /*
-     * Adding a field to amp_raw_mutex_s to falg if the data structure is
-     * already initialized isn't safe - memory isn't initialized and can 
-     * therefore accidentially set the flag to wrong values...
-     */
-    
-    BOOL retval;
+{    
+    BOOL retval = FALSE;
 
     assert(NULL != mutex);
     
-    /* DWORD const spint_count = AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT | AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000; */
-    /* BOOL const retval; */
     retval = InitializeCriticalSectionAndSpinCount(&mutex->critical_section,
         AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_DEFAULT_SPIN_COUNT | AMP_RAW_MUTEX_WINTHREADS_CRITICAL_SECTION_CREATE_IMMEDIATELY_ON_WIN2000);
     
     if (FALSE == retval) {
-        /* GetLastError has more infos. */
-        return ENOMEM;
+        DWORD const last_error = GetLastError();
+        return AMP_NOMEM;
     }
     
     /* Safe to set here as the mutex is only allowed to be used after init
@@ -90,46 +82,34 @@ int amp_raw_mutex_init(amp_mutex_t mutex)
 
 int amp_raw_mutex_finalize(amp_mutex_t mutex)
 {
-    assert(NULL != mutex);
+#if !defined(NDEBUG)
+    BOOL tryenterretval = FALSE;
+#endif /* !defined(NDEBUG) */
     
-    int retval = AMP_SUCCESS;
+    assert(NULL != mutex);
     
     /* Unexhaustive by-chance error checking in debug mode. */
 #if !defined(NDEBUG)
-    BOOL const tryenterretval = TryEnterCriticalSection(&mutex->critical_section);
+    tryenterretval = TryEnterCriticalSection(&mutex->critical_section);
     if (TRUE == tryenterretval ) {
         
         BOOL const locked = mutex->is_locked;
         LeaveCriticalSection(&mutex->critical_section);
         
-        /* 
-         * Assert to really show programming error in debug mode - return after
-         * never reached but shows what could happen (undefined behavior).
-         */
-        assert(FALSE == locked 
-               && "Finalizing a locked mutex leads to undefined behavior." 
-               && "Finalizing a mutex locked by the same thread leads to undefined behavior.");
-        
         if (TRUE == locked) {
-            return EBUSY;
+            assert(0); /* Programming error */
+            return AMP_ERROR;
         }    
 
     } else {
-        /* 
-         * Assert to really show programming error in debug mode - return after
-         * never reached but shows what could happen (undefined behavior).
-         */
-        assert(TRUE == tryenterretval 
-               && "Finalizing a locked mutex leads to undefined behavior.");
-        
-        return EBUSY;
-        
+        assert(0); /* Programming error */
+        return AMP_ERROR;
     }
-#endif
+#endif /* !defined(NDEBUG) */
     
     DeleteCriticalSection(&mutex->critical_section);
     
-    return retval;
+    return AMP_SUCCESS;
 }
 
 
@@ -164,16 +144,12 @@ int amp_mutex_lock(amp_mutex_t mutex)
          * locking in the first place.
          */
         LeaveCriticalSection(&mutex->critical_section);
-        /* 
-         * Assert to really show programming error in debug mode - return after
-         * never reached but shows what could happen (undefined behavior).
-         */
-        assert(false && "Recursive locking not allowed.");
+
+        assert(0); /* Programming error - recursive locking is not allowed */
         
-        return EDEADLK;
+        return AMP_ERROR;
     }
-    
-#endif
+#endif /* !defined(NDEBUG) */
     
     mutex->is_locked = TRUE;
     
@@ -184,32 +160,28 @@ int amp_mutex_lock(amp_mutex_t mutex)
 
 int amp_mutex_trylock(amp_mutex_t mutex)
 {
-    assert(NULL != mutex);
-    
-  
     int retval = AMP_SUCCESS;
-    BOOL const entered = TryEnterCriticalSection(&mutex->critical_section);
     
-    if (TRUE == entered) {
+    assert(NULL != mutex);    
+
+    if (TryEnterCriticalSection(&mutex->critical_section)) {
         
 #if !defined(NDEBUG)
         if (TRUE == mutex->is_locked) {
             LeaveCriticalSection(&mutex->critical_section);
             /* 
-             * Assert to really show programming error in debug mode - return after
-             * never reached but shows what could happen (undefined behavior).
+             * Trying to lock recursively leads to undefined behavior -
+             * programming error.
              */
-            assert(FALSE == mutex->is_locked 
-                   && "Trying to lock recursively leads to undefined behavior.");
-            return EDEADLK;
+            assert(0);
+            return AMP_ERROR;
         }
 #endif
         
         mutex->is_locked = TRUE;
         
     } else {
-        
-        retval = EBUSY;
+        retval = AMP_BUSY;
     }
     
     return retval;
@@ -227,37 +199,29 @@ int amp_mutex_unlock(amp_mutex_t mutex)
      * If possible (Win allows recursive locking) and is_locked not 
      * set -> error, otherwise everything seems ok.
      */
-    BOOL const trylockretval = TryEnterCriticalSection(&mutex->critical_section);
-    if (TRUE == trylockretval) {
+    if (TryEnterCriticalSection(&mutex->critical_section)) {
+        
         BOOL const locked = mutex->is_locked;
         LeaveCriticalSection(&mutex->critical_section);
         
-        /* 
-         * Assert to really show programming error in debug mode - return after
-         * never reached but shows what could happen (undefined behavior).
-         */
-        assert(TRUE == locked 
-               && "Calling unlock for a non-locked mutex leads to undefined behavior.");
-        
         if (FALSE == locked) {
-            return EPERM;
+            /* 
+             * Calling unlock for a non-locked mutex leads to undefined behavior -
+             * programming error.
+             */
+            assert(0);
+            return AMP_ERROR;
         }
         
         
     } else {
         /* 
-         * Assert to really show programming error in debug mode - return after
-         * never reached but shows what could happen (undefined behavior).
+         * Calling unlock for a mutex locked by another thread leads to 
+         * undefined behavior - programming error.
          */
-        assert(TRUE == trylockretval 
-               && "Calling unlock for a mutex locked by another thread leads to undefined behavior.");
-        return EPERM;
+        assert(0);
+        return AMP_ERROR;
     }
-    
-    
-    assert(TRUE == mutex->is_locked 
-           && "Only the thread holding the lock of a mutex is allowed to unlock it.");
-    
 #endif    
     
     /* Minimal window of possible inconsistency.

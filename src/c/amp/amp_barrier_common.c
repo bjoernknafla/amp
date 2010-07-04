@@ -39,9 +39,9 @@
 #include "amp_raw_barrier.h"
 
 #include <assert.h>
-#include <errno.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 
 
 
@@ -51,28 +51,30 @@ int amp_barrier_create(amp_barrier_t* barrier,
                        amp_alloc_func_t alloc_func,
                        amp_dealloc_func_t dealloc_func)
 {
+    amp_barrier_t tmp_barrier = AMP_BARRIER_UNINITIALIZED;
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != barrier);
     assert(0 < init_count);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
 
-    if (NULL == barrier
-        || 0 >= init_count
+    if (0 >= init_count
         || NULL == alloc_func
         || NULL == dealloc_func) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
     
     *barrier = AMP_BARRIER_UNINITIALIZED;
     
-    amp_barrier_t tmp_barrier = (amp_barrier_t)alloc_func(allocator_context,
-                                                          sizeof(struct amp_raw_barrier_s));
+    tmp_barrier = (amp_barrier_t)alloc_func(allocator_context,
+                                            sizeof(*tmp_barrier));
     if (NULL == tmp_barrier) {
-        return ENOMEM;
+        return AMP_NOMEM;
     }
     
-    int const retval = amp_raw_barrier_init(tmp_barrier, init_count);
+    retval = amp_raw_barrier_init(tmp_barrier, init_count);
     if (AMP_SUCCESS == retval) {
         *barrier = tmp_barrier;
     } else {
@@ -89,18 +91,14 @@ int amp_barrier_destroy(amp_barrier_t* barrier,
                         void* allocator_context,
                         amp_dealloc_func_t dealloc_func)
 {
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != barrier);
     assert(NULL != *barrier);
     assert(NULL != dealloc_func);
     
-    if (NULL == barrier
-        || NULL == *barrier
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
     
-    int retval = amp_raw_barrier_finalize(*barrier);
+    retval = amp_raw_barrier_finalize(*barrier);
     if (AMP_SUCCESS == retval) {
         retval = dealloc_func(allocator_context, *barrier);
         assert(AMP_SUCCESS == retval);

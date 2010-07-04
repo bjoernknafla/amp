@@ -40,9 +40,9 @@
 #include "amp_raw_semaphore.h"
 
 #include <assert.h>
-#include <errno.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 
 
 
@@ -52,6 +52,9 @@ int amp_semaphore_create(amp_semaphore_t* semaphore,
                          amp_alloc_func_t alloc_func,
                          amp_dealloc_func_t dealloc_func)
 {
+    amp_semaphore_t tmp_sema = AMP_SEMAPHORE_UNINITIALIZED;
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != semaphore);
     assert((amp_semaphore_counter_t)0 <= init_count);
     assert(AMP_RAW_SEMAPHORE_COUNT_MAX >= (amp_raw_semaphore_counter_t)init_count);
@@ -60,23 +63,20 @@ int amp_semaphore_create(amp_semaphore_t* semaphore,
     
     *semaphore = AMP_SEMAPHORE_UNINITIALIZED;
     
-    if (NULL == semaphore
-        || (amp_semaphore_counter_t)0 > init_count
-        || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
+    if ((amp_semaphore_counter_t)0 > init_count
+        || AMP_RAW_SEMAPHORE_COUNT_MAX < (amp_raw_semaphore_counter_t)init_count) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
-    
-    amp_semaphore_t tmp_sema = (amp_semaphore_t)alloc_func(allocator_context,
-                                                           sizeof(struct amp_raw_semaphore_s));
+
+    tmp_sema = (amp_semaphore_t)alloc_func(allocator_context,
+                                           sizeof(*tmp_sema));
     if (NULL == tmp_sema) {
-        return ENOMEM;
+        return AMP_NOMEM;
     }
     
-    int const retval = amp_raw_semaphore_init(tmp_sema,
-                                              init_count);
+    retval = amp_raw_semaphore_init(tmp_sema,
+                                    init_count);
     if (AMP_SUCCESS == retval) {
         *semaphore = tmp_sema;
     } else {
@@ -93,18 +93,13 @@ int amp_semaphore_destroy(amp_semaphore_t* semaphore,
                           void* allocator_context,
                           amp_dealloc_func_t dealloc_func)
 {
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != semaphore);
     assert(NULL != *semaphore);
     assert(NULL != dealloc_func);
     
-    if (NULL == semaphore
-        || NULL == semaphore
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
-    
-    int retval = amp_raw_semaphore_finalize(*semaphore);
+    retval = amp_raw_semaphore_finalize(*semaphore);
     if (AMP_SUCCESS == retval) {
         retval = dealloc_func(allocator_context,
                               *semaphore);

@@ -39,10 +39,10 @@
 #include "amp_thread_array.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_thread.h"
 #include "amp_raw_thread.h"
 #include "amp_internal_thread.h"
@@ -68,6 +68,9 @@ int amp_thread_array_create(amp_thread_array_t* thread_array,
      *             the group thread structs and the group itself into.
      */
     
+    struct amp_thread_array_s* group = NULL;
+    struct amp_raw_thread_s* threads = NULL;
+    
     assert(NULL != thread_array);
     assert(0 != thread_count);
     assert(NULL != alloc_func);
@@ -80,32 +83,29 @@ int amp_thread_array_create(amp_thread_array_t* thread_array,
         || NULL == alloc_func
         || NULL == dealloc_func) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
     
     *thread_array = NULL;
     
-    struct amp_thread_array_s* group =  
-    (struct amp_thread_array_s *)alloc_func(allocator_context,
-                                            sizeof(struct amp_thread_array_s));
+    group = (struct amp_thread_array_s *)alloc_func(allocator_context,
+                                                    sizeof(*group));
     if (NULL == group) {
-        return ENOMEM;
+        return AMP_NOMEM;
     }
     
     /* Allocate memory for the groups threads. */
-    struct amp_raw_thread_s* threads = 
-    (struct amp_raw_thread_s*)alloc_func(allocator_context,
-                                         sizeof(struct amp_raw_thread_s) * thread_count);
+    threads = (struct amp_raw_thread_s*)alloc_func(allocator_context,
+                                                   sizeof(*threads) * thread_count);
     if (NULL == threads) {
+        int const rv = dealloc_func(allocator_context, group);
+        assert(AMP_SUCCESS == rv);
         
-        dealloc_func(allocator_context, group);
-        
-        return ENOMEM;
+        return AMP_NOMEM;
     }
     
     for (size_t i = 0; i < thread_count; ++i) {
-        
-        int rv = amp_internal_thread_init_for_configuration(&threads[i]);
+        int const rv = amp_internal_thread_init_for_configuration(&threads[i]);
         assert(AMP_SUCCESS == rv);
     }
     
@@ -125,29 +125,27 @@ int amp_thread_array_destroy(amp_thread_array_t* thread_array,
                              void* allocator_context,
                              amp_dealloc_func_t dealloc_func)
 {
+    int retval = AMP_UNSUPPORTED;
+    
     assert(NULL != thread_array);
     assert(NULL != *thread_array);
     assert(NULL != dealloc_func);
     assert(0 == (*thread_array)->joinable_count);
-    
-    if (NULL == thread_array 
-        || NULL == *thread_array
-        || NULL == dealloc_func) {
-        
-        return EINVAL;
-    }
+
     
     if ((0 != (*thread_array)->joinable_count)) {
-        return EBUSY;
+        return AMP_BUSY;
     }
     
-    int retval = dealloc_func(allocator_context, (*thread_array)->threads);
+    retval = dealloc_func(allocator_context, (*thread_array)->threads);
     if (AMP_SUCCESS == retval) {
         (*thread_array)->threads = NULL;
         retval =  dealloc_func(allocator_context, *thread_array);
-        assert(AMP_SUCCESS == retval);
         if (AMP_SUCCESS == retval) {
             *thread_array = AMP_THREAD_ARRAY_UNINITIALIZED;
+        } else {
+            assert(0); /* Unable to deallocate - posibly bad dealloc_func */
+            retval = AMP_ERROR;
         }
     }
     
@@ -161,6 +159,10 @@ int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
                                         size_t range_length,
                                         void* shared_context)
 {
+    size_t thread_count = 0;
+    struct amp_raw_thread_s *threads = NULL;
+    size_t range_end = 0;
+    
     assert(NULL != thread_array);
     assert(range_begin < thread_array->thread_count);
     assert(range_length > 0);
@@ -168,23 +170,21 @@ int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
     assert(range_begin <= thread_array->thread_count - range_length);
     assert(0 == thread_array->joinable_count);
     
-    size_t const thread_count = thread_array->thread_count;
+    thread_count = thread_array->thread_count;
     
-    if (NULL == thread_array
-        || range_begin >= thread_count
+    if (range_begin >= thread_count
         || range_length <= 0
         || range_length > thread_count
         || range_begin > thread_count - range_length) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
     if (0 != thread_array->joinable_count) {
-        return EBUSY;
+        return AMP_BUSY;
     }
     
-    struct amp_raw_thread_s *threads = thread_array->threads;
-    
-    size_t const range_end = range_begin - 1 + range_length;
+    threads = thread_array->threads;
+    range_end = range_begin - 1 + range_length;
     
     for (size_t i = range_begin; i <= range_end; ++i) {
         int const errc = amp_internal_thread_configure_context(&threads[i],
@@ -204,6 +204,10 @@ int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
                                          size_t range_length,
                                          amp_thread_func_t shared_function)
 {
+    size_t thread_count = 0;
+    struct amp_raw_thread_s *threads = NULL;
+    size_t range_end = 0;
+    
     assert(NULL != thread_array);
     assert(range_begin < thread_array->thread_count);
     assert(range_length > 0);
@@ -212,25 +216,22 @@ int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
     assert(NULL != shared_function);
     assert(0 == thread_array->joinable_count);
     
-    size_t const thread_count = thread_array->thread_count;
+    thread_count = thread_array->thread_count;
     
-    if (NULL == thread_array
-        || range_begin >= thread_count
+    if (range_begin >= thread_count
         || range_length <= 0
         || range_length > thread_count
         || range_begin > thread_count - range_length
         || NULL == shared_function) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
     if (0 != thread_array->joinable_count) {
-        return EBUSY;
+        return AMP_BUSY;
     }
     
-    struct amp_raw_thread_s *threads = thread_array->threads;
-    
-    size_t const range_end = range_begin - 1 + range_length;
-    
+    threads = thread_array->threads;
+    range_end = range_begin - 1 + range_length;
     for (size_t i = range_begin; i <= range_end; ++i) {
         int const errc = amp_internal_thread_configure_function(&threads[i],
                                                                 shared_function);
@@ -250,6 +251,10 @@ int amp_thread_array_configure(amp_thread_array_t thread_array,
                                void* shared_context,
                                amp_thread_func_t shared_function)
 {
+    size_t thread_count = 0;
+    struct amp_raw_thread_s* threads = NULL;
+    size_t range_end = 0;
+    
     assert(NULL != thread_array);
     assert(range_begin < thread_array->thread_count);
     assert(range_length > 0);
@@ -258,30 +263,30 @@ int amp_thread_array_configure(amp_thread_array_t thread_array,
     assert(NULL != shared_function);
     assert(0 == thread_array->joinable_count);
     
-    size_t const thread_count = thread_array->thread_count;
+    thread_count = thread_array->thread_count;
     
-    if (NULL == thread_array
-        || range_begin >= thread_count
+    if (range_begin >= thread_count
         || range_length <= 0
         || range_length > thread_count
         || range_begin > thread_count - range_length
         || NULL == shared_function) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
     if (0 != thread_array->joinable_count) {
-        return EBUSY;
+        return AMP_BUSY;
     }
     
-    struct amp_raw_thread_s* threads = thread_array->threads;
-    
-    size_t const range_end = range_begin - 1 + range_length;
-    
+    threads = thread_array->threads;
+    range_end = range_begin - 1 + range_length;
     for (size_t i = range_begin; i <= range_end; ++i) {
-        int const errc0 = amp_internal_thread_configure_context(&threads[i],
-                                                                shared_context);
-        int const errc1 = amp_internal_thread_configure_function(&threads[i],
-                                                                 shared_function);
+        int errc0 = AMP_ERROR;
+        int errc1 = AMP_ERROR;
+        
+        errc0 = amp_internal_thread_configure_context(&threads[i],
+                                                      shared_context);
+        errc1 = amp_internal_thread_configure_function(&threads[i],
+                                                       shared_function);
         if (AMP_SUCCESS != errc0
             || AMP_SUCCESS != errc1) {
             
@@ -296,17 +301,17 @@ int amp_thread_array_configure(amp_thread_array_t thread_array,
 int amp_thread_array_launch_all(struct amp_thread_array_s *thread_array,
                                 size_t* joinable_thread_count)
 {
+    struct amp_raw_thread_s *threads = NULL;
+    size_t joinable_count = 0;
+    size_t thread_count = 0;
+    int retval = AMP_SUCCESS;
+    
     assert(NULL != thread_array);
     
-    if (NULL == thread_array) {
-        return EINVAL;
-    }
+    threads = thread_array->threads;
+    joinable_count = thread_array->joinable_count;
+    thread_count = thread_array->thread_count;
     
-    struct amp_raw_thread_s *threads = thread_array->threads;
-    size_t joinable_count = thread_array->joinable_count;
-    size_t const thread_count = thread_array->thread_count;
-    
-    int retval = AMP_SUCCESS;
     while (   (joinable_count < thread_count)
            && (AMP_SUCCESS == retval)) {
         
@@ -332,17 +337,20 @@ int amp_thread_array_launch_all(struct amp_thread_array_s *thread_array,
 int amp_thread_array_join_all(struct amp_thread_array_s* thread_array,
                               size_t* joinable_thread_count)
 {
+    struct amp_raw_thread_s *threads = NULL;
+    size_t joinable_count = 0;
+    size_t joined_count = 0;
+    int retval = AMP_SUCCESS;
+    
     assert(NULL != thread_array);
     
     if (NULL == thread_array) {
         return EINVAL;
     }
     
-    struct amp_raw_thread_s *threads = thread_array->threads;
-    size_t const joinable_count = thread_array->joinable_count;
-    size_t joined_count = 0;
-    
-    int retval = AMP_SUCCESS;
+    threads = thread_array->threads;
+    joinable_count = thread_array->joinable_count;
+    joined_count = 0;
     while (   (joined_count < joinable_count)
            && (AMP_SUCCESS == retval)) {
         
@@ -373,10 +381,6 @@ int amp_thread_array_get_joinable_thread_count(amp_thread_array_t thread_array,
 {
     assert(NULL != thread_array);
     assert(NULL != joinable_thread_count);
-
-    if (NULL == thread_array || NULL == joinable_thread_count) {
-        return EINVAL;
-    }
     
     *joinable_thread_count = thread_array->joinable_count;
     

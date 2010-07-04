@@ -50,6 +50,7 @@
 #include <sched.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
 #include "amp_raw_thread.h"
 #include "amp_internal_thread.h"
 
@@ -90,10 +91,6 @@ int amp_internal_native_thread_set_invalid(struct amp_native_thread_s *native_th
 {
     assert(NULL != native_thread);
     
-    if (NULL == native_thread) {
-        return EINVAL;
-    }
-    
     native_thread->thread = AMP_INVALID_THREAD_ID;
     
     return AMP_SUCCESS;
@@ -107,22 +104,27 @@ int amp_internal_thread_launch_configured(amp_thread_t thread)
     assert(NULL != thread->func);
     assert(amp_internal_thread_prelaunch_state == thread->state);
     
-    if (   (NULL == thread) 
-        || (NULL == thread->func) 
+    if ((NULL == thread->func) 
         || (amp_internal_thread_prelaunch_state != thread->state)) {
         
-        return EINVAL;
+        return AMP_ERROR;
     }
     
-    int const retval = pthread_create(&(thread->native_thread_description.thread), 
-                                      NULL, /* Default thread creation attribs. */
-                                      amp_internal_native_thread_adapter_func, 
-                                      thread);
-    assert(EINVAL != retval && "Thread attributes are invalid.");
-    assert((0 == retval || EAGAIN == retval) && "Unexpected error.");
-    
+    int retval = pthread_create(&(thread->native_thread_description.thread), 
+                                NULL, /* Default thread creation attribs. */
+                                amp_internal_native_thread_adapter_func, 
+                                thread);
     if (0 == retval) {
         thread->state = amp_internal_thread_joinable_state;
+    } else {
+        switch (retval) {
+            case EAGAIN:
+                retval = AMP_ERROR;
+                break;
+            default: /* EINVAL, EPERM - programming error */
+                assert(0);
+                retval = AMP_ERROR;
+        }
     }
     
     return retval;
@@ -141,26 +143,24 @@ int amp_raw_thread_join(amp_thread_t thread)
          */
         if (amp_internal_thread_joined_state == thread->state) {
             /* Thread has already joined. */
-            return EINVAL;
+            return AMP_ERROR    ;
         } else {
             /* thread doesn't point to valid thread data. */
-            return ESRCH;
+            return AMP_ERROR;
         }
     }
     
     /* Currently is ignored. */
     void *thread_exit_value = 0;
-    int const retval = pthread_join(thread->native_thread_description.thread,
-                                    &thread_exit_value);
-    assert( (0 == retval 
-             || EINVAL == retval 
-             || EDEADLK == retval 
-             || ESRCH == retval) 
-           && "Unexpected error.");
-    
+    int retval = pthread_join(thread->native_thread_description.thread,
+                              &thread_exit_value);
     if (0 == retval) {
         /* Successful join.*/
         thread->state = amp_internal_thread_joined_state;
+    } else {
+        /* EINVAL, ESRCH, EDEADLK - programming error */
+        assert(0);
+        retval = AMP_ERROR;
     }
     
     return retval;
@@ -188,7 +188,7 @@ int amp_thread_id(amp_thread_t thread,
     
     if (amp_internal_thread_joinable_state != thread->state) {
         *id = AMP_INVALID_THREAD_ID;
-        return ESRCH;
+        return AMP_ERROR;
     }
     
     *id = (amp_thread_id_t)(thread->native_thread_description.thread);

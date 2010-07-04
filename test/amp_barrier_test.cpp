@@ -11,12 +11,12 @@
 #include <UnitTest++.h>
 
 #include <cassert>
-#include <cerrno>
 #include <cstddef>
 #include <algorithm>
 #include <vector>
 
 #include <amp/amp.h>
+#include <amp/amp_return_code.h>
 
 
 
@@ -56,7 +56,7 @@ SUITE(amp_barrier)
         errc = amp_barrier_wait(barrier);
         CHECK_EQUAL(AMP_BARRIER_SERIAL_THREAD, errc);
         
-        errc = amp_barrier_destroy(barrier,
+        errc = amp_barrier_destroy(&barrier,
                                    AMP_DEFAULT_ALLOCATOR,
                                    &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, errc);
@@ -162,13 +162,13 @@ SUITE(amp_barrier)
         assert(AMP_SUCCESS == retval);
         assert(0 == joinable_count);
         
-        retval = amp_thread_array_destroy(threads,
+        retval = amp_thread_array_destroy(&threads,
                                           AMP_DEFAULT_ALLOCATOR,
                                           &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         
-        retval = amp_barrier_destroy(barrier,
+        retval = amp_barrier_destroy(&barrier,
                                      AMP_DEFAULT_ALLOCATOR,
                                      &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -315,19 +315,19 @@ SUITE(amp_barrier)
         std::size_t concurrency_level = 0;
         retval = amp_platform_get_installed_hwthread_count(platform,
                                                            &concurrency_level);
-        assert(AMP_SUCCESS == retval || ENOSYS == retval);
-        if (ENOSYS == retval) {
+        assert(AMP_SUCCESS == retval || AMP_UNSUPPORTED == retval);
+        if (AMP_UNSUPPORTED == retval) {
             retval = amp_platform_get_installed_core_count(platform,
                                                            &concurrency_level);
-            assert(AMP_SUCCESS == retval || ENOSYS == retval);
-            if (ENOSYS == retval) {
+            assert(AMP_SUCCESS == retval || AMP_UNSUPPORTED == retval);
+            if (AMP_UNSUPPORTED == retval) {
                 concurrency_level = 8;
             }
         }
         
         concurrency_level = std::max(concurrency_level, static_cast<std::size_t>(8));
         
-        retval = amp_platform_destroy(platform,
+        retval = amp_platform_destroy(&platform,
                                       AMP_DEFAULT_ALLOCATOR,
                                       &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
@@ -427,25 +427,25 @@ SUITE(amp_barrier)
         assert(0 == joinable_count);
         
 
-        retval = amp_barrier_destroy(shared_barrier,
+        retval = amp_barrier_destroy(&shared_barrier,
                                      AMP_DEFAULT_ALLOCATOR,
                                      &amp_default_dealloc);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         shared_barrier = AMP_BARRIER_UNINITIALIZED;
         
-        retval = amp_mutex_destroy(shared_counter_mutex,
+        retval = amp_mutex_destroy(&shared_counter_mutex,
                                    AMP_DEFAULT_ALLOCATOR,
                                    &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         shared_counter_mutex = AMP_MUTEX_UNINITIALIZED;
         
-        retval = amp_semaphore_destroy(shared_wakeup_sema,
+        retval = amp_semaphore_destroy(&shared_wakeup_sema,
                                        AMP_DEFAULT_ALLOCATOR,
                                        &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
         shared_wakeup_sema = AMP_SEMAPHORE_UNINITIALIZED;
         
-        retval = amp_thread_array_destroy(threads,
+        retval = amp_thread_array_destroy(&threads,
                                           AMP_DEFAULT_ALLOCATOR,
                                           &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);

@@ -58,8 +58,8 @@ int amp_mutex_create(amp_mutex_t* mutex,
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
     
-    amp_mutex_t tmp_mutex = (amp_mutex_t)alloc_func(allocator_context,
-                                                    sizeof(struct amp_raw_mutex_s));
+    tmp_mutex = (amp_mutex_t)alloc_func(allocator_context,
+                                        sizeof(*tmp_mutex));
     if (NULL == tmp_mutex) {
         return AMP_NOMEM;
     }

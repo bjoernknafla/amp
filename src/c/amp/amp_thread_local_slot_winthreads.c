@@ -51,28 +51,24 @@
 
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include "amp_stddef.h"
+#include "amp_return_code.h"
+
 
 
 int amp_raw_thread_local_slot_init(amp_thread_local_slot_key_t key)
 {
+    DWORD index = 0;
+    
     assert(NULL != key);
 
-    if (NULL == key) {
-        return EINVAL;
-    }
-    
-    DWORD const index = TlsAlloc();
-    
+    index = TlsAlloc();
     if (TLS_OUT_OF_INDEXES == index) {
-        assert(TLS_OUT_OF_INDEXES != index && "Maximum slot count exceeded.");
+        DWORD const last_error = GetLastError();
         
-        /* TODO: @todo Call GetLastError to get better error diagnsotics. */
-        
-        return EAGAIN;
+        return AMP_ERROR;
     }
 
     key->tls_index = index;
@@ -84,14 +80,17 @@ int amp_raw_thread_local_slot_init(amp_thread_local_slot_key_t key)
 
 int amp_raw_thread_local_slot_finalize(amp_thread_local_slot_key_t key)
 {
-    BOOL const free_retval = TlsFree(key->tls_index);
+    BOOL free_retval = FALSE;
+    
+    assert(NULL != key);
+    
+    free_retval = TlsFree(key->tls_index);
     
     if (FALSE == free_retval) {
-        assert(TRUE == free_retval && "Unknown error.");
+        DWORD const last_error = GetLastError();
+        assert(0); /* Progamming error */
         
-        /* TODO: @todo Call GetLastError to get better error diagnsotics. */
-        
-        return EINVAL;
+        return AMP_ERROR;
     }
     
     return AMP_SUCCESS;
@@ -102,14 +101,17 @@ int amp_raw_thread_local_slot_finalize(amp_thread_local_slot_key_t key)
 int amp_thread_local_slot_set_value(amp_thread_local_slot_key_t key,
                                     void *value)
 {
-    BOOL const set_retval = TlsSetValue(key->tls_index, value);
+    BOOL set_retval = FALSE;    
+    
+    assert(NULL != key);
+    
+    set_retval = TlsSetValue(key->tls_index, value);
     
     if (FALSE == set_retval) {
-        assert(TRUE == set_retval && "Unknown error.");
+        DWORD const last_error = GetLastError();
+        assert(0); /* Programming error */
         
-        /* TODO: @todo Call GetLastError to get better error diagnsotics. */
-        
-        return EINVAL;
+        return AMP_ERROR;
     }
     
     return AMP_SUCCESS;
@@ -119,8 +121,10 @@ int amp_thread_local_slot_set_value(amp_thread_local_slot_key_t key,
 
 void* amp_raw_thread_local_slot_value(amp_thread_local_slot_key_t key)
 {
+    void *retval = NULL;
+    DWORD last_error = 0;
+    
     assert(NULL != key);
-    assert(NULL != value);
     
     /**
      * TODO: @todo Add a debug status flag to check if a key has been 
@@ -130,10 +134,9 @@ void* amp_raw_thread_local_slot_value(amp_thread_local_slot_key_t key)
      * everything is alright - Pthreads doesn't detect errors but might lead
      * to undefined behavior when using an invalid key.
      */
-    void *retval =  TlsGetValue(key->tls_index);
-    DWORD const last_error = GetLastError();
-    assert((NULL != retval || ERROR_SUCCESS == last_error)
-           && "Unknown error.");
+    retval =  TlsGetValue(key->tls_index);
+    last_error = GetLastError();
+    assert((NULL != retval || ERROR_SUCCESS == last_error));
     
     return retval;
 }
