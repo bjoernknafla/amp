@@ -76,8 +76,6 @@ SUITE(amp_thread)
         for (std::size_t i = 0; i < thread_count; ++i) {
             int retval = amp_thread_create_and_launch(&threads[i],
                                                       AMP_DEFAULT_ALLOCATOR,
-                                                      &amp_default_alloc,
-                                                      &amp_default_dealloc,
                                                       &values_to_set[i], 
                                                       &launch_run_join_thread_func);
             CHECK_EQUAL(AMP_SUCCESS, retval);
@@ -85,8 +83,7 @@ SUITE(amp_thread)
         
         for (std::size_t i = 0; i < thread_count; ++i) {
             int retval = amp_thread_join_and_destroy(&threads[i],
-                                                     AMP_DEFAULT_ALLOCATOR,
-                                                     &amp_default_dealloc);
+                                                     AMP_DEFAULT_ALLOCATOR);
             CHECK_EQUAL(AMP_SUCCESS, retval);
         }
         

@@ -91,10 +91,8 @@ extern "C" {
      * TODO: @todo Decide if to allow @c 0 as a thread count.
      */
     int amp_thread_array_create(amp_thread_array_t* thread_array,
-                                size_t thread_count,
-                                void* allocator_context,
-                                amp_alloc_func_t alloc_func,
-                                amp_dealloc_func_t dealloc_func);
+                                amp_allocator_t allocator,
+                                size_t thread_count);
     
     
     /**
@@ -124,8 +122,7 @@ extern "C" {
      *         are NULL.
      */
     int amp_thread_array_destroy(amp_thread_array_t* thread_array,
-                                 void* allocator_context,
-                                 amp_dealloc_func_t dealloc_func);
+                                 amp_allocator_t allocator);
     
     /**
      * Sets range_length thread array thread contexts starting at index 

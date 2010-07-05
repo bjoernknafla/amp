@@ -1,0 +1,35 @@
+//
+//  amp_pthread_and_generic_broadcast_barriers_backend_test.xcconfig
+//  amp
+//
+//  Created by Björn Knafla on 05.07.10.
+//  Copyright 2010 Bjoern Knafla Parallelization + AI + Gamedev Consulting. All rights reserved.
+//
+
+#include "UnitTest++"
+#include "amp"
+
+
+PRODUCT_NAME = amp_pthread_and_generic_broadcast_barriers_backend_test
+
+GCC_PREPROCESSOR_DEFINITIONS = AMP_USE_PTHREADS AMP_USE_GENERIC_BROADCAST_BARRIERS
+
+// AMP_USE_PTHREADS
+// AMP_USE_WINTHREADS
+
+// AMP_USE_POSIX_1003_1B_SEMAPHORES
+// AMP_USE_LIBDISPATCH_SEMAPHORES
+// AMP_USE_PTHREADS
+// AMP_USE_WINTHREADS
+
+// AMP_USE_WINVISTA_CONDITION_VARIABLES
+// 
+
+// AMP_USE_GENERIC_BROADCAST_BARRIERS 
+// AMP_USE_GENERIC_SIGNAL_BARRIERS
+
+HEADER_SEARCH_PATHS = $(AMP_HEADER_PATHS) $(UNITTESTCPP_HEADER_PATH)
+LIBRARY_SEARCH_PATHS = $(inherited) "$(UNITTESTCPP_LIBRARY_PATH)"
+
+GCC_INLINES_ARE_PRIVATE_EXTERN = NO
+GCC_SYMBOLS_PRIVATE_EXTERN = NO

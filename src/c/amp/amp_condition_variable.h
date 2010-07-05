@@ -85,9 +85,7 @@ extern "C" {
      *         initialized.
      */
     int amp_condition_variable_create(amp_condition_variable_t* cond,
-                                      void* allocator_context,
-                                      amp_alloc_func_t alloc_func,
-                                      amp_dealloc_func_t dealloc_func);
+                                      amp_allocator_t allocator);
     
     /**
      * Finalizes and frees the memory of a condition variable.
@@ -108,8 +106,7 @@ extern "C" {
      *         EBUSY the condition variable is in use.
      */
     int amp_condition_variable_destroy(amp_condition_variable_t* cond,
-                                       void* allocator_context,
-                                       amp_dealloc_func_t dealloc_func);
+                                       amp_allocator_t allocator);
     
     /**
      * Wakes up all threads waiting on the condition variable. Only one thread

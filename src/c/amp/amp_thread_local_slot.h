@@ -87,9 +87,7 @@ extern "C" {
      * @attention key mustn't be NULL.
      */
     int amp_thread_local_slot_create(amp_thread_local_slot_key_t* key,
-                                     void* allocator_context,
-                                     amp_alloc_func_t alloc_func,
-                                     amp_dealloc_func_t dealloc_func);
+                                     amp_allocator_t allocator);
     
     
     /**
@@ -110,8 +108,7 @@ extern "C" {
      *            results in undefined behavior.
      */
     int amp_thread_local_slot_destroy(amp_thread_local_slot_key_t* key,
-                                      void* allocator_context,
-                                      amp_dealloc_func_t dealloc_func);
+                                      amp_allocator_t allocator);
     
     
     /**

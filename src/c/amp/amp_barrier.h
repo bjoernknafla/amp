@@ -114,10 +114,8 @@ extern "C" {
      *         create the barrier internals.
      */
     int amp_barrier_create(amp_barrier_t* barrier,
-                           amp_barrier_count_t init_count,
-                           void* allocator_context,
-                           amp_alloc_func_t alloc_func,
-                           amp_dealloc_func_t dealloc_func);
+                           amp_allocator_t allocator,
+                           amp_barrier_count_t init_count);
     
     
     /**
@@ -144,8 +142,7 @@ extern "C" {
      *             
      */
     int amp_barrier_destroy(amp_barrier_t* barrier,
-                            void* allocator_context,
-                            amp_dealloc_func_t dealloc_func);
+                            amp_allocator_t allocator);
     
     /**
      * Blocks a thread to wait on the barrier till as many threads are waiting

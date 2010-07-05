@@ -87,7 +87,7 @@ static size_t amp_internal_query_sysctlbyname(char const* query_term)
                                         &result, 
                                         &result_size, 
                                         NULL, /* Don't want to change value */
-                                        0 /* Don't want to change value */
+                                        (size_t)0 /* Don't want to change value */
                                         );
     
     assert(0 == error_code);
@@ -105,6 +105,7 @@ int amp_platform_get_installed_core_count(amp_platform_t descr,
                                           size_t* result)
 {
     assert(NULL != descr);
+    (void)descr;
     
     if (NULL != result ) {
         
@@ -120,6 +121,7 @@ int amp_platform_get_active_core_count(amp_platform_t descr,
                                        size_t* result)
 {
     assert(NULL != descr);
+    (void)descr;
     
     if (NULL != result ) {
         
@@ -135,6 +137,7 @@ int amp_platform_get_installed_hwthread_count(amp_platform_t descr,
                                               size_t* result)
 {
     assert(NULL != descr);
+    (void)descr;
     
     if (NULL != result ) {
         
@@ -150,6 +153,7 @@ int amp_platform_get_active_hwthread_count(amp_platform_t descr,
                                            size_t* result)
 {
     assert(NULL != descr);
+    (void)descr;
     
     if (NULL != result ) {
         

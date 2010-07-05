@@ -47,18 +47,15 @@ SUITE(amp_barrier)
     {
         amp_barrier_t barrier = AMP_BARRIER_UNINITIALIZED;
         int errc = amp_barrier_create(&barrier,
-                                      1,
                                       AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      1);
         CHECK_EQUAL(AMP_SUCCESS, errc);
         
         errc = amp_barrier_wait(barrier);
         CHECK_EQUAL(AMP_BARRIER_SERIAL_THREAD, errc);
         
         errc = amp_barrier_destroy(&barrier,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, errc);
         barrier = AMP_BARRIER_UNINITIALIZED;
     }
@@ -117,10 +114,9 @@ SUITE(amp_barrier)
         
         amp_barrier_t barrier = AMP_BARRIER_UNINITIALIZED;
         int retval = amp_barrier_create(&barrier,
-                                        thread_count + 1, /* Plus one for the main thread */
                                         AMP_DEFAULT_ALLOCATOR,
-                                        &amp_default_alloc,
-                                        &amp_default_dealloc);
+                                        thread_count + 1 /* Plus one for the main thread */
+                                        );
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         struct parallel_wait_thread_context prototype_context = {
@@ -131,10 +127,8 @@ SUITE(amp_barrier)
         
         amp_thread_array_t threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         retval = amp_thread_array_create(&threads,
-                                         thread_count, 
                                          AMP_DEFAULT_ALLOCATOR,
-                                         &amp_default_alloc, 
-                                         &amp_default_dealloc);
+                                         thread_count);
         assert(AMP_SUCCESS == retval);
         
         for (unsigned int i = 0; i < thread_count; ++i) {
@@ -163,14 +157,12 @@ SUITE(amp_barrier)
         assert(0 == joinable_count);
         
         retval = amp_thread_array_destroy(&threads,
-                                          AMP_DEFAULT_ALLOCATOR,
-                                          &amp_default_dealloc);
+                                          AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         
         retval = amp_barrier_destroy(&barrier,
-                                     AMP_DEFAULT_ALLOCATOR,
-                                     &amp_default_dealloc);
+                                     AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -307,9 +299,7 @@ SUITE(amp_barrier)
     {
         amp_platform_t platform = AMP_PLATFORM_UNINITIALIZED;
         int retval = amp_platform_create(&platform,
-                                         AMP_DEFAULT_ALLOCATOR,
-                                         &amp_default_alloc,
-                                         &amp_default_dealloc);
+                                         AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         
         std::size_t concurrency_level = 0;
@@ -328,8 +318,7 @@ SUITE(amp_barrier)
         concurrency_level = std::max(concurrency_level, static_cast<std::size_t>(8));
         
         retval = amp_platform_destroy(&platform,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_dealloc);
+                                      AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         
         
@@ -343,31 +332,23 @@ SUITE(amp_barrier)
         amp_semaphore_t shared_wakeup_sema = AMP_SEMAPHORE_UNINITIALIZED;
     
         retval = amp_barrier_create(&shared_barrier,
-                                    a_third_of_thread_count * 2,
                                     AMP_DEFAULT_ALLOCATOR,
-                                    &amp_default_alloc,
-                                    &amp_default_dealloc);
+                                    a_third_of_thread_count * 2);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_mutex_create(&shared_counter_mutex,
-                                  AMP_DEFAULT_ALLOCATOR,
-                                  &amp_default_alloc,
-                                  &amp_default_dealloc);
+                                  AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
                                       
         retval = amp_semaphore_create(&shared_wakeup_sema,
-                                      0,
                                       AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      0);
         assert(AMP_SUCCESS == retval);
         
         amp_thread_array_t threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         retval = amp_thread_array_create(&threads,
-                                         thread_count,
                                          AMP_DEFAULT_ALLOCATOR,
-                                         &amp_default_alloc,
-                                         &amp_default_dealloc);
+                                         thread_count);
         assert(AMP_SUCCESS == retval);
         
         
@@ -428,26 +409,22 @@ SUITE(amp_barrier)
         
 
         retval = amp_barrier_destroy(&shared_barrier,
-                                     AMP_DEFAULT_ALLOCATOR,
-                                     &amp_default_dealloc);
+                                     AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         shared_barrier = AMP_BARRIER_UNINITIALIZED;
         
         retval = amp_mutex_destroy(&shared_counter_mutex,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         shared_counter_mutex = AMP_MUTEX_UNINITIALIZED;
         
         retval = amp_semaphore_destroy(&shared_wakeup_sema,
-                                       AMP_DEFAULT_ALLOCATOR,
-                                       &amp_default_dealloc);
+                                       AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         shared_wakeup_sema = AMP_SEMAPHORE_UNINITIALIZED;
         
         retval = amp_thread_array_destroy(&threads,
-                                          AMP_DEFAULT_ALLOCATOR,
-                                          &amp_default_dealloc);
+                                          AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         threads = AMP_THREAD_ARRAY_UNINITIALIZED;
 

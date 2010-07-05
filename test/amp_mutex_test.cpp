@@ -60,9 +60,7 @@ SUITE(amp_mutex)
         amp_mutex_t mutex;
         
         int retval = amp_mutex_create(&mutex,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         {
@@ -79,8 +77,7 @@ SUITE(amp_mutex)
         }
         
         retval = amp_mutex_destroy(&mutex,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -91,9 +88,7 @@ SUITE(amp_mutex)
         amp_mutex_t mutex;
         
         int retval = amp_mutex_create(&mutex,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         {
@@ -110,8 +105,7 @@ SUITE(amp_mutex)
         }
         
         retval = amp_mutex_destroy(&mutex,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -197,9 +191,7 @@ SUITE(amp_mutex)
         mutex_and_flag.check_flag = CHECK_FLAG_UNSET;
         
         int retval = amp_mutex_create(&mutex_and_flag.mutex,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_mutex_lock(mutex_and_flag.mutex);
@@ -209,17 +201,13 @@ SUITE(amp_mutex)
         amp_thread_t thread = AMP_THREAD_UNINITIALIZED;
         retval = amp_thread_create_and_launch(&thread,
                                               AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc,
                                               &mutex_and_flag, 
                                               &unsuccessful_trylock_thread_func);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_thread_join_and_destroy(&thread,
-                                             AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_dealloc);
+                                             AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(CHECK_FLAG_SET, mutex_and_flag.check_flag);
         
@@ -229,8 +217,7 @@ SUITE(amp_mutex)
         
         
         retval = amp_mutex_destroy(&mutex_and_flag.mutex,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -285,7 +272,6 @@ SUITE(amp_mutex)
                                              AMP_DEFAULT_ALLOCATOR,
                                              &amp_default_dealloc);
         assert(AMP_SUCCESS == retval);
-        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(CHECK_FLAG_SET, mutex_and_flag.check_flag);
         
@@ -356,9 +342,7 @@ SUITE(amp_mutex)
         
         amp_mutex_t mutex;
         int retval = amp_mutex_create(&mutex,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_mutex_lock(mutex);
@@ -373,10 +357,8 @@ SUITE(amp_mutex)
         
         amp_thread_array_t threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         retval = amp_thread_array_create(&threads,
-                                         thread_count,
                                          AMP_DEFAULT_ALLOCATOR,
-                                         &amp_default_alloc, 
-                                         &amp_default_dealloc);
+                                         thread_count);
         assert(AMP_SUCCESS == retval);
         
         for (size_t i = 0; i < thread_count; ++i) {
@@ -418,10 +400,8 @@ SUITE(amp_mutex)
         assert(0 == joinable_count);
         
         retval = amp_thread_array_destroy(&threads,
-                                          AMP_DEFAULT_ALLOCATOR,
-                                          &amp_default_dealloc);
+                                          AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         
         
         // Check that all threads increased the lock counter.
@@ -454,8 +434,7 @@ SUITE(amp_mutex)
         
         
         retval = amp_mutex_destroy(&mutex,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
     }

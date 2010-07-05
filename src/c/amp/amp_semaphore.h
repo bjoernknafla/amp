@@ -113,10 +113,8 @@ extern "C" {
      *             needed.
      */
     int amp_semaphore_create(amp_semaphore_t* semaphore,
-                             amp_semaphore_counter_t init_count,
-                             void* allocator_context,
-                             amp_alloc_func_t alloc_func,
-                             amp_dealloc_func_t dealloc_func);
+                             amp_allocator_t allocator,
+                             amp_semaphore_counter_t init_count);
     
     
     /**
@@ -150,8 +148,7 @@ extern "C" {
      *            undefined.
      */
     int amp_semaphore_destroy(amp_semaphore_t* semaphore,
-                              void* allocator_context,
-                              amp_dealloc_func_t dealloc_func);
+                              amp_allocator_t allocator);
     
     
     

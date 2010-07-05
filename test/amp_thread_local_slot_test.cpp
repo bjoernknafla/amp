@@ -112,9 +112,7 @@ SUITE(amp_thread_local_slot)
         amp_thread_local_slot_key_t key;
         
         int retval = amp_thread_local_slot_create(&key,
-                                                  AMP_DEFAULT_ALLOCATOR,
-                                                  &amp_default_alloc,
-                                                  &amp_default_dealloc);
+                                                  AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         CHECK(NULL == amp_thread_local_slot_value(key));
@@ -129,8 +127,7 @@ SUITE(amp_thread_local_slot)
         CHECK_EQUAL(*((int*)result_data), data0);
         
         retval = amp_thread_local_slot_destroy(&key,
-                                               AMP_DEFAULT_ALLOCATOR,
-                                               &amp_default_dealloc);
+                                               AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -142,9 +139,7 @@ SUITE(amp_thread_local_slot)
         amp_thread_local_slot_key_t key;
         
         int retval = amp_thread_local_slot_create(&key,
-                                                  AMP_DEFAULT_ALLOCATOR,
-                                                  &amp_default_alloc,
-                                                  &amp_default_dealloc);
+                                                  AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         CHECK(NULL == amp_thread_local_slot_value(key));
@@ -178,8 +173,7 @@ SUITE(amp_thread_local_slot)
         
         
         retval = amp_thread_local_slot_destroy(&key,
-                                               AMP_DEFAULT_ALLOCATOR,
-                                               &amp_default_dealloc);
+                                               AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -234,9 +228,7 @@ SUITE(amp_thread_local_slot)
         // finds its own stored data in the slot.
         amp_thread_local_slot_key_t key;
         int retval = amp_thread_local_slot_create(&key,
-                                                  AMP_DEFAULT_ALLOCATOR,
-                                                  &amp_default_alloc,
-                                                  &amp_default_dealloc);
+                                                  AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -248,10 +240,8 @@ SUITE(amp_thread_local_slot)
         size_t const thread_count = 20;
         amp_thread_array_t threads;
         retval = amp_thread_array_create(&threads,
-                                         thread_count,
                                          AMP_DEFAULT_ALLOCATOR,
-                                         &amp_default_alloc,
-                                         &amp_default_dealloc);
+                                         thread_count);
         assert(AMP_SUCCESS == retval);
         
         
@@ -260,7 +250,7 @@ SUITE(amp_thread_local_slot)
         
         for (size_t i = 0; i < thread_count; ++i) {
             thread_context_values[i].key_p = &key;
-            thread_context_values[i].slot_value = i;
+            thread_context_values[i].slot_value = static_cast<int>(i);
             thread_context_values[i].check_flag = CHECK_FLAG_UNSET;
             
             int const ret = amp_thread_array_configure(threads,
@@ -284,8 +274,7 @@ SUITE(amp_thread_local_slot)
         assert(0 == joinable_count);
         
         retval = amp_thread_array_destroy(&threads,
-                                          AMP_DEFAULT_ALLOCATOR,
-                                          &amp_default_dealloc);
+                                          AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         
         for (size_t i = 0; i < thread_count; ++i) {
@@ -293,8 +282,7 @@ SUITE(amp_thread_local_slot)
         }
         
         retval = amp_thread_local_slot_destroy(&key,
-                                               AMP_DEFAULT_ALLOCATOR,
-                                               &amp_default_dealloc);
+                                               AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     

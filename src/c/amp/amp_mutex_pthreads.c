@@ -95,6 +95,7 @@ int amp_raw_mutex_init(amp_mutex_t mutex)
     /* Get rid of the mutex attribute - it isn't used anymore. */
     int const mattr_destroy_retval = pthread_mutexattr_destroy(&mutex_attributes);
     assert(0 == mattr_destroy_retval);
+    (void)mattr_destroy_retval;
     
     return retval;
 }

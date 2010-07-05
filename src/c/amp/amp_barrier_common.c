@@ -46,30 +46,25 @@
 
 
 int amp_barrier_create(amp_barrier_t* barrier,
-                       amp_barrier_count_t init_count,
-                       void* allocator_context,
-                       amp_alloc_func_t alloc_func,
-                       amp_dealloc_func_t dealloc_func)
+                       amp_allocator_t allocator,
+                       amp_barrier_count_t init_count)
 {
     amp_barrier_t tmp_barrier = AMP_BARRIER_UNINITIALIZED;
     int retval = AMP_UNSUPPORTED;
     
     assert(NULL != barrier);
     assert(0 < init_count);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
 
-    if (0 >= init_count
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
+    if (0 >= init_count) {
         
         return AMP_ERROR;
     }
     
     *barrier = AMP_BARRIER_UNINITIALIZED;
     
-    tmp_barrier = (amp_barrier_t)alloc_func(allocator_context,
-                                            sizeof(*tmp_barrier));
+    tmp_barrier = (amp_barrier_t)AMP_ALLOC(allocator,
+                                           sizeof(*tmp_barrier));
     if (NULL == tmp_barrier) {
         return AMP_NOMEM;
     }
@@ -78,8 +73,9 @@ int amp_barrier_create(amp_barrier_t* barrier,
     if (AMP_SUCCESS == retval) {
         *barrier = tmp_barrier;
     } else {
-        int const rv = dealloc_func(allocator_context, tmp_barrier);
+        int const rv = AMP_DEALLOC(allocator, tmp_barrier);
         assert(AMP_SUCCESS == rv);
+        (void)rv;
     }
 
     return retval;
@@ -88,19 +84,18 @@ int amp_barrier_create(amp_barrier_t* barrier,
 
 
 int amp_barrier_destroy(amp_barrier_t* barrier,
-                        void* allocator_context,
-                        amp_dealloc_func_t dealloc_func)
+                        amp_allocator_t allocator)
 {
     int retval = AMP_UNSUPPORTED;
     
     assert(NULL != barrier);
     assert(NULL != *barrier);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     
     
     retval = amp_raw_barrier_finalize(*barrier);
     if (AMP_SUCCESS == retval) {
-        retval = dealloc_func(allocator_context, *barrier);
+        retval = AMP_DEALLOC(allocator, *barrier);
         assert(AMP_SUCCESS == retval);
         if (AMP_SUCCESS == retval) {
             *barrier = AMP_BARRIER_UNINITIALIZED;

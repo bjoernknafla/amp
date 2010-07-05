@@ -46,7 +46,12 @@
 #include "amp_raw_platform.h"
 
 
-
+/**
+ * TODO: @todo Change the signature of amp_raw_platform_init or of the 
+ *             platform create functions to make it explicit that an allocator
+ *             is stored internally or mainly use a buffer per platform
+ *             object.
+ */
 int amp_raw_platform_init(amp_platform_t descr,
                           void* allocator_context,
                           amp_alloc_func_t alloc_func,
@@ -78,34 +83,32 @@ int amp_raw_platform_finalize(amp_platform_t descr)
 
 
 int amp_platform_create(amp_platform_t* descr,
-                        void* allocator_context,
-                        amp_alloc_func_t alloc_func,
-                        amp_dealloc_func_t dealloc_func)
+                        amp_allocator_t allocator)
 {
     amp_platform_t tmp_platform = AMP_PLATFORM_UNINITIALIZED;
     int retval = AMP_UNSUPPORTED;
     
     assert(NULL != descr);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     
     *descr = AMP_PLATFORM_UNINITIALIZED;
     
-    tmp_platform = (amp_platform_t)alloc_func(allocator_context,
+    tmp_platform = (amp_platform_t)AMP_ALLOC(allocator,
                                               sizeof(*tmp_platform));
     if (NULL == tmp_platform) {
         return AMP_NOMEM;
     }
     
     retval = amp_raw_platform_init(tmp_platform,
-                                   allocator_context,
-                                   alloc_func,
-                                   dealloc_func);
+                                   allocator->allocator_context,
+                                   allocator->alloc_func,
+                                   allocator->dealloc_func);
     if (AMP_SUCCESS == retval) {
         *descr = tmp_platform;
     } else {
-        int const rc = dealloc_func(allocator_context, tmp_platform);
+        int const rc = AMP_DEALLOC(allocator, tmp_platform);
         assert(AMP_SUCCESS == rc);
+        (void)rc;
     }
     
     return retval;
@@ -114,18 +117,17 @@ int amp_platform_create(amp_platform_t* descr,
 
 
 int amp_platform_destroy(amp_platform_t* descr,
-                         void* allocator_context,
-                         amp_dealloc_func_t dealloc_func)
+                         amp_allocator_t allocator)
 {
     int retval = AMP_UNSUPPORTED;
     
     assert(NULL != descr);
     assert(NULL != *descr);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     
     retval = amp_raw_platform_finalize(*descr);
     if (AMP_SUCCESS == retval) {
-        retval = dealloc_func(allocator_context,
+        retval = AMP_DEALLOC(allocator,
                               *descr);
         if (AMP_SUCCESS == retval) {
             *descr = AMP_PLATFORM_UNINITIALIZED;

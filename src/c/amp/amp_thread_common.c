@@ -184,9 +184,7 @@ int amp_raw_thread_launch(amp_thread_t thread,
 
 
 int amp_thread_create_and_launch(amp_thread_t* thread,
-                                 void* allocator_context,
-                                 amp_alloc_func_t alloc_func,
-                                 amp_dealloc_func_t dealloc_func,
+                                 amp_allocator_t allocator,
                                  void* func_context,
                                  amp_thread_func_t func)
 {
@@ -194,13 +192,12 @@ int amp_thread_create_and_launch(amp_thread_t* thread,
     amp_thread_t local_thread = AMP_THREAD_UNINITIALIZED;
     
     assert(NULL != thread);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     assert(NULL != func);
     
     *thread = AMP_THREAD_UNINITIALIZED;
     
-    local_thread = (amp_thread_t)alloc_func(allocator_context,
+    local_thread = (amp_thread_t)AMP_ALLOC(allocator,
                                             sizeof(*local_thread));
     
     if (NULL == local_thread) {
@@ -214,8 +211,9 @@ int amp_thread_create_and_launch(amp_thread_t* thread,
     if (AMP_SUCCESS == retval) {
         *thread = local_thread;
     } else {
-        int const rc = dealloc_func(allocator_context, local_thread);
+        int const rc = AMP_DEALLOC(allocator, local_thread);
         assert(AMP_SUCCESS == rc);
+        (void)rc;
     }
     
     return retval;
@@ -224,19 +222,18 @@ int amp_thread_create_and_launch(amp_thread_t* thread,
 
 
 int amp_thread_join_and_destroy(amp_thread_t* thread,
-                                void* allocator_context,
-                                amp_dealloc_func_t dealloc_func)
+                                amp_allocator_t allocator)
 {
     int retval = AMP_UNSUPPORTED;
     
     assert(NULL != thread);
     assert(NULL != *thread);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     
     retval = amp_raw_thread_join(*thread);
     
     if (AMP_SUCCESS == retval) {
-        retval = dealloc_func(allocator_context, *thread);
+        retval = AMP_DEALLOC(allocator, *thread);
         assert(AMP_SUCCESS == retval);
         if (AMP_SUCCESS == retval) {
             *thread = AMP_THREAD_UNINITIALIZED;

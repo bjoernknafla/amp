@@ -350,10 +350,8 @@ SUITE(amp_thread_array)
 
         
         int retval = amp_thread_array_create(&thread_array,
-                                             thread_count,
                                              AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_alloc,
-                                             &amp_default_dealloc);
+                                             thread_count);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         for (size_t i = 0; i < thread_count; ++i) {
@@ -398,8 +396,7 @@ SUITE(amp_thread_array)
         
         
         retval = amp_thread_array_destroy(&thread_array,
-                                          AMP_DEFAULT_ALLOCATOR,
-                                          &amp_default_dealloc);
+                                          AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
 
         
@@ -425,10 +422,8 @@ SUITE(amp_thread_array)
         context_vector_type context_vector(thread_count, 0);
         
         int retval = amp_thread_array_create(&thread_array,
-                                             thread_count,
                                              AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_alloc,
-                                             &amp_default_dealloc);
+                                             thread_count);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         
@@ -478,8 +473,7 @@ SUITE(amp_thread_array)
         
         
         retval = amp_thread_array_destroy(&thread_array,
-                                          AMP_DEFAULT_ALLOCATOR,
-                                          &amp_default_dealloc);
+                                          AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         

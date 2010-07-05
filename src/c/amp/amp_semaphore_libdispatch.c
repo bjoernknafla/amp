@@ -84,6 +84,7 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
     for (amp_semaphore_counter_t i = 0; i < init_count; ++i) {
         long const signal_retval = dispatch_semaphore_signal(semaphore->semaphore);
         assert(0 == signal_retval && "During creation no thread must wait on the semaphore.");
+        (void)signal_retval;
     }
     
     return AMP_SUCCESS;
@@ -111,6 +112,7 @@ int amp_semaphore_wait(amp_semaphore_t semaphore)
     long retval = dispatch_semaphore_wait(semaphore->semaphore, DISPATCH_TIME_FOREVER);
     
     assert(0 == retval && "Timeout should not occur when waiting for DISPATCH_TIME_FOREVER.");
+    (void)retval;
     
     return AMP_SUCCESS;
 }

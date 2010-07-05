@@ -131,9 +131,7 @@ extern "C" {
      *         set it might assert that these programming errors don't happen.
      */
     int amp_mutex_create(amp_mutex_t* mutex,
-                         void* allocator_context,
-                         amp_alloc_func_t alloc_func,
-                         amp_dealloc_func_t dealloc_func);
+                         amp_allocator_t allocator);
     
     /**
      * Finalizes the mutex and frees its memory and platform resources.
@@ -161,8 +159,7 @@ extern "C" {
      *            free or other resource management functions internally.
      */
     int amp_mutex_destroy(amp_mutex_t* mutex,
-                          void* allocator_context,
-                          amp_dealloc_func_t dealloc_func);
+                          amp_allocator_t allocator);
     
     /**
      * Locks the mutex or, if another thread holds the lock, blocks waiting 

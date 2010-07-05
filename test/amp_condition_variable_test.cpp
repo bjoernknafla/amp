@@ -74,14 +74,11 @@ SUITE(amp_condition_variable)
         amp_condition_variable_t cond;
         
         int retval = amp_condition_variable_create(&cond,
-                                                   AMP_DEFAULT_ALLOCATOR,
-                                                   &amp_default_alloc,
-                                                   &amp_default_dealloc);
+                                                   AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_condition_variable_destroy(&cond,
-                                                AMP_DEFAULT_ALLOCATOR,
-                                                &amp_default_dealloc);
+                                                AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -92,17 +89,14 @@ SUITE(amp_condition_variable)
         amp_condition_variable_t cond;
         
         int retval = amp_condition_variable_create(&cond,
-                                                   AMP_DEFAULT_ALLOCATOR,
-                                                   &amp_default_alloc,
-                                                   &amp_default_dealloc);
+                                                   AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_condition_variable_signal(cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_condition_variable_destroy(&cond,
-                                                AMP_DEFAULT_ALLOCATOR,
-                                                &amp_default_dealloc);
+                                                AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -152,22 +146,16 @@ SUITE(amp_condition_variable)
         
         
         int retval = amp_mutex_create(&mwc.mutex,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_condition_variable_create(&mwc.cond,
-                                               AMP_DEFAULT_ALLOCATOR,
-                                               &amp_default_alloc,
-                                               &amp_default_dealloc);
+                                               AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_semaphore_create(&mwc.ready_for_signal_sem, 
-                                      0,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+        retval = amp_semaphore_create(&mwc.ready_for_signal_sem,
+                                      AMP_DEFAULT_ALLOCATOR, 
+                                      0);
         assert(AMP_SUCCESS == retval);
         
         mwc.state = state_initialized_flag;
@@ -179,8 +167,6 @@ SUITE(amp_condition_variable)
         amp_thread_t thread = AMP_THREAD_UNINITIALIZED;
         retval = amp_thread_create_and_launch(&thread, 
                                               AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc,
                                               &mwc, 
                                               &cond_waiting_thread_func);
         assert(AMP_SUCCESS == retval);
@@ -200,27 +186,21 @@ SUITE(amp_condition_variable)
         assert(AMP_SUCCESS == retval);
         
         retval = amp_thread_join_and_destroy(&thread,
-                                             AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_dealloc);
+                                             AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(state_awake_after_waiting_flag, mwc.state);
         
         retval = amp_semaphore_destroy(&mwc.ready_for_signal_sem, 
-                                       AMP_DEFAULT_ALLOCATOR,
-                                       &amp_default_dealloc);
+                                       AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        mwc.ready_for_signal_sem = AMP_SEMAPHORE_UNINITIALIZED;
         
         retval = amp_condition_variable_destroy(&mwc.cond,
-                                                AMP_DEFAULT_ALLOCATOR,
-                                                &amp_default_dealloc);
+                                                AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_mutex_destroy(&mwc.mutex,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
     }
     
@@ -233,22 +213,16 @@ SUITE(amp_condition_variable)
         mwc.state = state_initialized_flag;
         
         int retval = amp_mutex_create(&mwc.mutex,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_condition_variable_create(&mwc.cond,
-                                               AMP_DEFAULT_ALLOCATOR,
-                                               &amp_default_alloc,
-                                               &amp_default_dealloc);
+                                               AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_semaphore_create(&mwc.ready_for_signal_sem, 
-                                      0,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+        retval = amp_semaphore_create(&mwc.ready_for_signal_sem,
+                                      AMP_DEFAULT_ALLOCATOR, 
+                                      0);
         assert(AMP_SUCCESS == retval);
         
         // This signal should be lost - no waiting thread.
@@ -258,8 +232,6 @@ SUITE(amp_condition_variable)
         amp_thread_t thread = AMP_THREAD_UNINITIALIZED;
         retval = amp_thread_create_and_launch(&thread,
                                               AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc,
                                               &mwc, 
                                               &cond_waiting_thread_func);
         assert(AMP_SUCCESS == retval);
@@ -302,27 +274,21 @@ SUITE(amp_condition_variable)
         
         
         retval = amp_thread_join_and_destroy(&thread,
-                                             AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_dealloc);
+                                             AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(state_awake_after_waiting_flag, mwc.state);
         
         retval = amp_semaphore_destroy(&mwc.ready_for_signal_sem, 
-                                       AMP_DEFAULT_ALLOCATOR,
-                                       &amp_default_dealloc);
+                                       AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        mwc.ready_for_signal_sem = AMP_SEMAPHORE_UNINITIALIZED;
         
         retval = amp_condition_variable_destroy(&mwc.cond,
-                                                AMP_DEFAULT_ALLOCATOR,
-                                                &amp_default_dealloc);
+                                                AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_mutex_destroy(&mwc.mutex,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
     }
     
@@ -390,29 +356,21 @@ SUITE(amp_condition_variable)
             ,   thread_contexts(NULL)
             {
                 int retval = amp_mutex_create(&threads_common_context.mutex,
-                                              AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc);
+                                              AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
                 
                 retval = amp_condition_variable_create(&threads_common_context.cond,
-                                                       AMP_DEFAULT_ALLOCATOR,
-                                                       &amp_default_alloc,
-                                                       &amp_default_dealloc);
+                                                       AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
                 
-                retval = amp_semaphore_create(&threads_common_context.ready_for_signal_sem, 
-                                              0,
+                retval = amp_semaphore_create(&threads_common_context.ready_for_signal_sem,
                                               AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc);
+                                              0);
                 assert(AMP_SUCCESS == retval);
                 
-                retval = amp_semaphore_create(&threads_common_context.thread_awake_sem, 
-                                              0,
-                                              AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc);
+                retval = amp_semaphore_create(&threads_common_context.thread_awake_sem,
+                                              AMP_DEFAULT_ALLOCATOR, 
+                                              0);
                 assert(AMP_SUCCESS == retval);
                 
                 threads_common_context.thread_count = thread_count;
@@ -433,25 +391,19 @@ SUITE(amp_condition_variable)
                 delete[] thread_contexts;
                 
                 int retval = amp_semaphore_destroy(&threads_common_context.thread_awake_sem,
-                                                   AMP_DEFAULT_ALLOCATOR,
-                                                   &amp_default_dealloc);
+                                                   AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
-                threads_common_context.thread_awake_sem = AMP_SEMAPHORE_UNINITIALIZED;
                 
                 retval = amp_semaphore_destroy(&threads_common_context.ready_for_signal_sem,
-                                               AMP_DEFAULT_ALLOCATOR,
-                                               &amp_default_dealloc);
+                                               AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
-                threads_common_context.ready_for_signal_sem = AMP_SEMAPHORE_UNINITIALIZED;
                 
                 retval = amp_condition_variable_destroy(&threads_common_context.cond,
-                                                        AMP_DEFAULT_ALLOCATOR,
-                                                        &amp_default_dealloc);
+                                                        AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
                 
                 retval = amp_mutex_destroy(&threads_common_context.mutex,
-                                           AMP_DEFAULT_ALLOCATOR,
-                                           &amp_default_dealloc);
+                                           AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
             }
             
@@ -476,10 +428,8 @@ SUITE(amp_condition_variable)
         
         amp_thread_array_t threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         int retval = amp_thread_array_create(&threads,
-                                             thread_count,
                                              AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_alloc,
-                                             &amp_default_dealloc);
+                                             thread_count);
         assert(AMP_SUCCESS == retval);
         
         // Start threads to wait on condition variable
@@ -619,11 +569,8 @@ SUITE(amp_condition_variable)
         assert(0 == joinable_count);
         
         retval = amp_thread_array_destroy(&threads,
-                                          AMP_DEFAULT_ALLOCATOR,
-                                          &amp_default_dealloc);
-        assert(AMP_SUCCESS == retval);
-        threads = AMP_THREAD_ARRAY_UNINITIALIZED;
-    }
+                                          AMP_DEFAULT_ALLOCATOR);
+        assert(AMP_SUCCESS == retval);    }
     
     
     
@@ -632,17 +579,14 @@ SUITE(amp_condition_variable)
         amp_condition_variable_t cond;
         
         int retval = amp_condition_variable_create(&cond,
-                                                   AMP_DEFAULT_ALLOCATOR,
-                                                   &amp_default_alloc,
-                                                   &amp_default_dealloc);
+                                                   AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_condition_variable_broadcast(cond);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_condition_variable_destroy(&cond,
-                                                AMP_DEFAULT_ALLOCATOR,
-                                                &amp_default_dealloc);
+                                                AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -654,22 +598,16 @@ SUITE(amp_condition_variable)
         struct mutex_with_cond_s mwc;
         
         int retval = amp_mutex_create(&mwc.mutex,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_condition_variable_create(&mwc.cond,
-                                               AMP_DEFAULT_ALLOCATOR,
-                                               &amp_default_alloc,
-                                               &amp_default_dealloc);
+                                               AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_semaphore_create(&mwc.ready_for_signal_sem,
-                                      0,
                                       AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      0);
         assert(AMP_SUCCESS == retval);
         
         mwc.state = state_initialized_flag;
@@ -681,8 +619,6 @@ SUITE(amp_condition_variable)
         amp_thread_t thread = AMP_THREAD_UNINITIALIZED;
         retval = amp_thread_create_and_launch(&thread,
                                               AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc,
                                               &mwc, 
                                               &cond_waiting_thread_func);
         assert(AMP_SUCCESS == retval);
@@ -702,27 +638,21 @@ SUITE(amp_condition_variable)
         assert(AMP_SUCCESS == retval);
         
         retval = amp_thread_join_and_destroy(&thread,
-                                             AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_dealloc);
+                                             AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(state_awake_after_waiting_flag, mwc.state);
         
         retval = amp_semaphore_destroy(&mwc.ready_for_signal_sem,
-                                       AMP_DEFAULT_ALLOCATOR,
-                                       &amp_default_dealloc);
+                                       AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        mwc.ready_for_signal_sem = AMP_SEMAPHORE_UNINITIALIZED;
         
         retval = amp_condition_variable_destroy(&mwc.cond,
-                                                AMP_DEFAULT_ALLOCATOR,
-                                                &amp_default_dealloc);
+                                                AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_mutex_destroy(&mwc.mutex,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval); 
     }
     
@@ -735,22 +665,16 @@ SUITE(amp_condition_variable)
         mwc.state = state_initialized_flag;
         
         int retval = amp_mutex_create(&mwc.mutex,
-                                      AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         
         retval = amp_condition_variable_create(&mwc.cond,
-                                               AMP_DEFAULT_ALLOCATOR,
-                                               &amp_default_alloc,
-                                               &amp_default_dealloc);
+                                               AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
-        retval = amp_semaphore_create(&mwc.ready_for_signal_sem, 
-                                      0,
+        retval = amp_semaphore_create(&mwc.ready_for_signal_sem,
                                       AMP_DEFAULT_ALLOCATOR,
-                                      &amp_default_alloc,
-                                      &amp_default_dealloc);
+                                      0);
         assert(AMP_SUCCESS == retval);
         
         // This broadcast should be lost - no waiting thread.
@@ -760,8 +684,6 @@ SUITE(amp_condition_variable)
         amp_thread_t thread = AMP_THREAD_UNINITIALIZED;
         retval = amp_thread_create_and_launch(&thread,
                                               AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc,
                                               &mwc, 
                                               &cond_waiting_thread_func);
         assert(AMP_SUCCESS == retval);
@@ -804,27 +726,21 @@ SUITE(amp_condition_variable)
         
         
         retval = amp_thread_join_and_destroy(&thread,
-                                             AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_dealloc);
+                                             AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        thread = AMP_THREAD_UNINITIALIZED;
         
         CHECK_EQUAL(state_awake_after_waiting_flag, mwc.state);
         
         retval = amp_semaphore_destroy(&mwc.ready_for_signal_sem, 
-                                       AMP_DEFAULT_ALLOCATOR,
-                                       &amp_default_dealloc);
+                                       AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        mwc.ready_for_signal_sem = AMP_SEMAPHORE_UNINITIALIZED;
         
         retval = amp_condition_variable_destroy(&mwc.cond,
-                                                AMP_DEFAULT_ALLOCATOR,
-                                                &amp_default_dealloc);
+                                                AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_mutex_destroy(&mwc.mutex,
-                                   AMP_DEFAULT_ALLOCATOR,
-                                   &amp_default_dealloc);
+                                   AMP_DEFAULT_ALLOCATOR);
         CHECK_EQUAL(AMP_SUCCESS, retval);
     }
     
@@ -904,22 +820,16 @@ SUITE(amp_condition_variable)
             ,   thread_contexts(NULL)
             {
                 int retval = amp_mutex_create(&threads_common_context.mutex,
-                                              AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc);
+                                              AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
                 
                 retval = amp_condition_variable_create(&threads_common_context.cond,
-                                                       AMP_DEFAULT_ALLOCATOR,
-                                                       &amp_default_alloc,
-                                                       &amp_default_dealloc);
+                                                       AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
                 
-                retval = amp_semaphore_create(&threads_common_context.all_threads_about_to_wait_for_cond_sem, 
-                                              0,
+                retval = amp_semaphore_create(&threads_common_context.all_threads_about_to_wait_for_cond_sem,
                                               AMP_DEFAULT_ALLOCATOR,
-                                              &amp_default_alloc,
-                                              &amp_default_dealloc);
+                                              0);
                 assert(AMP_SUCCESS == retval);
                 
                 threads_common_context.thread_count = thread_count;
@@ -934,10 +844,8 @@ SUITE(amp_condition_variable)
                     
                     
                     retval = amp_semaphore_create(&(thread_contexts[i].let_thread_proceed_to_next_wait_cycle_sem),
-                                                  0,
                                                   AMP_DEFAULT_ALLOCATOR,
-                                                  &amp_default_alloc,
-                                                  &amp_default_dealloc);
+                                                  0);
                     assert(AMP_SUCCESS == retval);
                     
                     thread_contexts[i].state = state_initialized_flag;
@@ -950,28 +858,22 @@ SUITE(amp_condition_variable)
                 
                 for (std::size_t i = 0; i < thread_count; ++i) {
                     int rv = amp_semaphore_destroy(&thread_contexts[i].let_thread_proceed_to_next_wait_cycle_sem,
-                                                   AMP_DEFAULT_ALLOCATOR,
-                                                   &amp_default_dealloc);
+                                                   AMP_DEFAULT_ALLOCATOR);
                     assert(AMP_SUCCESS == rv);
-                    thread_contexts[i].let_thread_proceed_to_next_wait_cycle_sem = AMP_SEMAPHORE_UNINITIALIZED;
                 }
                 
                 delete[] thread_contexts;
                 
                 int retval = amp_semaphore_destroy(&threads_common_context.all_threads_about_to_wait_for_cond_sem,
-                                                   AMP_DEFAULT_ALLOCATOR,
-                                                   &amp_default_dealloc);
+                                                   AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
-                threads_common_context.all_threads_about_to_wait_for_cond_sem = AMP_SEMAPHORE_UNINITIALIZED;
                 
                 retval = amp_condition_variable_destroy(&threads_common_context.cond,
-                                                        AMP_DEFAULT_ALLOCATOR,
-                                                        &amp_default_dealloc);
+                                                        AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
                 
                 retval = amp_mutex_destroy(&threads_common_context.mutex,
-                                           AMP_DEFAULT_ALLOCATOR,
-                                           &amp_default_dealloc);
+                                           AMP_DEFAULT_ALLOCATOR);
                 assert(AMP_SUCCESS == retval);
             }
             
@@ -999,10 +901,8 @@ SUITE(amp_condition_variable)
         // thread_count is provided by the fixture.
         amp_thread_array_t threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         int retval = amp_thread_array_create(&threads,
-                                             thread_count,
                                              AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_alloc,
-                                             &amp_default_dealloc);
+                                             thread_count);
         assert(AMP_SUCCESS == retval);
         
         
@@ -1142,8 +1042,7 @@ SUITE(amp_condition_variable)
         assert(0 == joinable_count);
         
         retval = amp_thread_array_destroy(&threads,
-                                          AMP_DEFAULT_ALLOCATOR,
-                                          &amp_default_dealloc);
+                                          AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
         
         for (std::size_t i = 0; i < thread_count; ++i) {
@@ -1166,10 +1065,8 @@ SUITE(amp_condition_variable)
         // thread_count is provided by the fixture.
         amp_thread_array_t threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         int retval = amp_thread_array_create(&threads,
-                                             thread_count,
                                              AMP_DEFAULT_ALLOCATOR,
-                                             &amp_default_alloc,
-                                             &amp_default_dealloc);
+                                             thread_count);
         assert(AMP_SUCCESS == retval);
         
         
@@ -1425,10 +1322,8 @@ SUITE(amp_condition_variable)
         assert(0 == joinable_count);
         
         retval = amp_thread_array_destroy(&threads,
-                                          AMP_DEFAULT_ALLOCATOR,
-                                          &amp_default_dealloc);
+                                          AMP_DEFAULT_ALLOCATOR);
         assert(AMP_SUCCESS == retval);
-        threads = AMP_THREAD_ARRAY_UNINITIALIZED;
         
         
         for (std::size_t i = 0; i < thread_count; ++i) {

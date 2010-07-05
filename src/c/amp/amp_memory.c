@@ -32,32 +32,122 @@
 
 #include "amp_memory.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "amp_return_code.h"
 
 
+void* amp_default_allocator_context = NULL;
 
-void* amp_default_allocator = NULL;
+static struct amp_raw_allocator_s amp_internal_allocator_default = {
+    amp_default_alloc,
+    amp_default_calloc,
+    amp_default_dealloc,
+    NULL /* amp_default_allocator_context */
+};
 
+
+
+amp_allocator_t amp_default_allocator = &amp_internal_allocator_default;
 
 void* amp_default_alloc(void *dummy_allocator_context, 
-                 size_t bytes_to_allocate)
+                        size_t bytes_to_allocate,
+                        char const* filename,
+                        int line)
 {
     (void)dummy_allocator_context;
+    (void)filename;
+    (void)line;
     
     return malloc(bytes_to_allocate);
 }
 
 
-int amp_default_dealloc(void *dummy_allocator_context,
-              void *pointer)
+
+void* amp_default_calloc(void* dummy_allocator_context,
+                       size_t elem_count,
+                       size_t bytes_per_elem,
+                       char const* filename,
+                       int line)
 {
     (void)dummy_allocator_context;
+    (void)filename;
+    (void)line;
+    
+    return calloc(elem_count, bytes_per_elem);
+}
+
+
+
+int amp_default_dealloc(void *dummy_allocator_context,
+                        void *pointer,
+                        char const* filename,
+                        int line)
+{
+    (void)dummy_allocator_context;
+    (void)filename;
+    (void)line;
     
     free(pointer);
     
     return AMP_SUCCESS;
+}
+
+
+
+int amp_allocator_create(amp_allocator_t* target_allocator,
+                         amp_allocator_t source_allocator,
+                         void* target_allocator_context,
+                         amp_alloc_func_t target_alloc_func,
+                         amp_calloc_func_t target_calloc_func,
+                         amp_dealloc_func_t target_dealloc_func)
+{
+    amp_allocator_t tmp_allocator = NULL;
+    
+    assert(NULL != target_allocator);
+    assert(NULL != source_allocator);
+    assert(NULL != target_alloc_func);
+    assert(NULL != target_calloc_func);
+    assert(NULL != target_dealloc_func);
+    
+    tmp_allocator = (amp_allocator_t)AMP_ALLOC(source_allocator, sizeof(*tmp_allocator));
+    if (NULL == tmp_allocator) {
+        return AMP_NOMEM;
+    }
+    
+    tmp_allocator->alloc_func = target_alloc_func;
+    tmp_allocator->calloc_func = target_calloc_func;
+    tmp_allocator->dealloc_func = target_dealloc_func;
+    tmp_allocator->allocator_context = target_allocator_context;
+    
+    *target_allocator = tmp_allocator;
+    
+    return AMP_SUCCESS;
+}
+
+
+
+int amp_allocator_destroy(amp_allocator_t* target_allocator,
+                          amp_allocator_t source_allocator)
+{
+    int return_code = AMP_ERROR;
+    
+    assert(NULL != target_allocator);
+    assert(NULL != source_allocator);
+    
+    return_code = AMP_DEALLOC(source_allocator,
+                              *target_allocator);
+    if (AMP_SUCCESS == return_code) {
+        
+        *target_allocator = NULL;
+        
+    } else {
+        assert(0); /* Programming error */
+        return_code = AMP_ERROR;
+    }
+    
+    return return_code;
 }
 
 

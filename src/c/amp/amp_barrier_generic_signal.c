@@ -98,6 +98,7 @@ int amp_raw_barrier_init(amp_barrier_t barrier,
     if (AMP_SUCCESS != errc) {
         int const ec = amp_raw_mutex_finalize(&barrier->count_mutex);
         assert(AMP_SUCCESS == ec);
+        (void)ec;
         
         return errc;
     }
@@ -153,6 +154,8 @@ int amp_raw_barrier_finalize(amp_barrier_t barrier)
     if (barrier_count != barrier->init_count) {
         return AMP_BUSY;
     }
+#else
+    (void)barrier_count;
 #endif
     
     barrier->valid = ~((int)amp_internal_valid_raw_barrier_lifecycle_state);

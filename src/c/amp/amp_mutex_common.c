@@ -47,19 +47,16 @@
 
 
 int amp_mutex_create(amp_mutex_t* mutex,
-                     void* allocator_context,
-                     amp_alloc_func_t alloc_func,
-                     amp_dealloc_func_t dealloc_func)
+                     amp_allocator_t allocator)
 {
     amp_mutex_t tmp_mutex = AMP_MUTEX_UNINITIALIZED;
     int retval = AMP_UNSUPPORTED;
     
     assert(NULL != mutex);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     
-    tmp_mutex = (amp_mutex_t)alloc_func(allocator_context,
-                                        sizeof(*tmp_mutex));
+    tmp_mutex = (amp_mutex_t)AMP_ALLOC(allocator,
+                                       sizeof(*tmp_mutex));
     if (NULL == tmp_mutex) {
         return AMP_NOMEM;
     }
@@ -68,9 +65,10 @@ int amp_mutex_create(amp_mutex_t* mutex,
     if (AMP_SUCCESS == retval) {
         *mutex = tmp_mutex;
     } else {
-        int const rc = dealloc_func(allocator_context,
-                                    tmp_mutex);
+        int const rc = AMP_DEALLOC(allocator,
+                                   tmp_mutex);
         assert(AMP_SUCCESS == rc);
+        (void)rc;
     }
     
     return retval;
@@ -79,19 +77,18 @@ int amp_mutex_create(amp_mutex_t* mutex,
 
 
 int amp_mutex_destroy(amp_mutex_t* mutex,
-                      void* allocator_context,
-                      amp_dealloc_func_t dealloc_func)
+                      amp_allocator_t allocator)
 {
     int retval = AMP_UNSUPPORTED;
     
     assert(NULL != mutex);
     assert(NULL != *mutex);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     
     retval = amp_raw_mutex_finalize(*mutex);
     if (AMP_SUCCESS == retval) {
-        retval = dealloc_func(allocator_context,
-                              *mutex);
+        retval = AMP_DEALLOC(allocator,
+                             *mutex);
         assert(AMP_SUCCESS == retval);
         if (AMP_SUCCESS == retval) {
             *mutex = AMP_MUTEX_UNINITIALIZED;

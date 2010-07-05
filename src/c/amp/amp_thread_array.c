@@ -59,10 +59,8 @@ struct amp_thread_array_s {
 
 
 int amp_thread_array_create(amp_thread_array_t* thread_array,
-                            size_t thread_count,
-                            void* allocator_context,
-                            amp_alloc_func_t alloc_func,
-                            amp_dealloc_func_t dealloc_func)
+                            amp_allocator_t allocator,
+                            size_t thread_count)
 {
     /* TODO: @todo Decide if only to allocate one big area of memory to put
      *             the group thread structs and the group itself into.
@@ -73,33 +71,30 @@ int amp_thread_array_create(amp_thread_array_t* thread_array,
     
     assert(NULL != thread_array);
     assert(0 != thread_count);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     
     *thread_array = AMP_THREAD_ARRAY_UNINITIALIZED;
     
-    if (NULL == thread_array
-        || 0 == thread_count
-        || NULL == alloc_func
-        || NULL == dealloc_func) {
+    if ( 0 == thread_count) {
         
         return AMP_ERROR;
     }
     
     *thread_array = NULL;
     
-    group = (struct amp_thread_array_s *)alloc_func(allocator_context,
-                                                    sizeof(*group));
+    group = (struct amp_thread_array_s *)AMP_ALLOC(allocator, sizeof(*group));
     if (NULL == group) {
         return AMP_NOMEM;
     }
     
     /* Allocate memory for the groups threads. */
-    threads = (struct amp_raw_thread_s*)alloc_func(allocator_context,
-                                                   sizeof(*threads) * thread_count);
+    threads = (struct amp_raw_thread_s*)AMP_CALLOC(allocator,
+                                                   thread_count,
+                                                   sizeof(*threads));
     if (NULL == threads) {
-        int const rv = dealloc_func(allocator_context, group);
+        int const rv = AMP_DEALLOC(allocator, group);
         assert(AMP_SUCCESS == rv);
+        (void)rv;
         
         return AMP_NOMEM;
     }
@@ -107,6 +102,7 @@ int amp_thread_array_create(amp_thread_array_t* thread_array,
     for (size_t i = 0; i < thread_count; ++i) {
         int const rv = amp_internal_thread_init_for_configuration(&threads[i]);
         assert(AMP_SUCCESS == rv);
+        (void)rv;
     }
     
     
@@ -122,14 +118,13 @@ int amp_thread_array_create(amp_thread_array_t* thread_array,
 
 
 int amp_thread_array_destroy(amp_thread_array_t* thread_array,
-                             void* allocator_context,
-                             amp_dealloc_func_t dealloc_func)
+                             amp_allocator_t allocator)
 {
     int retval = AMP_UNSUPPORTED;
     
     assert(NULL != thread_array);
     assert(NULL != *thread_array);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     assert(0 == (*thread_array)->joinable_count);
 
     
@@ -137,10 +132,10 @@ int amp_thread_array_destroy(amp_thread_array_t* thread_array,
         return AMP_BUSY;
     }
     
-    retval = dealloc_func(allocator_context, (*thread_array)->threads);
+    retval = AMP_DEALLOC(allocator, (*thread_array)->threads);
     if (AMP_SUCCESS == retval) {
         (*thread_array)->threads = NULL;
-        retval =  dealloc_func(allocator_context, *thread_array);
+        retval =  AMP_DEALLOC(allocator, *thread_array);
         if (AMP_SUCCESS == retval) {
             *thread_array = AMP_THREAD_ARRAY_UNINITIALIZED;
         } else {

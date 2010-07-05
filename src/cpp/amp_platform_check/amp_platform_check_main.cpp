@@ -93,18 +93,11 @@ namespace {
 int main(int argc, char *argv[])
 {
     (void)argc;
-    (void)argv;
+    (void)argv;    
     
+    amp_platform_t platform = AMP_PLATFORM_UNINITIALIZED;
     
-    void* allocator_context = NULL;
-    
-    
-    amp_platform_t platform;
-    
-    int const error_code_create = amp_platform_create(&platform, 
-                                                      allocator_context, 
-                                                      &amp_default_alloc, 
-                                                      &amp_default_dealloc);
+    int const error_code_create = amp_platform_create(&platform,AMP_DEFAULT_ALLOCATOR);
     exit_on_error(error_code_create);
     
     // Extract numbers from platform description.
@@ -128,9 +121,7 @@ int main(int argc, char *argv[])
     error_code = amp_platform_get_active_hwthread_count(platform, &active_hwthread_count);
     exit_on_error_other_than_enosys(error_code);
     
-    int const error_code_destroy = amp_platform_destroy(&platform,
-                                                        allocator_context,
-                                                        &amp_default_dealloc);
+    int const error_code_destroy = amp_platform_destroy(&platform,AMP_DEFAULT_ALLOCATOR);
     exit_on_error(error_code_destroy);
     
     

@@ -59,9 +59,7 @@ namespace {
         :   platform(AMP_PLATFORM_UNINITIALIZED)
         {
             int const error_code = amp_platform_create(&platform,
-                                                       AMP_DEFAULT_ALLOCATOR,
-                                                       &amp_default_alloc,
-                                                       &amp_default_dealloc);
+                                                       AMP_DEFAULT_ALLOCATOR);
             assert(AMP_SUCCESS == error_code);
             
         }
@@ -70,11 +68,9 @@ namespace {
         virtual ~amp_platform_test_fixture()
         {
             int const error_code = amp_platform_destroy(&platform,
-                                                        AMP_DEFAULT_ALLOCATOR,
-                                                        &amp_default_dealloc);
+                                                        AMP_DEFAULT_ALLOCATOR);
             
             assert(AMP_SUCCESS == error_code);
-            platform = AMP_PLATFORM_UNINITIALIZED;
         }
         
         
@@ -96,14 +92,44 @@ namespace {
     
     
     void* statistics_collecting_alloc(void* context,
-                                      std::size_t size)
+                                      std::size_t size,
+                                      char const* filename,
+                                      int line)
     {
+        (void)filename;
+        (void)line;
+        
         struct statistics_collecting_allocator* ctxt = (struct statistics_collecting_allocator*)context;
         
         ctxt->allocated_memory += size;
         
-        std::size_t* ptr = (std::size_t*)amp_default_alloc(AMP_DEFAULT_ALLOCATOR, 
-                                                           size + sizeof(std::size_t));
+        std::size_t* ptr = (std::size_t*)AMP_ALLOC(AMP_DEFAULT_ALLOCATOR, 
+                                                   size + sizeof(std::size_t));
+        
+        *ptr = size;
+        
+        return (void*)(ptr + 1);
+    }
+    
+    
+    
+    void* statistics_collecting_calloc(void* context,
+                                       std::size_t elem_count,
+                                       std::size_t elem_size_in_bytes,
+                                       char const* filename,
+                                       int line)
+    {
+        (void)filename;
+        (void)line;
+        
+        struct statistics_collecting_allocator* ctxt = (struct statistics_collecting_allocator*)context;
+        
+        std::size_t const size = elem_count * elem_size_in_bytes;
+        
+        ctxt->allocated_memory += size;
+        
+        std::size_t* ptr = (std::size_t*)AMP_ALLOC(AMP_DEFAULT_ALLOCATOR, 
+                                                   size + sizeof(std::size_t));
         
         *ptr = size;
         
@@ -113,8 +139,13 @@ namespace {
     
     
     int statistics_collecting_dealloc(void* context,
-                                      void* pointer_to_dealloc)
+                                      void* pointer_to_dealloc,
+                                      char const* filename,
+                                      int line)
     {
+        (void)filename;
+        (void)line;
+        
         struct statistics_collecting_allocator* ctxt = (struct statistics_collecting_allocator*)context;
         
         
@@ -123,7 +154,7 @@ namespace {
         
         ctxt->deallocated_memory += *ptr;
         
-        int const retval = amp_default_dealloc(AMP_DEFAULT_ALLOCATOR, ptr);
+        int const retval = AMP_DEALLOC(AMP_DEFAULT_ALLOCATOR, ptr);
         
         return retval;
     }
@@ -223,13 +254,21 @@ SUITE(amp_platform)
     TEST(memory_allocation_and_deallocation)
     {
         amp_platform_t platform;
-        struct statistics_collecting_allocator allocator = {0, 0};
+        struct statistics_collecting_allocator allocator_context = {0, 0};
         
         
-        int error_code = amp_platform_create(&platform,
-                                             &allocator,
-                                             &statistics_collecting_alloc,
-                                             &statistics_collecting_dealloc);
+        amp_allocator_t allocator = AMP_ALLOCATOR_UNINITIALIZED;
+        int error_code = amp_allocator_create(&allocator,
+                                         AMP_DEFAULT_ALLOCATOR,
+                                         &allocator_context,
+                                         &statistics_collecting_alloc, 
+                                         &statistics_collecting_calloc,
+                                         &statistics_collecting_dealloc);
+        assert(AMP_SUCCESS == error_code);
+        
+        
+        error_code = amp_platform_create(&platform,
+                                             allocator);
         assert(AMP_SUCCESS == error_code);
         
         size_t dummy_count = 0;
@@ -243,11 +282,14 @@ SUITE(amp_platform)
         assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
         
         error_code = amp_platform_destroy(&platform,
-                                          &allocator,
-                                          &statistics_collecting_dealloc);
+                                          allocator);
         assert(AMP_SUCCESS == error_code);
         
-        CHECK_EQUAL(allocator.allocated_memory, allocator.deallocated_memory);
+        CHECK_EQUAL(allocator_context.allocated_memory, allocator_context.deallocated_memory);
+        
+        error_code = amp_allocator_destroy(&allocator,
+                                           AMP_DEFAULT_ALLOCATOR);
+        assert(AMP_SUCCESS == error_code);
     }
     
     

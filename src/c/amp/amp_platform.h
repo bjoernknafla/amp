@@ -102,9 +102,7 @@ extern "C" {
      *         EINVAL is descr, alloc_func, or dealloc_func are NULL.
      */
     int amp_platform_create(amp_platform_t* descr,
-                            void* allocator_context,
-                            amp_alloc_func_t alloc_func,
-                            amp_dealloc_func_t dealloc_func);
+                            amp_allocator_t allocator);
     
     /**
      * Finalizes descr (invalidates it), frees its memory.
@@ -115,8 +113,7 @@ extern "C" {
      * descr will very likely be in an unusable and non-rescueable state.
      */
     int amp_platform_destroy(amp_platform_t* descr,
-                             void* allocator_context,
-                             amp_dealloc_func_t dealloc_func);
+                             amp_allocator_t allocator);
     
     
     
