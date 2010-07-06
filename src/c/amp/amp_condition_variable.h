@@ -74,14 +74,15 @@ extern "C" {
      *
      * @return AMP_SUCCESS if initialized successful, otherwise error codes are
      *         returned.
-     *         EAGAIN if a system resource other than memory wasn't available.
-     *         ENOMEM if available memory was lacking.
+     *         AMP_ERROR if a system resource other than memory wasn't 
+     *         available.
+     *         AMP_NOMEM if not enough memory is available.
      *         Error codes might be returned to signal errors while
      *         initializing, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EBUSY if the condition variable is already initialized.
-     *         EINVAL is the condition variable is invalid or already 
+     *         AMP_BUSY if the condition variable is already initialized.
+     *         AMP_ERROR if the condition variable is invalid or already 
      *         initialized.
      */
     int amp_condition_variable_create(amp_condition_variable_t* cond,
@@ -93,17 +94,17 @@ extern "C" {
      * Only call from one thread when the condition variable isn't in use
      * anymore.
      *
-     * allocator_context and dealloc_func must be capable of freeing the memory
-     * allocated via the create function otherwise behavior is undefined and
-     * resources might be leaked.
+     * allocator must be capable of freeing the memory allocated via the create 
+     * function otherwise behavior is undefined and resources might be leaked.
      *
      * @return AMP_SUCCESS if the condition variable was successfully destroyed.
      *         Error codes might be returned to signal errors while
      *         finalizing, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL the condition variable is invalid.
-     *         EBUSY the condition variable is in use.
+     *         AMP_ERROR the condition variable is invalid or allocator could
+     *         not deallocate the condition variable.
+     *         AMP_BUSY the condition variable is in use.
      */
     int amp_condition_variable_destroy(amp_condition_variable_t* cond,
                                        amp_allocator_t allocator);
@@ -113,7 +114,7 @@ extern "C" {
      * will be able to get the lock of the associated mutex (see wait function
      * below), all other will block while waiting on the lock. The "winner"
      * thread will leave its call to amp_condition_variable_wait with the
-     * assoicated mutex locked already.
+     * associated mutex locked by it.
      * The thread calling broadcast can but needn't own the lock on the 
      * associated mutex.
      *
@@ -122,7 +123,7 @@ extern "C" {
      *         broadcasting, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the condition variable isn't valid.
+     *         AMP_ERROR if the condition variable isn't valid.
      */
     int amp_condition_variable_broadcast(amp_condition_variable_t cond);
     
@@ -138,7 +139,7 @@ extern "C" {
      *         broadcasting, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the condition variable isn't valid.
+     *         AMP_ERROR if the condition variable isn't valid.
      */
     int amp_condition_variable_signal(amp_condition_variable_t cond);
     
@@ -169,7 +170,7 @@ extern "C" {
      *         waiting, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL is the condition variable or the mutex are invalid, or
+     *         AMP_ERROR is the condition variable or the mutex are invalid, or
      *         if different mutexes are used for concurrent waits on the same
      *         condition variable, or if the mutex isn't owned by the calling
      *         thread.

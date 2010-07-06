@@ -51,8 +51,6 @@
  * 
  * TODO: @todo Check if SEH (Windows structured exception handling) should be
  *             added.
- *
- * TODO: @todo Exchange the inner mutex against a critical section again.
  */
 
 

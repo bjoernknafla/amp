@@ -52,7 +52,7 @@ extern "C" {
      * Context for amp_platform query functions. Treat as opaque and don't
      * rely on its implementation as it can change from version to version.
      *
-     * TODO: @todo If WinVist and Win7 platform query functions alwys use the
+     * TODO: @todo If WinVist and Win7 platform query functions always use the
      *             same buffer size for queries then change the implementation
      *             to use a buffer instead of alloc and dealloc all the time.
      */
@@ -68,16 +68,15 @@ extern "C" {
      * platform description structure itself but might allocate a query buffer.
      */
     int amp_raw_platform_init(amp_platform_t descr,
-                              void* allocator_context,
-                              amp_alloc_func_t alloc_func,
-                              amp_dealloc_func_t dealloc_func);
+                              amp_allocator_t allocator);
     
     /**
      * Like amp_platform_destroy but only finalizes descr and frees the 
      * memory of its members but doesn't deallocate the platform structure 
      * itself.
      */
-    int amp_raw_platform_finalize(amp_platform_t descr);
+    int amp_raw_platform_finalize(amp_platform_t descr,
+                                  amp_allocator_t allocator);
     
     
     

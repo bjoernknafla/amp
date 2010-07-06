@@ -56,7 +56,6 @@ int amp_raw_mutex_init(amp_mutex_t mutex)
     int retval = pthread_mutexattr_init(&mutex_attributes);
     if (0 != retval) {
         if (ENOMEM == retval) {
-            /* assert(ENOMEN != retval && "Insufficient memory for mutex attributes."); */
             return AMP_NOMEM;
         } else {
             return AMP_ERROR;
@@ -78,13 +77,12 @@ int amp_raw_mutex_init(amp_mutex_t mutex)
     retval = pthread_mutex_init(&mutex->mutex, &mutex_attributes);
     switch (retval) {
         case 0:
-            /* retval is already equal to AMP_SUCCESS; */
+            /* retval is already equal to AMP_SUCCESS */
             break;
         case ENOMEM:
-            retval = AMP_NOMEM;
+            /* retval is already equal to AMP_NOMEM */
             break;
         case EAGAIN:
-            /* Fallthrough */
             retval = AMP_ERROR;
             break;
         default: /* EPERM, EBUSY, EINVAL - programming error */
@@ -140,7 +138,7 @@ int amp_mutex_trylock(amp_mutex_t mutex)
     switch (retval) {
         case 0:
             /* retval is already equal to AMP_SUCCESS */
-            /* Fallthrough */
+            break;
         case EBUSY:
             /* retval is already equal to AMP_BUSY */
             break;

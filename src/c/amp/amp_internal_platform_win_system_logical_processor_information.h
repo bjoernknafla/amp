@@ -92,9 +92,9 @@ extern "C" {
      * deallocated before the function ends.
      * 
      * Returns AMP_SUCCESS if the query method is supported or
-     * ENOSYS if not supported, ENOMEM if not memory could be allocated to
-     * query the platform infos, or EAGAIN if an unexpected error occured 
-     * (indicates a programming error).
+     * AMP_UNSUPPORTED if not supported, AMP_NOMEM if not memory could be 
+     * allocated to query the platform infos, or AMP_ERROR if an unexpected  
+     * error occured (indicates a programming error).
      *
      * info, alloc_func, and dealloc_func must not be invalid or NULL.
      *

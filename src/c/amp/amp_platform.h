@@ -54,6 +54,9 @@
  *                                                    size_t core_type_for_package_type_id);
  * TODO: @todo Add source file using GetLogicalProcessorInformationEx to query
  *             the platform on Windows Vista or later Windows versions.
+ * TODO: @todo Check back with Windows platform query documentation to only
+ *             create a query buffer on platform creation instead of using the
+ *             stored allocator for each query.
  *
  */
 
@@ -89,28 +92,30 @@ extern "C" {
      * memory if needed by the platform query functions (necessary for Windows 
      * Vista and Windows7 platform detection).
      *
-     * The allocator (allocator_context, alloc_func, and dealloc_func) are used
+     * The allocator is used (and probably also stored inside descr)
      * to allocate the memory for descr and eventually to create a temporary
      * buffer needed to query the platforms hardware informations (Windows
-     * GetLogicalProcessorInformation needs a dynamic buffer).
+     * GetLogicalProcessorInformation needs a dynamic buffer) on each query
+     * function call.
      *
      * On error no memory is leaked.
      *
      * Call amp_platform_destroy to finalize the platform description.
      *
      * @return AMP_SUCCESS on successful creation of a platform description.
-     *         EINVAL is descr, alloc_func, or dealloc_func are NULL.
      */
     int amp_platform_create(amp_platform_t* descr,
                             amp_allocator_t allocator);
     
+    
     /**
      * Finalizes descr (invalidates it), frees its memory.
      *
-     * Returns AMP_SUCCESS on successful destruction of descr, otherwise
-     * another error code is returned and if allocator_context, and
-     * dealloc_func aren't valid to deallocate descr behavior is undefined and
-     * descr will very likely be in an unusable and non-rescueable state.
+     * @return AMP_SUCCESS on successful destruction of descr. If allocator is 
+     *         unable to free the memory allocated with the allocator used for
+     *         the amp_platform_create call an allocator specific error code is 
+     *         returned and the behavior is undefined, e.g. resources might be 
+     *         leaked and descr becomes invalid. 
      */
     int amp_platform_destroy(amp_platform_t* descr,
                              amp_allocator_t allocator);
@@ -120,7 +125,7 @@ extern "C" {
     /**
      * Queries the platform for the number of processor cores (active or not).
      *
-     * descr must not be NULL.
+     * descr must be valid (created) and not be NULL.
      *
      * If the platform can be queried for this information the result is 
      * stored at the memory location result points to and AMP_SUCCESS is 
@@ -130,8 +135,8 @@ extern "C" {
      * If the information can not be queried descr isn't touched or changed.
      * 
      * @return AMP_SUCCESS if the information can be queried or
-     *         ENOSYS if the information can not be queried.
-     *         EINVAL is returned if desc is invalid, e.g. NULL.
+     *         AMP_UNSUPPORTED if the information can not be queried.
+     *         AMP_ERROR might be returned on error based on the used backend.
      */
     int amp_platform_get_installed_core_count(amp_platform_t descr, 
                                               size_t* result);
@@ -139,7 +144,7 @@ extern "C" {
     /**
      * Queries the platform for the number of currently active processor cores.
      *
-     * descr must not be NULL.
+     * descr must be valid (created) and not be NULL.
      *
      * If the platform can be queried for this information the result is 
      * stored at the memory location result points to and AMP_SUCCESS is 
@@ -149,8 +154,8 @@ extern "C" {
      * If the information can not be queried descr isn't touched or changed.
      * 
      * @return AMP_SUCCESS if the information can be queried or
-     *         ENOSYS if the information can not be queried.
-     *         EINVAL is returned if desc is invalid, e.g. NULL.
+     *         AMP_UNSUPPORTED if the information can not be queried.
+     *         AMP_ERROR might be returned on error based on the used backend.
      */
     int amp_platform_get_active_core_count(amp_platform_t descr, 
                                            size_t* result);
@@ -161,7 +166,7 @@ extern "C" {
      * information) then the number returned might be greater than the one
      * returned by amp_platform_get_installed_core_count.
      *
-     * descr must not be NULL.
+     * descr must be valid (created) and not be NULL.
      *
      * If the platform can be queried for this information the result is 
      * stored at the memory location result points to and AMP_SUCCESS is 
@@ -171,8 +176,8 @@ extern "C" {
      * If the information can not be queried descr isn't touched or changed.
      * 
      * @return AMP_SUCCESS if the information can be queried or
-     *         ENOSYS if the information can not be queried.
-     *         EINVAL is returned if desc is invalid, e.g. NULL.
+     *         AMP_UNSUPPORTED if the information can not be queried.
+     *         AMP_ERROR might be returned on error based on the used backend.
      */
     int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
                                                   size_t* result);
@@ -183,7 +188,7 @@ extern "C" {
      * querying this information) then the number returned might be greater than 
      * the one returned by amp_platform_get_active_core_count.
      *
-     * descr must not be NULL.
+     * descr must be valid (created) and not be NULL.
      *
      * If the platform can be queried for this information the result is 
      * stored at the memory location result points to and AMP_SUCCESS is 
@@ -193,8 +198,8 @@ extern "C" {
      * If the information can not be queried descr isn't touched or changed.
      * 
      * @return AMP_SUCCESS if the information can be queried or
-     *         ENOSYS if the information can not be queried.
-     *         EINVAL is returned if desc is invalid, e.g. NULL.
+     *         AMP_UNSUPPORTED if the information can not be queried.
+     *         AMP_ERROR might be returned on error based on the used backend.
      */
     int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result);

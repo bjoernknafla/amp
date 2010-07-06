@@ -37,16 +37,21 @@
  *
  * See README.markdown for more infos.
  *
- * @em amp is highly inspired and build after POSXI threads (Pthreads) - though
+ * @em amp is inspired and build after POSXI threads (Pthreads) - though
  * only offers a tiny part of its or Windows thread functionality.
  *
  * Most @em amp functions return an return code while they might also set errno.
  * Always check and rely on the returned error code and don't look at errno.
+ * errno might only be set as a sideeffect of calling system APIs.
+ * 
  *
- * TODO: @todo Add include for all non-raw amp headers.
+ * @attention Don't use amp functions other than the init functions on a
+ *            non-initialized data structure.
+ * @attention Don't call any amp init function on an already initialized (and
+ *            non-finalized) data structure.
+ * @attention Never reyl on undefined behavior - as it can vary between versions
+ *            of @em amp and the used backend (Pthreads, Windows threads, etc.).
  *
- * TODO: @todo Rename "Unexpected error" assert messages to 
- *             "Non-standard-conform error." to show what these asserts check.
  *
  * TODO: @todo Instead of using assert use an own assertion-macro that allows
  *             abortion only in debug mode or, if a compile time preprocessor
@@ -64,6 +69,7 @@
  * TODO: @todo Document all AMP_USE_ prefixed preprocessor symbols to 
  *                      differentiate specific platform backends (Windows Vista
  *                      condition variables, Mac OS X 10.6 dispatch semaphores.
+ *
  * TODO: @todo Add error preprocessor commands to all platform-ifdefs to 
  *             signal where new platforms need to add code when adapting them.
  */

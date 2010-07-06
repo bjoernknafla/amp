@@ -33,7 +33,7 @@
 /**
  * @file
  *
- * Unit test runner.
+ * Test runner.
  *
  * @attention If multiple tests show problems concentrate in the following
  *            order on problems: threads, thread local slots, mutexes, 

@@ -53,25 +53,26 @@
  *             object.
  */
 int amp_raw_platform_init(amp_platform_t descr,
-                          void* allocator_context,
-                          amp_alloc_func_t alloc_func,
-                          amp_dealloc_func_t dealloc_func)
+                          amp_allocator_t allocator)
 {
     assert(NULL != descr);
-    assert(NULL != alloc_func);
-    assert(NULL != dealloc_func);
+    assert(NULL != allocator);
     
-    descr->allocator_context = allocator_context;
-    descr->alloc_func = alloc_func;
-    descr->dealloc_func = dealloc_func;
+    descr->allocator_context = allocator->allocator_context;
+    descr->alloc_func = allocator->alloc_func;
+    descr->dealloc_func = allocator->dealloc_func;
     
     return AMP_SUCCESS;
 }
 
 
-int amp_raw_platform_finalize(amp_platform_t descr)
+int amp_raw_platform_finalize(amp_platform_t descr,
+                              amp_allocator_t allocator)
 {
+    (void)allocator;
+    
     assert(NULL != descr);
+    assert(NULL != allocator);
     
     descr->allocator_context = NULL;
     descr->alloc_func = NULL;
@@ -100,9 +101,7 @@ int amp_platform_create(amp_platform_t* descr,
     }
     
     retval = amp_raw_platform_init(tmp_platform,
-                                   allocator->allocator_context,
-                                   allocator->alloc_func,
-                                   allocator->dealloc_func);
+                                   allocator);
     if (AMP_SUCCESS == retval) {
         *descr = tmp_platform;
     } else {
@@ -125,7 +124,8 @@ int amp_platform_destroy(amp_platform_t* descr,
     assert(NULL != *descr);
     assert(NULL != allocator);
     
-    retval = amp_raw_platform_finalize(*descr);
+    retval = amp_raw_platform_finalize(*descr,
+                                       allocator);
     if (AMP_SUCCESS == retval) {
         retval = AMP_DEALLOC(allocator,
                               *descr);

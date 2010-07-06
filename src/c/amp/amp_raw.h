@@ -33,33 +33,11 @@
 /**
  * @file
  *
- * Main header file includes all raw amp headers. Raw headers are dependent
+ * Main raw header file including all raw amp headers. Raw headers are dependent
  * on platform specific headers and therefore include them. Non-raw headers
  * aren't platform dependent and don't include any platform-specific headers.
  *
  * See amp.h and README.markdown for more infos.
- *
- * @attention Don't use amp functions other than the init functions on a
- *            non-initialized data structure.
- * @attention Don't call any amp init function on an already initialized (and
- *            non-finalized) data structure.
- * @attention Never reyl on undefined behavior - as it can vary between versions
- *            of @em amp and the used backend (Pthreads, Windows threads, etc.).
- *
- *
- * TODO: @todo Add include for all non-raw amp headers.
- *
- * TODO: @todo Add Apple OS X 10.6 libdispatch backends for amp_raw_ semaphore
- *             and mutex.
- *
- *
- * TODO: @todo When adding the non-raw data types and connect them to the raw
- *             ones it might make sense to add the work opaque to the raw
- *             data structures.
- *
- * TODO: @todo In winthreads sources store the result of GetLastError in an 
- *             otherwise unused variable to allow inspection of the error code
- *             from the debugger.
  */
 
 #ifndef AMP_amp_raw_H

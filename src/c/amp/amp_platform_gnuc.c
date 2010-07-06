@@ -84,6 +84,8 @@ static size_t amp_internal_platform_get_core_count(void)
 int amp_platform_get_installed_core_count(amp_platform_t descr, 
                                           size_t* result)
 {
+    (void)descr;
+    
     assert(NULL != descr);
     
     if (NULL != result ) {
@@ -99,6 +101,8 @@ int amp_platform_get_installed_core_count(amp_platform_t descr,
 int amp_platform_get_active_core_count(amp_platform_t descr, 
                                        size_t* result)
 {
+    (void)descr;
+    
     assert(NULL != descr);
     
     if (NULL != result ) {
@@ -114,6 +118,8 @@ int amp_platform_get_active_core_count(amp_platform_t descr,
 int amp_platform_get_installed_hwthread_count(amp_platform_t descr, 
                                         size_t* result)
 {
+    (void)descr;
+    
     assert(NULL != descr); 
     
     /* Functionality not supported, no value returned. */
@@ -127,6 +133,8 @@ int amp_platform_get_installed_hwthread_count(amp_platform_t descr,
 int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result)
 {
+    (void)descr;
+    
     assert(NULL != descr); 
     
     /* Functionality not supported, no value returned. */

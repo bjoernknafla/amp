@@ -33,21 +33,14 @@
 /**
  * @file
  *
- * Function typedefs for a memory allocator concept and shallow wrappers
- * to adapt the memory interface to C standard malloc and free.
+ * An allocator used by create and destroy functions which can be 
+ * configured by users to include their own allocation, array allocation, 
+ * and deallocation functions using a user supplied context.
  *
- * Amp's allocator and deallocator functions get an allocator context as their
- * first parameter to enable the library user to hand functions to amp that
- * work on specific memory pools passed to them via the allocator context.
+ * The default allocator uses shallow wrappers around C's malloc, calloc, and
+ * free.
  *
- * TODO: @todo Add allocators and deallocators that return 16 byte aligned
- *             memory and eventually add allocator interfaces to explicitly
- *             set the memory alignment for allocation and deallocation.
- *
- * TODO: @todo Add a unit test.
- *
- * TODO: @todo Decide if to add a calloc alike typedef and wrapper function
- *             based on own use and amp user feedback.
+ * TODO: @todo Add a test, especially to check the amp_calloc_func_t contract.
  */
 
 #ifndef AMP_amp_memory_H
@@ -97,7 +90,8 @@ extern "C" {
      * Only call to free  memory allocated via the associated alloc function and
      * allocator context otherwise behavior might be undefined.
      *
-     * Returns AMP_SUCCESS on successfull deallocation.
+     * Returns AMP_SUCCESS on successfull deallocation or function specific
+     * error codes on errors.
      */
     typedef int (*amp_dealloc_func_t)(void* allocator_context, 
                                       void *pointer,
@@ -108,8 +102,10 @@ extern "C" {
     
     
     /**
-     * Default allocator context when calling amp_default_alloc, 
-     * amp_default_calloc, or amp_default_dealloc.
+     * Default allocator context for amp_default_alloc, amp_default_calloc, and 
+     * amp_default_dealloc.
+     *
+     * @attention Do not change amp_default_allocator_context.
      */
     extern void* amp_default_allocator_context;
     
@@ -117,7 +113,8 @@ extern "C" {
     
     
     /**
-     * Shallow wrapper around C std malloc which ignores allocator context.
+     * Shallow wrapper around C std malloc which ignores allocator context,
+     * filename, and line.
      *
      * Only thread-safe if C's std malloc is thread-safe.
      */
@@ -128,7 +125,8 @@ extern "C" {
     
     
     /**
-     * Shallow wrapper around C std calloc which ignores the allocator context.
+     * Shallow wrapper around C std calloc which ignores the allocator context,
+     * filename, and line.
      *
      * Only thread-safe if C's std calloc is thread-safe.
      */
@@ -140,7 +138,8 @@ extern "C" {
     
     
     /**
-     * Shallow wrapper around C std free which ignores allocator context.
+     * Shallow wrapper around C std free which ignores allocator context,
+     * filename, and line.
      *
      * Only thread-safe if C's std free is thread-safe.
      *
@@ -158,8 +157,9 @@ extern "C" {
      * amp release or new version.
      *
      * Create via amp_allocator_create and destroy via amp_allocator_destroy.
-     * To allocate or deallocate memory via an allocator use the preprocessor
-     * macors AMP_ALLOC, AMP_CALLOC, and AMP_DEALLOC.
+     * To allocate or deallocate memory via an allocator use the functions
+     * (which might be preprocessor macros) AMP_ALLOC, AMP_CALLOC, and 
+     * AMP_DEALLOC.
      */
     struct amp_raw_allocator_s {
         amp_alloc_func_t alloc_func;
@@ -173,13 +173,20 @@ extern "C" {
 #define AMP_ALLOCATOR_UNINITIALIZED ((amp_allocator_t)NULL)
     
     /**
-     * Creates a target allocator using source_allocator to create it.
+     * Creates and initializes a target allocator using source_allocator to 
+     * allocate memory for it.
+     *
+     * allocator_context can be NULL if alloc_func, calloc_func, and 
+     * dealloc_func work with a NULL arguments passed to them for their 
+     * allocator context.
+     *
+     * alloc_func, calloc_func, and dealloc_func and allocator_context must
+     * work/fit together.
      *
      * @return AMP_SUCCESS on successful creation.
      *         AMP_NOMEM if not enough memory is available to allocate the
      *         target allocator.
-     *         AMP_ERROR might be returned if an error is detected. Expect it
-     *         but do not rely on it.
+     *         AMP_ERROR might be returned if an error is detected.
      */
     int amp_allocator_create(amp_allocator_t* target_allocator,
                              amp_allocator_t source_allocator,
@@ -190,7 +197,8 @@ extern "C" {
     
     
     /**
-     * Destroys the target allocator using source_allocator.
+     * Destroys the target allocator using source_allocator to deallocate its
+     * memory.
      *
      * @return AMP_SUCCESS on successful creation.
      *         AMP_ERROR might be returned if an error is detected. Expect it
@@ -210,6 +218,8 @@ extern "C" {
      * Default allocator using amp_default_alloc, amp_default_calloc,
      * amp_default_dealloc, and AMP_DEFAULT_ALLOCATOR_CONTEXT. Use it to 
      * bootstrap new allocators.
+     *
+     * @attention Do not change it.
      */
     extern amp_allocator_t amp_default_allocator;
     
@@ -223,6 +233,9 @@ extern "C" {
     /**
      * Calls the alloc function of allocator to allocate size bytes of memory.
      * See amp_alloc_func_t for a behavior specification.
+     *
+     * The allocator expression must not have side-effects as it is used twice
+     * in the macro.
      */
 #define AMP_ALLOC(allocator, size) (allocator)->alloc_func((allocator)->allocator_context, (size), __FILE__, __LINE__)
     
@@ -230,6 +243,9 @@ extern "C" {
      * Calls the calloc function of allocator to allocate elem_count times
      * elem_size bytes of memory.
      * See amp_calloc_func_t for a behavior specification.
+     *
+     * The allocator expression must not have side-effects as it is used twice
+     * in the macro.
      */
 #define AMP_CALLOC(allocator, elem_count, elem_size) (allocator)->calloc_func((allocator)->allocator_context, (elem_count), (elem_size), __FILE__, __LINE__)
     
@@ -237,6 +253,9 @@ extern "C" {
      * Calls the dealloc function of allocator to deallocate the memory pointer
      * points to.
      * See amp_dealloc_func_t for a behavior specification.
+     *
+     * The allocator expression must not have side-effects as it is used twice
+     * in the macro.
      */
 #define AMP_DEALLOC(allocator, pointer) (allocator)->dealloc_func((allocator)->allocator_context, (pointer), __FILE__, __LINE__)
     

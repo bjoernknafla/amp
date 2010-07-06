@@ -76,7 +76,7 @@ extern "C" {
      * not queryable (e.g. sets them to zero).
      * 
      * Returns AMP_SUCCESS if the query method is supported or
-     * ENOSYS otherwise.
+     * AMP_UNSUPPORTED otherwise.
      *
      * info must not be invalid or NULL.
      *

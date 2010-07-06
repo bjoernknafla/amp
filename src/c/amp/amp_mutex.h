@@ -43,6 +43,10 @@
  * inside the critical section are protected from race conditions that could 
  * happen if another thread would execute the critical section concurrently.
  *
+ * @attention If someone accesses resources without using the single shared
+ *            mutex associated with it to protect it, then race conditions can
+ *            and will happen.
+ *
  * The thread locking the mutex attains its ownership and needs to unlock
  * it, too. As long as a thread holds the mutex lock no other thread can
  * lock it and will block and wait on the mutex to be unlocked. The moment 
@@ -58,7 +62,7 @@
  * resources by calling amp_mutex_destroy at the end of the mutex
  * lifetime.
  *
- * All functions working on mutexes return error codes. Check these return
+ * All functions working on mutexes return return codes. Check these return
  * codes and don't enter a critical section or use a mutex if the return
  * value isn't AMP_SUCCESS.
  *
@@ -112,9 +116,6 @@ extern "C" {
     /**
      * Allocates and initialize an amp_mutex_t before using it.
      *
-     * Calling amp_mutex_create on an already initialized and non-destroyed
-     * mutex results in undefined behavior.
-     *
      * @attention The platform-specific init function called might use malloc
      *            or other resource management functions internally.
      *
@@ -122,13 +123,15 @@ extern "C" {
      *            as it could result in undefined behavior and resource leaks.
      *
      * @return AMP_SUCCESS is returned on successful initialization of mutex.
-     *         EAGAIN is returned if the system temporarily has insufficent 
-     *                resources.
-     *         ENOMEM is returned if memory is insufficient.
+     *         AMP_ERROR is returned if the system temporarily has insufficent 
+     *         resources.
+     *         AMP_NOMEM is returned if memory is insufficient.
      *         Other error codes might be returned to signal errors while
      *         initializing, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
+     *         AMP_ERROR might be returned when trying to create a mutex
+     *         while the argument mutex points to an already exiting one.
      */
     int amp_mutex_create(amp_mutex_t* mutex,
                          amp_allocator_t allocator);
@@ -141,10 +144,11 @@ extern "C" {
      *         finalizing, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the mutex attribute isn't valid, e.g. not initialized.
-     *         EBUSY if the mutex is locked by a thread.
+     *         AMP_ERROR if the mutex attribute isn't valid, e.g. not 
+     *         initialized.
+     *         AMP_BUSY if the mutex is locked by a thread.
      *
-     * allocator_context and dealloc_func must be capable of freeing the memory
+     * allocator must be capable of freeing the memory
      * allocated via the create function otherwise behavior is undefined and
      * resources might be leaked.
      *
@@ -170,11 +174,11 @@ extern "C" {
      *         locking, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EDEADLK if the thread already holding the lock attempts to lock
-     *         again (recursively).
-     *         EINVAL if the mutex is invalid, e.g. not initialized.
+     *         AMP_ERROR if the thread already holding the lock attempts to lock
+     *         again (recursively) or if the mutex is invalid, e.g. not 
+     *         initialized.
      *
-     * @attention Trying to recursively locking a mutex from the same thread
+     * @attention Trying to recursively lock a mutex from the same thread
      *            results in undefined behavior. Never lock recursively.
      */
     int amp_mutex_lock(amp_mutex_t mutex);
@@ -184,20 +188,19 @@ extern "C" {
      * returns with an error code.
      *
      * @return AMP_SUCCESS if the lock has been taken.
-     *         EBUSY if lock hasn't been taken because it is locked by another 
-     *         thread.
+     *         AMP_BUSY if lock hasn't been taken because it is locked by  
+     *         another thread.
      *         Error codes might be returned to signal errors while
      *         trying to lock, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the mutex isn't valid, e.g. not initialized.
-     *         EDEADLK if trying to lock recursively (probably EBUSY is returned
-     *         instead).
+     *         AMP_ERROR if the mutex isn't valid, e.g. not initialized or if 
+     *         trying to lock recursively.
      *
      * @attention Don't enter the critical section if an error code is returned
      *            because the lock hasn't been taken.
      *
-     * @attention Trying to recursively locking a mutex from the same thread
+     * @attention Trying to recursively lock a mutex from the same thread
      *            results in undefined behavior. Never lock recursively.
      */
     int amp_mutex_trylock(amp_mutex_t mutex);
@@ -212,8 +215,8 @@ extern "C" {
      *         unlocking, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the mutex isn't valid, e.g. not initialized.
-     *         EPERM if a thread not holding the lock tries to unlock the mutex.
+     *         AMP_ERROR if the mutex isn't valid, e.g. not initialized or if a 
+     *         thread not holding the lock tries to unlock the mutex.
      *
      * @attention Only the thread holding the lock is allowed to unlock it, 
      *            otherwise behavior is undefined.

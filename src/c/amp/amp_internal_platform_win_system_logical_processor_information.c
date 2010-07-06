@@ -244,22 +244,23 @@ static DWORD amp_internal_win_version_greater_or_equal_and_type_equal(AMP_BOOL* 
 static int amp_internal_count_set_bits_of_ulong_ptr(ULONG_PTR bitmask);
 static int amp_internal_count_set_bits_of_ulong_ptr(ULONG_PTR bitmask)
 {
-    /* Code based on Henry S. Warren, Jr., Hacker's Delight, Addison-Wesley, 2003, 
-     * p. 70.
+    /* Code based on Henry S. Warren, Jr., Hacker's Delight, Addison-Wesley, 
+     * 2003, p. 70.
      * 
      * However using a simpler algorithm that counts ever bit of an unsigned
      * integral type to enable a predictive number of loop runs to enable
      * loop unrolling and also simpler arithmetic than used in in the example at
      * http://msdn.microsoft.com/en-us/library/ms683194(VS.85).aspx
      *
-     
-     ULONG sum = bitmask;
-     while (0 != bitmask) {
-     bitmask = bitmask >> 1;
-     sum = sum - bitmask;
-     }
-     
-     return (int)sum;
+     * <code>
+     * ULONG sum = bitmask;
+     * while (0 != bitmask) {
+     * bitmask = bitmask >> 1;
+     * sum = sum - bitmask;
+     * }
+     *
+     * return (int)sum;
+     * </code>
      */
     
     DWORD const ulong_size = sizeof(ULONG)* CHAR_BIT;

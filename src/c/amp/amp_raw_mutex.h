@@ -38,6 +38,8 @@
  *
  * @attention Don't copy a variable of type amp_raw_mutex_s - copying a pointer
  *            to this type is ok though.
+ *
+ * TODO: @todo Add Apple OS X 10.6 libdispatch backends for amp_raw_ mutex.
  */
 
 

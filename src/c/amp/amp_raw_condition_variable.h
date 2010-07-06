@@ -34,7 +34,7 @@
  * @file
  *
  * Backend specific definition of amp condition variable to allow placing a 
- * condition variable on the stack though platform specific headers will be 
+ * condition variable on the stack. Platform specific headers will be 
  * included.
  *
  * @attention Don't copy a variable of type amp_raw_condition_variable_s - 

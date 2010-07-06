@@ -31,7 +31,9 @@
  */
 
 /**
- * Cross-platform Subset of types of C99 stdint needed by amp.
+ * @file
+ *
+ * Minimal cross-platform subset of types of C99 stdint needed by amp.
  *
  * Assumes a C99 compatible C compiler, or MSVC, or a compiler whose c lib
  * contains the stdint header.
@@ -39,15 +41,14 @@
  * Makes intptr_t,  and uintptr_t accessible to amp.
  *
  * If C89 needs to be supported or a platform needs a better platform detection
- * and handling poc ( http://github.com/bjoernknafla/poc ) can be used to 
+ * and handling then poc ( http://github.com/bjoernknafla/poc ) can be used to 
  * define the necessary bit-sized primitive integer types. Currently poc isn't
  * used to keep the dependencies of amp at a minimum.
  *
  * amp uses intptr_t and uintptr_t in places where intmax_t and uintmax_t would
  * be more appropriate. However making intmax_t and uintmax_t available in a 
  * cross platform way complicates the implementation and adds more complexity
- * than it seems worth just yet. As all amp types that use bit-sized integral
- * types are typedefed changes can be made later one without much work.
+ * than it seems worth just yet.
  */ 
 
 #ifndef AMP_amp_stdint_H

@@ -30,6 +30,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @file
+ *
+ * Implementation of amp memory.
+ */ 
+
 #include "amp_memory.h"
 
 #include <assert.h>
