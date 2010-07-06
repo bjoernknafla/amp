@@ -335,7 +335,7 @@ SUITE(amp_thread_array)
         context_vector_type context_vector(thread_count);
         for (size_t i = 0; i < thread_count; ++i) {
             context_vector[i].item_to_set = &values_to_write_vector[i];
-            context_vector[i].item_value_to_use_for_set = i;
+            context_vector[i].item_value_to_use_for_set = static_cast<int>(i);
         }
         
         std::vector<amp_thread_func_t> thread_function_vector;

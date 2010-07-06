@@ -84,6 +84,7 @@ int amp_raw_barrier_init(amp_barrier_t barrier,
     if (AMP_SUCCESS != errc) {
         int const ec = amp_raw_mutex_finalize(&barrier->count_mutex);
         assert(AMP_SUCCESS == ec);
+        (void)ec;
         
         return errc;
     }

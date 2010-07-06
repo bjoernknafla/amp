@@ -375,6 +375,7 @@ SUITE(amp_mutex)
                                                         &thread_contexts[i],
                                                         staggered_locking_thread_func);
             assert(AMP_SUCCESS == retv);
+            (void)retv;
             
         }
         

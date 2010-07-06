@@ -132,6 +132,7 @@ SUITE(amp_semaphore)
             
             int retval = amp_semaphore_wait(sem_flag->sem);
             assert(AMP_SUCCESS == retval);
+            (void)retval;
             sem_flag->check_flag = CHECK_FLAG_SET;
         }
         

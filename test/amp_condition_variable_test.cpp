@@ -440,6 +440,7 @@ SUITE(amp_condition_variable)
                                                       &thread_contexts[i],
                                                       &one_cond_wait_multiple_thread_func);
             assert(AMP_SUCCESS == rv);
+            (void)rv;
         }
         
         size_t joinable_count = 0;
@@ -857,9 +858,10 @@ SUITE(amp_condition_variable)
             {
                 
                 for (std::size_t i = 0; i < thread_count; ++i) {
-                    int rv = amp_semaphore_destroy(&thread_contexts[i].let_thread_proceed_to_next_wait_cycle_sem,
+                    int const rv = amp_semaphore_destroy(&thread_contexts[i].let_thread_proceed_to_next_wait_cycle_sem,
                                                    AMP_DEFAULT_ALLOCATOR);
                     assert(AMP_SUCCESS == rv);
+                    (void)rv;
                 }
                 
                 delete[] thread_contexts;
@@ -914,6 +916,7 @@ SUITE(amp_condition_variable)
                                                       &thread_contexts[i],
                                                       &multi_cond_wait_multiple_thread_func);
             assert(AMP_SUCCESS == rv);
+            (void)rv;
         }
         
         size_t joinable_count = 0;
@@ -1078,6 +1081,7 @@ SUITE(amp_condition_variable)
                                                       &thread_contexts[i],
                                                       &multi_cond_wait_multiple_thread_func);
             assert(AMP_SUCCESS == rv);
+            (void)rv;
         }
         
         size_t joinable_count = 0;

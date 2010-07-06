@@ -114,6 +114,7 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
     
     int const mattr_destroy_retval = pthread_mutexattr_destroy(&mutex_attributes);
     assert(0 == mattr_destroy_retval);
+    (void)mattr_destroy_retval;
     
     /* 
      *If an error occured return error code from mutex creation after mutex
@@ -158,6 +159,7 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
         
         int const retv = pthread_mutex_destroy(&semaphore->mutex);
         assert(0 == retv); /* Programming error */
+        (void)retv;
         
         return retval;
     }
@@ -207,6 +209,7 @@ int amp_semaphore_wait(amp_semaphore_t semaphore)
     }
     int const munlock_retval = pthread_mutex_unlock(&semaphore->mutex);
     assert(0 == munlock_retval);
+    (void)munlock_retval;
     
     return retval;
 }
@@ -241,6 +244,7 @@ int amp_semaphore_signal(amp_semaphore_t semaphore)
     }
     int const munlock_retval = pthread_mutex_unlock(&semaphore->mutex);
     assert(0 == munlock_retval);
+    (void)munlock_retval;
     
     return retval;
 }

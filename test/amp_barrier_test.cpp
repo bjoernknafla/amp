@@ -333,7 +333,7 @@ SUITE(amp_barrier)
     
         retval = amp_barrier_create(&shared_barrier,
                                     AMP_DEFAULT_ALLOCATOR,
-                                    a_third_of_thread_count * 2);
+                                    static_cast<amp_barrier_count_t>(a_third_of_thread_count * 2));
         CHECK_EQUAL(AMP_SUCCESS, retval);
         
         retval = amp_mutex_create(&shared_counter_mutex,

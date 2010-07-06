@@ -61,6 +61,7 @@ namespace {
             int const error_code = amp_platform_create(&platform,
                                                        AMP_DEFAULT_ALLOCATOR);
             assert(AMP_SUCCESS == error_code);
+            (void)error_code;
             
         }
         
@@ -71,8 +72,8 @@ namespace {
                                                         AMP_DEFAULT_ALLOCATOR);
             
             assert(AMP_SUCCESS == error_code);
+            (void)error_code;
         }
-        
         
         amp_platform_t platform;
         
