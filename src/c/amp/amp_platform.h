@@ -102,6 +102,10 @@ extern "C" {
      *
      * Call amp_platform_destroy to finalize the platform description.
      *
+     * If the initialization fails the allocator is called to free the
+     * already allocated memory which must not result in an error or otherwise
+     * behavior is undefined.
+     *
      * @return AMP_SUCCESS on successful creation of a platform description.
      */
     int amp_platform_create(amp_platform_t* descr,
@@ -203,6 +207,27 @@ extern "C" {
      */
     int amp_platform_get_active_hwthread_count(amp_platform_t descr, 
                                                size_t* result);
+    
+    
+    /**
+     * Queries the platform for the maximum concurrency level supported, 
+     * that might be the count of installed hardware-threads or cores, or the
+     * number of active hardware-threads or cores based on what is supported by
+     * the platform's backend.
+     *
+     * If the query is not supported AMP_UNSUPPORTED is returned and result 
+     * is unchanged and untouched.
+     *
+     * If result is NULL the function call can be used to determine if the 
+     * query is supported or not.
+     *
+     * @return AMP_SUCCESS on successful concurrency level query.
+     *         AMP_UNSUPPORTED if the platform does not support this query.
+     */
+    int amp_platform_get_concurrency_level(amp_platform_t descr,
+                                           size_t* result);
+    
+    
     
     
 #if defined(__cplusplus)

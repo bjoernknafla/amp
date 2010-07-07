@@ -77,15 +77,19 @@ extern "C" {
      * Behavior is undefined if thread_array represents an already 
      * (non-destroyed) created thread array.
      *
+     * If the initialization fails the allocator is called to free the
+     * already allocated memory which must not result in an error or otherwise
+     * behavior is undefined.
+     *
      * @return AMP_SUCCESS on successful creation of thread_group. On error the
      *         following error codes are returned:
-     *         ENOMEM if not enough memory is available.
+     *         AMP_NOMEM if not enough memory is available.
      *         Other error codes might be returned to signal 
      *         errors, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL is returned if thread_array, thread_count, alloc_func, or
-     *         dealloc_func are NULL.
+     *         AMP_ERROR is returned if thread_array, thread_count, or
+     *         allocator are NULL.
      *         On error no memory is leaked.
      *         
      * TODO: @todo Decide if to allow @c 0 as a thread count.
@@ -112,14 +116,13 @@ extern "C" {
      * @return AMP_SUCCESS is returned on successful finalization of the thread
      *         array and after its memory is freed. On error the following error
      *         codes might be returned:
-     *         EBUSY is returned if not all launched threads of the array have
-     *         been joined.
      *         Other error codes might be returned to signal 
      *         errors, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL is returned if thread_array, alloc_func, or dealloc_func
-     *         are NULL.
+     *         AMP_BUSY is returned if not all launched threads of the array 
+     *         have been joined.
+     *         AMP_ERROR  is returned if thread_array or allocator are NULL.
      */
     int amp_thread_array_destroy(amp_thread_array_t* thread_array,
                                  amp_allocator_t allocator);
@@ -128,7 +131,7 @@ extern "C" {
      * Sets range_length thread array thread contexts starting at index 
      * range_begin to shared_context.
      *
-     * If an error is returned it us not defined if or which of the thread
+     * If an error is returned it is not defined if or which of the thread
      * contexts of the array have been changed.
      *
      * range_length must not be greater than the size of thread_array.
@@ -137,6 +140,15 @@ extern "C" {
      * index range of thread_array.
      *
      * Do not call after launching and before joining with a thread array.
+     *
+     * @return AMP_SUCCESS on successful configuration.
+     *         Other error codes might be returned to signal errors, too. These
+     *         are programming errors and must not occur in release code. When
+     *         @em amp is compiled without NDEBUG set it might assert that these
+     *         errors do not happen.
+     *         AMP_ERROR might be returned if the arguments are invalid.
+     *         AMP_BUSY might be returned if the thread array is already 
+     *         launched.
      */
     int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
                                             size_t range_begin,
@@ -157,6 +169,15 @@ extern "C" {
      * shared_function must not be NULL or invalid.
      *
      * Do not call after launching and before joining with a thread array.
+     *
+     * @return AMP_SUCCESS on successful configuration.
+     *         Other error codes might be returned to signal errors, too. These
+     *         are programming errors and must not occur in release code. When
+     *         @em amp is compiled without NDEBUG set it might assert that these
+     *         errors do not happen.
+     *         AMP_ERROR might be returned if the arguments are invalid.
+     *         AMP_BUSY might be returned if the thread array is already 
+     *         launched.
      */
     int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
                                              size_t range_begin,
@@ -177,6 +198,15 @@ extern "C" {
      * shared_function must not be NULL or invalid.
      *
      * Do not call after launching and before joining with a thread array.
+     *
+     * @return AMP_SUCCESS on successful configuration.
+     *         Other error codes might be returned to signal errors, too. These
+     *         are programming errors and must not occur in release code. When
+     *         @em amp is compiled without NDEBUG set it might assert that these
+     *         errors do not happen.
+     *         AMP_ERROR might be returned if the arguments are invalid.
+     *         AMP_BUSY might be returned if the thread array is already 
+     *         launched.
      */
     int amp_thread_array_configure(amp_thread_array_t thread_array,
                                    size_t range_begin,
@@ -190,10 +220,10 @@ extern "C" {
      * thread launching fails. The number of threads launched is returned
      * in joinable if the pointer is not NULL.
      * If not all threads could be launched nothing is done other then
-     * returning EAGAIN or ENOMEM and the threads that could be launched
+     * returning AMP_ERROR or AMP_NOMEM and the threads that could be launched
      * are running or are about to run. 
-     * Call join_all to join with the launched threads after the thread
-     * functions have exited.
+     *
+     * Call join_all to join with the launched threads.
      *
      * You can handle non-launcheable threads of a thread array in at least
      * three ways:
@@ -227,13 +257,12 @@ extern "C" {
      *
      * @return AMP_SUCCESS on successful launch of all launcheable threads of
      *         the thread array.
-     *         EAGAIN is returned if the system lacks the resources for thread
-     *         creation and launching.
+     *         AMP_ERROR is returned if the system lacks the resources for 
+     *         thread creation and launching.
      *         Other error codes might be returned to signal 
      *         errors, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL is returned if the thread_array is NULL or invalid.
      */
     int amp_thread_array_launch_all(amp_thread_array_t thread_array,
                                     size_t* joinable_thread_count);
@@ -254,8 +283,7 @@ extern "C" {
      *         errors, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL is returned if thread_array is NULL.
-     *         EDEADLK, EINVAL, ESRCH might be returned by the internally called
+     *         AMP_ERROR might be returned by the internally called
      *         amp_raw_thread_join on error.
      */
     int amp_thread_array_join_all(amp_thread_array_t thread_array,
@@ -271,8 +299,6 @@ extern "C" {
      *         errors, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL is returned if thread_array or joinable_thread_count are 
-     *         NULL.
      */
     int amp_thread_array_get_joinable_thread_count(amp_thread_array_t thread_array,
                                                    size_t* joinable_thread_count);

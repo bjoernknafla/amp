@@ -258,7 +258,8 @@ int amp_thread_yield(void)
     /* Ignore return code as it only indicates if there are other threads
      * to switch to or not, but @em amp uses this function only as a hint.
      */
-    SwitchToThread();
+    BOOL const switched_to_another_thread = SwitchToThread();
+    (void)switched_to_another_thread;
     
     return AMP_SUCCESS;
 }

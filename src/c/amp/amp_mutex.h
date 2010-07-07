@@ -122,6 +122,10 @@ extern "C" {
      * @attention Don't pass an already created mutex to amp_mutex_create
      *            as it could result in undefined behavior and resource leaks.
      *
+     * If the initialization fails the allocator is called to free the
+     * already allocated memory which must not result in an error or otherwise
+     * behavior is undefined.
+     *
      * @return AMP_SUCCESS is returned on successful initialization of mutex.
      *         AMP_ERROR is returned if the system temporarily has insufficent 
      *         resources.

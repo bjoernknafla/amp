@@ -70,10 +70,10 @@ extern "C" {
     
     /**
      * Treat this type as opaque as its internals will change from version to
-     * version!
+     * version.
      *
      * Stores the context and the thread function and hands the thread struct
-     * to the thread start function (trampoline function) so it has access
+     * to the thread start (trampoline) function so it has access
      * to the function to run and the context to pass to it.
      */
     struct amp_native_thread_s {

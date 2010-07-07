@@ -34,10 +34,6 @@
  * @file
  *
  * Shallow wrapper around Pthread mutex to emulate an amp raw semaphore.
- *
- * TODO: @todo Look through all error return codes and identify which 
- *             are purely internal (error in this code) and shouldn't leave the
- *             function but be fixed.
  */
 
 
@@ -81,12 +77,11 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
     semaphore->count = init_count;
     
     pthread_mutexattr_t mutex_attributes;
-    /* If the system lacks memory can return ENOMEM. */
     int retval = pthread_mutexattr_init(&mutex_attributes);
     if (0 != retval) {
         switch (retval) {
             case ENOMEM:
-                retval = AMP_NOMEM;
+                /* retval is already equal to AMP_NOMEM */
                 break;
             default:
                 assert(0); /* Programming error */
@@ -103,12 +98,6 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
     assert(0 == retval);
 #endif /* !defined(NDEBUG) */
     
-    /*
-     * Might generate EAGAIN or ENOMEM errors which are handed back to the 
-     * caller.
-     * EINVAL, EPERM, and EBUSY  error codes are implementation problems and are
-     * therefore checked while debugging.
-     */ 
     retval = pthread_mutex_init(&semaphore->mutex,&mutex_attributes);
     assert(0 == retval || EAGAIN == retval || ENOMEM == retval);
     
@@ -123,7 +112,7 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
     if (0 != retval) {
         switch (retval) {
             case ENOMEM:
-                retval = AMP_NOMEM;
+                /* retval is already equal to AMP_NOMEM */
                 break;
             case EAGAIN:
                 retval = AMP_ERROR;
@@ -136,26 +125,19 @@ int amp_raw_semaphore_init(amp_semaphore_t semaphore,
         return retval;
     }
     
-    /*
-     * Create a process private condition variable.
-     * Lack of resources and memory errors are reported back as EAGAIN, ENOMEM. 
-     * Other errors indicate programming errors and trigger assertions in debug 
-     * mode (and are also returned in non-debug mode).
-     */
     retval = pthread_cond_init(&semaphore->a_thread_can_pass, NULL);
     if (0 != retval) {
         switch (retval) {
+            case ENOMEM:
+                /* retval is already equal to AMP_NOMEM */
+                break;
             case EAGAIN:
                 retval = AMP_ERROR;
-                break;
-            case ENOMEM:
-                retval = AMP_NOMEM;
                 break;
             default: /* EBUSY, EINVAL - programming error */
                 assert(0);
                 retval = AMP_ERROR;
         }
-        
         
         int const retv = pthread_mutex_destroy(&semaphore->mutex);
         assert(0 == retv); /* Programming error */
@@ -195,7 +177,6 @@ int amp_semaphore_wait(amp_semaphore_t semaphore)
     }
     {
         while ((0 >= semaphore->count) && (AMP_SUCCESS == retval)) {
-            /* The following asserts trigger on user programming errors. */
             retval = pthread_cond_wait(&semaphore->a_thread_can_pass, 
                                              &semaphore->mutex);
             assert(0 == retval); /* Programming error */

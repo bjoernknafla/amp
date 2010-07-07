@@ -226,10 +226,10 @@ SUITE(amp_platform)
         size_t max_count = 0;
         
         int error_code = amp_platform_get_installed_core_count(platform, &max_count);
-        assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
+        assert(AMP_SUCCESS == error_code || AMP_UNSUPPORTED == error_code);
         
         error_code = amp_platform_get_active_core_count(platform, &active_count);
-        assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
+        assert(AMP_SUCCESS == error_code || AMP_UNSUPPORTED == error_code);
         
         CHECK(active_count <= max_count);
     }
@@ -242,14 +242,100 @@ SUITE(amp_platform)
         size_t max_count = 0;
         
         int error_code = amp_platform_get_installed_hwthread_count(platform, &max_count);
-        assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
+        assert(AMP_SUCCESS == error_code || AMP_UNSUPPORTED == error_code);
         
         error_code = amp_platform_get_active_hwthread_count(platform, &active_count);
-        assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
+        assert(AMP_SUCCESS == error_code || AMP_UNSUPPORTED == error_code);
         
         CHECK(active_count <= max_count);
     }
 
+    
+    
+    TEST_FIXTURE(amp_platform_test_fixture, active_hwthread_count_greater_or_equal_to_active_core_count_if_both_supported)
+    {
+        size_t active_hwthread_count = 0;
+        size_t active_core_count = 0;
+        
+        int retcode_hwthread = AMP_UNSUPPORTED;
+        int retcode_core = AMP_UNSUPPORTED;
+        
+        retcode_hwthread = amp_platform_get_active_hwthread_count(platform,
+                                                                 &active_hwthread_count);
+        CHECK(AMP_SUCCESS == retcode_hwthread || AMP_UNSUPPORTED == retcode_hwthread);
+        
+        retcode_core = amp_platform_get_active_core_count(platform,
+                                                          &active_core_count);
+        CHECK(AMP_SUCCESS == retcode_core || AMP_UNSUPPORTED == retcode_core);
+        
+        if (AMP_SUCCESS == retcode_hwthread) {
+            CHECK( active_hwthread_count >= active_core_count);
+        } else {
+            CHECK( active_hwthread_count <= active_core_count);
+        }
+    }
+    
+    
+    
+    TEST_FIXTURE(amp_platform_test_fixture, installed_hwthread_count_greater_or_equal_to_installed_core_count_if_both_supported)
+    {
+        size_t installed_hwthread_count = 0;
+        size_t installed_core_count = 0;
+        
+        int retcode_hwthread = AMP_UNSUPPORTED;
+        int retcode_core = AMP_UNSUPPORTED;
+        
+        retcode_hwthread = amp_platform_get_installed_hwthread_count(platform,
+                                                                     &installed_hwthread_count);
+        CHECK(AMP_SUCCESS == retcode_hwthread || AMP_UNSUPPORTED == retcode_hwthread);
+        
+        retcode_core = amp_platform_get_installed_core_count(platform,
+                                                             &installed_core_count);
+        CHECK(AMP_SUCCESS == retcode_core || AMP_UNSUPPORTED == retcode_core);
+        
+        if (AMP_SUCCESS == retcode_hwthread) {
+            CHECK( installed_hwthread_count >= installed_core_count);
+        } else {
+            CHECK( installed_hwthread_count <= installed_core_count);
+        }
+    }
+    
+    
+    
+    TEST_FIXTURE(amp_platform_test_fixture, concurrency_level) 
+    {
+        size_t installed_hwthread_count = 0;
+        size_t active_hwthread_count = 0;
+        size_t installed_core_count = 0;
+        size_t active_core_count = 0;
+        
+        int retcode = amp_platform_get_installed_hwthread_count(platform,
+                                                                &installed_hwthread_count);
+        assert(AMP_SUCCESS == retcode || AMP_UNSUPPORTED == retcode);
+        
+        retcode = amp_platform_get_active_hwthread_count(platform,
+                                                         &active_hwthread_count);
+        assert(AMP_SUCCESS == retcode || AMP_UNSUPPORTED == retcode);
+        
+        retcode = amp_platform_get_installed_core_count(platform,
+                                                        &installed_core_count);
+        assert(AMP_SUCCESS == retcode || AMP_UNSUPPORTED == retcode);
+        
+        retcode = amp_platform_get_active_core_count(platform,
+                                                     &active_core_count);
+        assert(AMP_SUCCESS == retcode || AMP_UNSUPPORTED == retcode);
+        
+        size_t const max_count = std::max(std::max(installed_hwthread_count, active_hwthread_count), 
+                                          std::max(installed_core_count, active_core_count));
+        
+        size_t concurrency_level = 0;
+        retcode = amp_platform_get_concurrency_level(platform, 
+                                                     &concurrency_level);
+        assert(AMP_SUCCESS == retcode || AMP_UNSUPPORTED == retcode);
+        
+        CHECK_EQUAL(max_count, concurrency_level);
+    }
+    
     
     
     TEST(memory_allocation_and_deallocation)
@@ -274,13 +360,13 @@ SUITE(amp_platform)
         
         size_t dummy_count = 0;
         error_code = amp_platform_get_installed_core_count(platform, &dummy_count);
-        assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
+        assert(AMP_SUCCESS == error_code || AMP_UNSUPPORTED == error_code);
         error_code = amp_platform_get_active_core_count(platform, &dummy_count);
-        assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
+        assert(AMP_SUCCESS == error_code || AMP_UNSUPPORTED == error_code);
         error_code = amp_platform_get_installed_hwthread_count(platform, &dummy_count);
-        assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
+        assert(AMP_SUCCESS == error_code || AMP_UNSUPPORTED == error_code);
         error_code = amp_platform_get_active_hwthread_count(platform, &dummy_count);
-        assert(AMP_SUCCESS == error_code || ENOSYS == error_code);
+        assert(AMP_SUCCESS == error_code || AMP_UNSUPPORTED == error_code);
         
         error_code = amp_platform_destroy(&platform,
                                           allocator);

@@ -39,10 +39,10 @@
  *
  * TODO: @todo Manage threads when using cocoa (create at least one NSTask and 
  *             create an autoreleasepool inside the threads.
- * TODO: @todo Add docu to say how many threads can run at max and if joined 
+ * TODO: @todo Add docs to say how many threads can run at max and if joined 
  *             thread slots are recycled or are blocked for the runtime of the 
  *             app. Decide if the id is really necessary.
- * TODO: @todo Decide, implement and document if amp threads surpress 
+ * TODO: @todo Decide, implement, and document if amp threads surpress 
  *             signals from reaching them.
  */
 
@@ -67,6 +67,9 @@ extern "C" {
     /**
      * Type of the user function to run on the thread.
      * @param context user data passed into the function.
+     *
+     * TODO: @todo Switch to returning an int to align with the next C 1x 
+     *             standard.
      */
     typedef void (*amp_thread_func_t)(void *context);
     
@@ -85,8 +88,8 @@ extern "C" {
     /**
      * Creates and launches a thread.
      *
-     * thread must be kept alive as long as the thread executes - which means 
-     * until a call to amp_raw_thread_join on the thread returned.
+     * To wait on the thread and also free the memory it uses call 
+     * amp_thread_join_and_destroy.
      *
      * Mental thread model: a thread is like a spaceship. After launch
      * it needs to explicitly land (join) - otherwise it just crashes with 
@@ -96,22 +99,22 @@ extern "C" {
      * thread representation.
      *
      * If fed with already launched native thread behavior is undefined.
-     *
-     * The allocator parameters are placed before the thread context and
-     * function argument to enable use of the same argument order if 
-     * lambda support is added to C (see Apple's Grand Central Dispatch and
-     * Apple's C extension called blocks).
      * 
+     * If the initialization fails the allocator is called to free the
+     * already allocated memory which must not result in an error or otherwise
+     * behavior is undefined.
+     *
      * @return AMP_SUCCESS on successful thread launch.
-     *         EAGAIN if the system is lacking resources for thread creation.
+     *         AMP_ERROR if the system is lacking resources for thread creation.
+     *         AMP_NOMEM if the system is lacking memory to create the thread.
      *         Other error codes might be returned to signal errors while
      *         launching, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL The thread or the thread function is invalid.
+     *         AMP_ERROR if the thread or the thread function is invalid.
      *
-     * @attetion A platform might restrict the number of threads which can be
-     *           created system wide or per process.
+     * @attention A platform might restrict the number of threads which can be
+     *            created system wide or per process.
      *
      * @attention Passing NULL for @a thread or @a func results in 
      *            undefined behavior.
@@ -119,8 +122,6 @@ extern "C" {
      * @attention Don't pass an already existing thread in or you won't be able
      *            to join with it which results in a resource leak and undefined
      *            behavior.
-     *
-     * TODO: @todo Add restrict to the pointers and document it.
      */
     int amp_thread_create_and_launch(amp_thread_t* thread,
                                      amp_allocator_t allocator,
@@ -128,28 +129,25 @@ extern "C" {
                                      amp_thread_func_t func);
     
     /**
-     * Waits until the thread stops and frees its resources. 
+     * Waits until the thread ends and frees its resources. 
      *
      * If thread hasn't been launched behavior is undefined.
      *
      * If joining with a thread was not successful the memory of thread will not
      * be freed.
      *
-     * allocator_context and dealloc_func must be capable of freeing the memory
-     * allocated via the create function otherwise behavior is undefined and
-     * resources might be leaked.
+     * allocator must be capable of freeing the memory allocated by the create 
+     * function otherwise behavior is undefined and resources might be leaked.
      *
      * @return AMP_SUCCESS after succesfully joining with the thread.
      *         Other error codes might be returned to signal errors while
      *         joining, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EDEADLK might be reported if a deadlock condition was detected or
-     *         the calling thread tries to join with itself.
-     *         EINVAL might be reported if the argument doesn't refer to a 
-     *         joinable thread.
-     *         ESRCH might be returned if no  system thread is associated with 
-     *         the argument.
+     *         AMP_ERROR might be reported if a deadlock condition was detected,
+     *         or if the calling thread tries to join with itself, or if the 
+     *         argument doesn't refer to a joinable thread, or if if no  system 
+     *         thread is associated with the argument.
      *
      * @attention Only pass a thread as an argument if its launching was 
      *            successful, otherwise behavior is undefined.
@@ -166,6 +164,9 @@ extern "C" {
      * When a thread is joined its thread id might be reused by a newly started
      * thread, therefore beware of joining with this new thread if you believe
      * that its the old thread.
+     *
+     * @attention Work for the main thread but behavior is undefined if called
+     *            from non-amp-created threads.
      */
     amp_thread_id_t amp_thread_current_id(void);
     
@@ -187,14 +188,15 @@ extern "C" {
      *
      * Suggestion from David R. Butenhof's book 
      * "Programming with POSIX threads", p. 316 : call before locking a mutex to 
-     * minimize the chance of a context switch while the mutex is locked.
+     * minimize the chance of a context switch while a mutex is locked.
      *
      * @return AMP_SUCCESS on success, otherwise
-     *         ENOSYS is returned if not supported.
+     *         AMP_UNSUPPORTED is returned if not supported.
      *
-     * Thanks to Jedd Orion Haberstro i clarified if amp_thread_yield results
-     * in an immediate context switch or if it is merrely a hint (as I 
-     * proclaimed before). Answer: it depends on the platform in use.
+     * Thanks to Jedd Orion Haberstro for a clarified documentation if 
+     * amp_thread_yield results in an immediate context switch or if it is
+     * merrely a hint (as documented before). Answer: it depends on the platform 
+     * in use.
      */
     int amp_thread_yield(void);
     

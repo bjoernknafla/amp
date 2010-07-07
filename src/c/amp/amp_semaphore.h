@@ -31,8 +31,9 @@
  */
 
 /**
- * Shallow wrapper around a semaphore type of the platform which is only
- * used inside one process.
+ * Shallow wrapper around a semaphore type of the platform.
+ * An amp_semaphore can not be shared between two processes, each process only
+ * has access to its own semaphores.
  *
  * @attention Don't pass pointers to an invalid semaphore to any
  *            of the functions. Don't pass non-initialized (or after 
@@ -61,15 +62,21 @@ extern "C" {
 
 #define AMP_SEMAPHORE_UNINITIALIZED NULL
     
+    /**
+     * Abstract semaphore type.
+     */
     typedef struct amp_raw_semaphore_s *amp_semaphore_t;
     
-    
+    /**
+     * Seamphore counter type.
+     */
     typedef intptr_t amp_semaphore_counter_t;
 
     
     /**
      * Creates a semaphore by allocating memory and initializing it with
-     * a counter value of init_count and assigns the result to *semaphore.
+     * a counter value of init_count and assigns the result to where semaphore
+     * points.
      *
      * Internal calls to the platform semaphore API can result in memory 
      * allocations that bypass the argument supplied allocator.
@@ -82,24 +89,24 @@ extern "C" {
      * If an overflow (or underflow) would happen the function called won't
      * succeed and an error code is returned.
      *
+     * If the initialization fails the allocator is called to free the
+     * already allocated memory which must not result in an error or otherwise
+     * behavior is undefined.
+     *
      * @return AMP_SUCCESS on successful initialization, otherwise:
-     *         ENOMEM if memory is insufficient.
-     *         EAGAIN if other system resources are insufficient.
-     *         ENOSPC if the POSIX 1003 1b backend is used and the system lacks
-     *         resources.
-     *         ENOSYS if the POSIX 1003 1b backend is used and the system 
-     *         doesn't support semaphores. Use another backend while compiling,
-     *         for example AMP_USE_WINTHREADS, or AMP_USE_PTHREADS and don't 
-     *         define AMP_USE_POSIX_1003_1b_SEMAPHORES.
+     *         AMP_NOMEM if memory is insufficient.
+     *         AMP_ERROR if other system resources are insufficient, e.g. too
+     *         many semaphores have been created.
+     *         AMP_UNSUPPORTED if the backend in use doesn't support semaphores. 
+     *         Use another backend while building the library.
      *         Other error codes might be returned to signal errors while
      *         initializing, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the semaphore is invalid, the init_count is negative or
-     *         greater than AMP_RAW_SEMAPHORE_COUNT_MAX.
-     *         EPERM if the process lacks privileges to initialize the 
-     *         semaphore.
-     *         EBUSY if the semaphore is already initialized.
+     *         AMP_ERROR if the semaphore is invalid, the init_count is negative 
+     *         or greater than AMP_RAW_SEMAPHORE_COUNT_MAX.
+     *         AMP_ERROR if the process lacks privileges to initialize the 
+     *         semaphore or if the semaphore is in use.
      *
      * @attention semaphore mustn't be NULL.
      *
@@ -108,9 +115,6 @@ extern "C" {
      *
      * @attention init_count mustn't be negative and mustn't be greater than
      *            AMP_RAW_SEMAPHORE_COUNT_MAX.
-     *
-     * TODO: @todo See how many of the backend specific error codes are really
-     *             needed.
      */
     int amp_semaphore_create(amp_semaphore_t* semaphore,
                              amp_allocator_t allocator,
@@ -123,7 +127,7 @@ extern "C" {
      * The platform semaphore API's finalization routines might bypass the
      * user provided allocator.
      *
-     * On destruction the semaphore counter must be equal to the init count
+     * On destruction the semaphore counter should be equal to the init count
      * set on creation, therefore balance signaling and waiting.
      *
      * allocator_context and dealloc_func must be capable of freeing the memory
@@ -131,13 +135,13 @@ extern "C" {
      * resources might be leaked.
      *
      * @return AMP_SUCCESS on successful finalization and destruction.
-     *         ENOSYS if the backend doesn't support semaphores.
+     *         AMP_UNSUPPORTED if the backend doesn't support semaphores.
      *         Error codes might be returned to signal errors while
      *         finalization, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EBUSY if threads block on the semaphore.
-     *         EINVAL if the semaphore isn't valid, e.g. not initialized.
+     *         AMP_BUSY if threads block on the semaphore.
+     *         AMP_ERROR if the semaphore isn't valid, e.g. not initialized.
      *
      * @attention semaphore mustn't be NULL.
      *
@@ -153,24 +157,22 @@ extern "C" {
     
     
     /**
-     * If the semaphore counter is not zero decrements the counter and pass the
-     * semaphore. If the counter is zero the thread blocks until the semaphore
+     * If the semaphore counter is not zero decrements the counter and returns.
+     * If the counter is zero the thread blocks until the semaphore
      * counter becomes greater than zero again and its the threads turn to 
-     * decrease and pass it.
+     * decrease and it and return to work on.
      *
      * @return AMP_SUCCESS after waited successful on the semaphore.
-     *         EINTR if the semaphore was interrupted by a signal when using a
-     *         backend that supports signal interruption.
-     *         ENOSYS if the backend doesn't support semaphores.
-     *         EOVERFLOW if the semaphore counter value exceeds 
+     *         AMP_ERROR if the semaphore was interrupted by a signal when using
+     *         a backend that supports signal interruption.
+     *         AMP_UNSUPPORTED if the backend doesn't support semaphores.
      *         Error codes might be returned to signal errors while
      *         waiting, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EDEADLK if a deadlock condition was detected.
-     *         EINVAL if the semaphore isn't valid, e.g. not initialized.
-     *         EPERM if the process lacks privileges to wait on the 
-     *         semaphore.
+     *         AMP_ERROR if a deadlock condition was detected, or if the 
+     *         semaphore isn't valid, e.g. not initialized, or if the process 
+     *         lacks privileges to wait on the semaphore.
      *
      * @attention sem mustn't be NULL.
      *
@@ -178,9 +180,7 @@ extern "C" {
      *            react to / are or are not usable with signals. Set the threads
      *            signal mask to not let any signals through.
      *
-     * TODO: @todo Decide if os signals should be able to interrupt the waiting.
-     * TODO: @todo Document that a wait can be interrupted by an OS signal and
-     *             will return AMP_ERROR in such a case.
+     * TODO: @todo Decide if OS signals should be able to interrupt the waiting.
      */
     int amp_semaphore_wait(amp_semaphore_t semaphore);
     
@@ -191,19 +191,18 @@ extern "C" {
      * counter and pass the semaphore to execute on.
      *
      * @return AMP_SUCCESS after succesful signaling the semaphore.
-     *         ENOSYS if the backend doesn't support semaphores.
-     *         EOVERFLOW or EAGAIN if the semaphore counter value exceeds 
+     *         AMP_UNSUPPORTED if the backend doesn't support semaphores.
+     *         AMP_ERROR if the semaphore counter value exceeds 
      *           AMP_RAW_SEMAPHORE_COUNT_MAX .
      *         Error codes might be returned to signal errors while
      *         signaling, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the semaphore isn't valid, e.g. not initialized.
-     *         EDEADLK if a deadlock condition is detected.
-     *         EPERM if the process lacks privileges to signal the 
-     *         semaphore.
+     *         AMP_ERROR if the semaphore isn't valid, e.g. not initialized, or
+     *         if a deadlock condition is detected, or if the process lacks 
+     *         privileges to signal the semaphore.
      *
-     * @attention sem mustn't be NULL.
+     * @attention semaphore mustn't be NULL.
      */
     int amp_semaphore_signal(amp_semaphore_t semaphore);
     

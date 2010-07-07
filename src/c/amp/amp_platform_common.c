@@ -47,6 +47,17 @@
 
 
 /**
+ * Internal helper function returning the greater value of a and b.
+ */
+size_t amp_internal_max(size_t a, size_t b);
+size_t amp_internal_max(size_t a, size_t b)
+{
+    return ((a >= b)? a : b);
+}
+
+
+
+/**
  * TODO: @todo Change the signature of amp_raw_platform_init or of the 
  *             platform create functions to make it explicit that an allocator
  *             is stored internally or mainly use a buffer per platform
@@ -137,6 +148,57 @@ int amp_platform_destroy(amp_platform_t* descr,
     }
     
     return retval;
+}
+
+
+
+int amp_platform_get_concurrency_level(amp_platform_t descr,
+                                       size_t* result)
+{
+    int return_value = AMP_UNSUPPORTED;
+
+    int retcode_installed_hwthreads = AMP_UNSUPPORTED;
+    int retcode_installed_cores = AMP_UNSUPPORTED;
+    int retcode_active_hwthreads = AMP_UNSUPPORTED;
+    int retcode_active_cores = AMP_UNSUPPORTED;
+    
+    size_t retval_installed_hwthreads = 0;
+    size_t retval_installed_cores = 0;
+    size_t retval_active_hwthreads = 0;
+    size_t retval_active_cores = 0;
+    
+    assert(NULL != descr);
+    
+    retcode_installed_hwthreads = amp_platform_get_installed_hwthread_count(descr,
+                                                                            &retval_installed_hwthreads);
+    
+    retcode_active_hwthreads = amp_platform_get_active_hwthread_count(descr,
+                                                                      &retval_active_hwthreads);
+    
+    retcode_installed_cores = amp_platform_get_installed_core_count(descr,
+                                                                    &retval_installed_cores);
+    
+    retcode_active_cores = amp_platform_get_active_core_count(descr,
+                                                              &retval_active_cores);
+    
+    
+    
+    if (AMP_SUCCESS == retcode_installed_hwthreads 
+        || AMP_SUCCESS == retcode_active_hwthreads
+        || AMP_SUCCESS == retcode_installed_cores
+        || AMP_SUCCESS == retcode_active_cores) {
+        
+        return_value = AMP_SUCCESS;
+    }
+    
+    if (AMP_SUCCESS == return_value 
+        && NULL != result) {
+        
+        *result = amp_internal_max(amp_internal_max(retval_installed_hwthreads, retval_installed_cores),
+                                   amp_internal_max(retval_active_hwthreads, retval_active_cores));
+    }
+
+    return return_value;
 }
 
 

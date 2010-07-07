@@ -57,10 +57,10 @@ int amp_raw_thread_local_slot_init(amp_thread_local_slot_key_t key)
     int retval = pthread_key_create(&(key->key), NULL);
     switch (retval) {
         case 0:
-            /* Nothing to do */
+            /* retval already equals AMP_SUCCESS */
             break;
         case ENOMEM:
-            retval = AMP_NOMEM;
+            /* retval already equals AMP_NOMEM */
             break;
         case EAGAIN:
             retval = AMP_ERROR;
@@ -94,10 +94,10 @@ int amp_thread_local_slot_set_value(amp_thread_local_slot_key_t key,
     int retval = pthread_setspecific(key->key, value);
     switch (retval) {
         case 0:
-            /* Nothing to do */
+            /* retval already equals AMP_SUCCESS */
             break;
         case ENOMEM:
-            retval = AMP_NOMEM;
+            /* retval already equals AMP_NOMEM */
             break;
         default: /* EINVAL - programming error */
             assert(0);

@@ -48,7 +48,9 @@
 #include "amp_internal_thread.h"
 
 
-
+/** 
+ * Internal opaque thread array data structure 
+ */
 struct amp_thread_array_s {
     struct amp_raw_thread_s *threads;
     size_t thread_count;
@@ -338,10 +340,6 @@ int amp_thread_array_join_all(struct amp_thread_array_s* thread_array,
     int retval = AMP_SUCCESS;
     
     assert(NULL != thread_array);
-    
-    if (NULL == thread_array) {
-        return EINVAL;
-    }
     
     threads = thread_array->threads;
     joinable_count = thread_array->joinable_count;

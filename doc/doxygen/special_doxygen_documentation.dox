@@ -36,7 +36,7 @@
  * specifically documented to be ok.
  *
  * Never pass non-created/uninitialized values to @em amp functions other than
- * to the create and init functions. @amp has no way to detect invalid pointers
+ * to the create and init functions. @em amp has no way to detect invalid pointers
  * and for performance reasons does not even try to detect them.
  *
  * Always check return codes that flag errors that can occur, e.g. not enough
@@ -98,9 +98,9 @@
  *
  * Bjoern Knafla <br>
  * Bjoern Knafla Parallelization + AI + Gamedev Consulting <br>
- * email <a href="mailto:amp@bjoernknafla.com">amp@bjoernknafla.com</a> <br>
+ * email <a href="mailto:amp@bjoernknafla.com">amp\@bjoernknafla.com</a> <br>
  * web <a href="http://www.bjoernknafla.com">www.bjoernknafla.com</a> <br>
- * twitter <a href="http://twitter.com/bjoernknafla">@bjoernknafla</a>
+ * twitter <a href="http://twitter.com/bjoernknafla">\@bjoernknafla</a>
  *
  * @section copyright_and_license Copyright and License
  *

@@ -74,15 +74,20 @@ extern "C" {
      *
      * Each thread has to set the value of its own slot.
      *
+     * If the initialization fails the allocator is called to free the
+     * already allocated memory which must not result in an error or otherwise
+     * behavior is undefined.
+     *
      * @return AMP_SUCCESS on successful slot creation.
-     *         EAGAIN if system resource are insufficient or the max slot count
-     *         has been exceeded.
-     *         ENOMEM if the system has insufficient memory to create the key.
+     *         AMP_ERROR if system resource are insufficient or the max slot 
+     *         count has been exceeded.
+     *         AMP_NOMEM if the system has insufficient memory to create the 
+     *         key.
      *         Other error codes might be returned to signal errors while
      *         creating, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the key can't be stored in the argument.
+     *         AMP_ERROR if the key can't be stored in the argument.
      *
      * @attention key mustn't be NULL.
      */
@@ -102,7 +107,7 @@ extern "C" {
      *         finalization, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the key is invalid.
+     *         AMP_ERROR if the key is invalid.
      *
      * @attention Trying to access a slot via an invalid, e.g. finalized key,
      *            results in undefined behavior.
@@ -115,13 +120,13 @@ extern "C" {
      * Store a value in the slot identified by key.
      *
      * @return AMP_SUCCESS on success.
-     *         ENOMEM if the system has insufficient memory to associate the
+     *         AMP_NOMEM if the system has insufficient memory to associate the
      *         value with the key.
      *         Error codes might be returned to signal errors while
      *         setting the value, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL if the key is invalid.
+     *         AMP_ERROR if the key is invalid.
      *
      * @attention NULL is a special value - for @em amp it means that the slot
      *            is empty.

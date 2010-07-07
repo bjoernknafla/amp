@@ -72,6 +72,10 @@ extern "C" {
      * Behavior is undefined if calling it on an already created and not 
      * destroyed condition variable - resources will be leaked or worser.
      *
+     * If the initialization fails the allocator is called to free the
+     * already allocated memory which must not result in an error or otherwise
+     * behavior is undefined.
+     *
      * @return AMP_SUCCESS if initialized successful, otherwise error codes are
      *         returned.
      *         AMP_ERROR if a system resource other than memory wasn't 

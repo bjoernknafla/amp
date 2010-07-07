@@ -34,10 +34,11 @@
  * @file
  *
  * Shallow wrapper around POSIX 1003 1b semaphores.
+ *
+ * TODO: @todo Test implementation on a platform supporting POSIX 1003 1b 
+ *             semaphores. Until then: take care.
  */
 
-/* #error Implementation is completely untested and hasn't been compiled yet. Take care!
-*/
 #include "amp_semaphore.h"
 
 #include <assert.h>

@@ -55,7 +55,9 @@
 #include "amp_return_code.h"
 
 
-
+/**
+ * Helper function to query the active core count.
+ */
 static size_t amp_internal_platform_get_active_core_count(void);
 static size_t amp_internal_platform_get_active_core_count(void)
 {
@@ -63,6 +65,9 @@ static size_t amp_internal_platform_get_active_core_count(void)
 }
 
 
+/**
+ * Helper function to query the installed core count.
+ */
 static size_t amp_internal_platform_get_core_count(void);
 static size_t amp_internal_platform_get_core_count(void)
 {

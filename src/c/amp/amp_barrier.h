@@ -45,11 +45,11 @@
  * enters the next barrier, too, so all threads can compute on the prepared 
  * data.
  *
- * TODO: @todo Decide if to add a function to query for missing threads to enter
- *             the barrier. Reason against it: result is invalid the moment it
- *             is gathered and if multiple threads spin on the barrier it will
- *             never be taken (other than adding a counter for threads that
- *             would enter if the barrier will be fulfilled then).
+ * TODO: @todo Decide if to add a function to trywait if a barrier would be
+ *             left by waiting on it. Do this via a register/unregister
+ *             trywait functionality so the barrier can internally count if
+ *             the already waiting threads and the one who registerd for
+ *             trywait would be enought to resolve and leave the barrier.
  *
  * TODO: @todo The moment hardware supports it add a barrier type that is only
  *             valid for a group of cores - think OpenCL workgroup barriers.
@@ -73,7 +73,9 @@ extern "C" {
     
 #define AMP_BARRIER_UNINITIALIZED NULL
     
-    
+    /**
+     * Amp barrier type. Treat as opaque.
+     */
     typedef struct amp_raw_barrier_s *amp_barrier_t;
     
     
@@ -88,7 +90,9 @@ extern "C" {
      */
 #define AMP_BARRIER_SERIAL_THREAD ((int)-1)
     
-    
+    /**
+     * Type of the barrier counter.
+     */
     typedef unsigned int amp_barrier_count_t;
     
     
@@ -102,16 +106,19 @@ extern "C" {
      *
      * init_count must be greater than 0.
      *
+     * If the initialization fails the allocator is called to free the
+     * already allocated memory which must not result in an error or otherwise
+     * behavior is undefined.
+     *
      * @return AMP_SUCCESS on successful creation and initialization of barrier.
-     *         ENOMEM is returned if not enough memory is avaible.
-     *         ENOSYS is returned if barriers aren't supported.
+     *         AMP_NOMEM is returned if not enough memory is avaible.
+     *         AMP_UNSUPPORTED is returned if barriers aren't supported.
      *         Other error codes might be returned to signal errors while
      *         creating, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL is returned if arguments are invalid.
-     *         EAGAIN is returned if not enough platform resources exist to
-     *         create the barrier internals.
+     *         AMP_ERROR is returned if arguments are invalid or if not enough 
+     *         platform resources exist to create the barrier internals.
      */
     int amp_barrier_create(amp_barrier_t* barrier,
                            amp_allocator_t allocator,
@@ -137,8 +144,8 @@ extern "C" {
      *         errors, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL is returned if barrier or dealloc_func are NULL.
-     *         EBUSY might be returned if threads are waiting on the barrier.
+     *         AMP_ERROR is returned if barrier or allocator are NULL or if 
+     *         threads are waiting on the barrier.
      *             
      */
     int amp_barrier_destroy(amp_barrier_t* barrier,
@@ -158,7 +165,7 @@ extern "C" {
      *         errors, too. These are programming errors and mustn't 
      *         occur in release code. When @em amp is compiled without NDEBUG
      *         set it might assert that these programming errors don't happen.
-     *         EINVAL might be returned if barrier is not valid.
+     *         AMP_ERROR might be returned if barrier is not valid.
      */
     int amp_barrier_wait(amp_barrier_t barrier);
     

@@ -34,7 +34,7 @@
  * @file
  *
  * Internal helper functions that should never be used directly by amp users
- * because everything contained in this file can change without any notice!
+ * because everything contained in this file can change without any notice.
  *
  * TODO: @todo When introducing export macros and statements make sure to hide
  *             internals.
@@ -84,7 +84,7 @@ extern "C" {
      * native_thread must not be NULL.
      *
      * @return AMP_SUCCESS if native_thread is not NULL, otherwise retuns 
-     *         EINVAL.
+     *         AMP_ERROR.
      */
     int amp_internal_native_thread_set_invalid(struct amp_native_thread_s *native_thread);
     

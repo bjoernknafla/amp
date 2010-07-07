@@ -71,8 +71,8 @@ enum amp_internal_raw_barrier_lifecycle_state {
  * can preceed.
  */
 enum amp_internal_raw_barrier_state {
-    amp_internal_counting_raw_barrier_state = 0, /* Calling wait counts the barrier count down */
-    amp_internal_waking_raw_barrier_state /* Waiting threads are woken up */
+    amp_internal_counting_raw_barrier_state = 0, /**< Calling wait counts the barrier count down */
+    amp_internal_waking_raw_barrier_state /**< Waiting threads are woken up */
 };
 
 

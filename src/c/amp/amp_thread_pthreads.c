@@ -38,6 +38,17 @@
  * amp_internal_thread.h.
  *
  * TODO: @todo Decide if to use Pthreads yield instead of POSIX yield.
+ *
+ * TODO: @todo Remove thread id hack using pthread_t and replace with a proper
+ *             thread id implementation. Also look into the next C standard
+ *             and the next C++ standard to get an idea how to refactor the
+ *             whole id thematic. Idea: use a thread local slot that points
+ *             to the threads amp struct and use that address as the id value.
+ *             The main thread is represented by NULL and accessing the amp
+ *             thread id on non-amp-thread-created threads is undefined 
+ *             behavior. Or let one thread point to the other to organize
+ *             truly unique numbers as ids though this will lead to O(n) 
+ *             complexity.
  */
 
 
@@ -171,9 +182,7 @@ int amp_raw_thread_join(amp_thread_t thread)
 amp_thread_id_t amp_thread_current_id(void)
 {
     /*
-     * TODO: @todo Remove hack! Most Pthreads libraries implement pthread_t as
-     *             a pointer to a thread struct, a pointeer can be converted to
-     *             
+     * TODO: @todo Replace hack!
      */
     return (amp_thread_id_t)pthread_self();
 }

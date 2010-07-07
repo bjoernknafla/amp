@@ -44,7 +44,7 @@
  * cores and hardware threads. On Windows earlier than Windows Vista cores and
  * hardware threads can not be differentiated.
  * 
- * @ATTENTION The implementation of GetLogicalProcessorInformation can only 
+ * @attention The implementation of GetLogicalProcessorInformation can only 
  *            handle a fixed number of cores or hardware threads - on platforms
  *            that support more cores or hardware threads it (and therefore the
  *            amp_platform query functions) only return informations about the 
