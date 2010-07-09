@@ -31,11 +31,12 @@
  */
 
 
-#error Untested
+
 
 #include "amp_internal_platform_win_system_logical_processor_information.h"
 
 #include <assert.h>
+#include <limits.h>
 #include <stddef.h>
 
 #define WIN32_LEAN_AND_MEAN
@@ -66,19 +67,21 @@
 static DWORD amp_internal_win_version_greater_or_equal(AMP_BOOL* result,
                                                        DWORD major_version,
                                                        DWORD minor_version,
-                                                       DWORD major_service_pack,
-                                                       DWORD minor_service_pack);
+                                                       WORD major_service_pack,
+                                                       WORD minor_service_pack);
 static DWORD amp_internal_win_version_greater_or_equal(AMP_BOOL* result,
                                                        DWORD major_version,
                                                        DWORD minor_version,
-                                                       DWORD major_service_pack,
-                                                       DWORD minor_service_pack)
+                                                       WORD major_service_pack,
+                                                       WORD minor_service_pack)
 {
     DWORD error_code = 0;
-    OSVERSIONINFOEX os_version_info_ex = {}; /* ZeroMemory(&os_version_info_ex, sizeof(OSVERSIONINFOEX));  */
+    OSVERSIONINFOEX os_version_info_ex; 
     DWORDLONG os_query_condition_mask = 0;
     int const comparison_operation = VER_GREATER_EQUAL;
     
+    ZeroMemory(&os_version_info_ex, sizeof(OSVERSIONINFOEX));
+
     assert(NULL != result);
     
     os_version_info_ex.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
@@ -113,7 +116,7 @@ static DWORD amp_internal_win_version_greater_or_equal(AMP_BOOL* result,
                                    | VER_SERVICEPACKMINOR,
                                    os_query_condition_mask)) {
         
-        result = AMP_TRUE;
+        *result = AMP_TRUE;
         error_code = 0;
         
     } else {        
@@ -159,22 +162,23 @@ typedef enum AMP_INTERNAL_WIN_TYPE {
 static DWORD amp_internal_win_version_greater_or_equal_and_type_equal(AMP_BOOL* result,
                                                                       DWORD major_version,
                                                                       DWORD minor_version,
-                                                                      DWORD major_service_pack,
-                                                                      DWORD minor_service_pack,
+                                                                      WORD major_service_pack,
+                                                                      WORD minor_service_pack,
                                                                       AMP_INTERNAL_WIN_TYPE product_type);
 static DWORD amp_internal_win_version_greater_or_equal_and_type_equal(AMP_BOOL* result,
                                                                       DWORD major_version,
                                                                       DWORD minor_version,
-                                                                      DWORD major_service_pack,
-                                                                      DWORD minor_service_pack,
+                                                                      WORD major_service_pack,
+                                                                      WORD minor_service_pack,
                                                                       AMP_INTERNAL_WIN_TYPE product_type)
 {
     DWORD error_code = 0;
-    
-    OSVERSIONINFOEX os_version_info_ex = {}; /* ZeroMemory(&os_version_info_ex, sizeof(OSVERSIONINFOEX));  */
+    OSVERSIONINFOEX os_version_info_ex;
     DWORDLONG os_query_condition_mask = 0;
     int const comparison_operation = VER_GREATER_EQUAL;
     
+    ZeroMemory(&os_version_info_ex, sizeof(OSVERSIONINFOEX));
+
     assert(NULL != result);
     
     os_version_info_ex.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
@@ -266,9 +270,9 @@ static int amp_internal_count_set_bits_of_ulong_ptr(ULONG_PTR bitmask)
     DWORD const ulong_size = sizeof(ULONG)* CHAR_BIT;
     ULONG_PTR const rightmost_bit = (ULONG_PTR)1;
     int counter = 0;
+    DWORD i = 1;
     
-    
-    for (DWORD i = 1; i < ulong_size; ++i) {
+    for (i = 1; i < ulong_size; ++i) {
         
         counter += (int)(rightmost_bit & bitmask);
         bitmask = bitmask >> 1;
@@ -303,7 +307,7 @@ static AMP_BOOL amp_internal_platform_can_differentiate_core_and_hwthread_count(
     
     if (NULL != get_logical_processor_information_func) {
         
-        int const error_code = amp_internal_win_version_greater_or_equal(can_differentiate,
+        int const error_code = amp_internal_win_version_greater_or_equal(&can_differentiate,
                                                                          6,
                                                                          0,
                                                                          0,
@@ -315,7 +319,7 @@ static AMP_BOOL amp_internal_platform_can_differentiate_core_and_hwthread_count(
 
 
 
-int amp_internal_platform_win_system_logical_processor_information(struct* amp_internal_platform_win_info_s info
+int amp_internal_platform_win_system_logical_processor_information(struct amp_internal_platform_win_info_s* info,
                                                                    void* allocator_context,
                                                                    amp_alloc_func_t alloc_func,
                                                                    amp_dealloc_func_t dealloc_func)
@@ -330,7 +334,8 @@ int amp_internal_platform_win_system_logical_processor_information(struct* amp_i
     int hwthread_count = 0;
     PSYSTEM_LOGICAL_PROCESSOR_INFORMATION sysinfo;
     int error_code = AMP_UNSUPPORTED;
-    
+    size_t i = 0;
+
     assert(NULL != info);
     assert(NULL != alloc_func);
     assert(NULL != dealloc_func);
@@ -359,7 +364,9 @@ int amp_internal_platform_win_system_logical_processor_information(struct* amp_i
     }
     
     sysinfo_buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)alloc_func(allocator_context,
-                                                                       sysinfo_buffer_size);
+                                                                       sysinfo_buffer_size,
+                                                                       __FILE__,
+                                                                       __LINE__);
     if (NULL == sysinfo_buffer) {
         
         return AMP_NOMEM;
@@ -368,13 +375,14 @@ int amp_internal_platform_win_system_logical_processor_information(struct* amp_i
     query_successful = get_logical_processor_information_func(sysinfo_buffer, 
                                                               &sysinfo_buffer_size);
     if (FALSE == query_successful) {
-        
+        DWORD last_error = 0;
+
         error_code = AMP_UNSUPPORTED;
-        
+
         /* Query to easily access error code when debugging. */
-        DWORD const last_error = GetLastError();
+        last_error = GetLastError();
         
-        error_code = dealloc_func(allocator_context, sysinfo_buffer);
+        error_code = dealloc_func(allocator_context, sysinfo_buffer, __FILE__, __LINE__);
         assert(AMP_SUCCESS == error_code);
         
         return AMP_ERROR;
@@ -382,12 +390,12 @@ int amp_internal_platform_win_system_logical_processor_information(struct* amp_i
     
     sysinfo = sysinfo_buffer;
     
-    for (size_t i = 0; i < sysinfo_buffer_size; i = i + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION)) {
+    for (i = 0; i < sysinfo_buffer_size; i = i + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION)) {
         
         switch (sysinfo->Relationship) {
             case RelationProcessorCore:
                 
-                if (1 == sysinfo->ProcessorCore.Flag) {
+                if (1 == sysinfo->ProcessorCore.Flags) {
                     
                     if (TRUE == amp_internal_platform_can_differentiate_core_and_hwthread_count()) {
                         
@@ -422,11 +430,11 @@ int amp_internal_platform_win_system_logical_processor_information(struct* amp_i
         ++sysinfo;
     }
     
-    error_code = dealloc_func(allocator_context, sysinfo_buffer);
+    error_code = dealloc_func(allocator_context, sysinfo_buffer, __FILE__, __LINE__);
     assert(AMP_SUCCESS == error_code);
     
     
-    info->installed_core_count = (size_t)core_count;;
+    info->installed_core_count = (size_t)core_count;
     info->active_core_count = 0;
     info->installed_hwthread_count = (size_t)hwthread_count;
     info->active_hwthread_count = 0;

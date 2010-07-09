@@ -74,7 +74,7 @@ unsigned int __stdcall native_thread_adapter_func(void *thread)
      */
     /* assert(0 != pthread_equal(thread_context->native_thread_description.thread , pthread_self()));*/
     
-    thread_context->thread_func(thread_context->thread_func_context);
+    thread_context->func(thread_context->func_context);
     
     /**
      * TODO: @todo The moment amp atomic ops are available add a way to 
@@ -107,11 +107,11 @@ int amp_internal_thread_launch_configured(amp_thread_t thread)
     int retval = AMP_UNSUPPORTED;
     
     assert(NULL != thread);
-    assert(NULL != thread->thread_func);
+    assert(NULL != thread->func);
     assert(amp_internal_thread_prelaunch_state == thread->state);
     
     if ((NULL == thread) 
-        || (NULL == thread->thread_func) 
+        || (NULL == thread->func) 
         || (amp_internal_thread_prelaunch_state != thread->state)) {
         
         return EINVAL;
@@ -155,7 +155,7 @@ int amp_internal_thread_launch_configured(amp_thread_t thread)
 /**
  * TODO: @todo Add better error detection and handling.
  */
-int amp_raw_thread_join(amp_raw_thread_t *thread)
+int amp_raw_thread_join(amp_thread_t thread)
 {
     int retval = AMP_UNSUPPORTED;
     

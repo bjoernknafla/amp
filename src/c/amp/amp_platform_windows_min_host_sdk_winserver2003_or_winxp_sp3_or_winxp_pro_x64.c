@@ -31,7 +31,6 @@
  */
 
 
-#error Untested
 
 #include "amp_platform.h"
 
@@ -39,6 +38,7 @@
 #include <stddef.h>
 
 #include "amp_return_code.h"
+#include "amp_raw_platform.h"
 #include "amp_internal_platform_win_system_info.h"
 #include "amp_internal_platform_win_system_logical_processor_information.h"
 

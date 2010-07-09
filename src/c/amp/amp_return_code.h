@@ -58,8 +58,8 @@ extern "C" {
         amp_success_return_code = 0, /**< Operation successful */
         amp_nomem_return_code = ENOMEM, /**< Not enough memory */
         amp_busy_return_code = EBUSY, /**< Resource in use by other thread */
-        amp_timeout_return_code = ETIMEDOUT, /**< Waited on busy resource till timeout */
         amp_unsupported_return_code = ENOSYS, /**< Operation not supported by backend */
+        amp_timeout_return_code, /**< Waited on busy resource till timeout */
         amp_error_return_code = 666 /**< Another error occured */
     };
     
