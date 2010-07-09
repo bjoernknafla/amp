@@ -228,15 +228,15 @@ int amp_raw_thread_join(amp_raw_thread_t *thread)
 
 
 
-amp_thread_id_t amp_thread_current_id(void)
+amp_internal_thread_id_t amp_internal_thread_current_id(void)
 {
-    return (amp_thread_id_t)GetCurrentThreadId();
+    return (amp_internal_thread_id_t)GetCurrentThreadId();
 }
 
 
 
-int amp_thread_id(amp_thread_t thread,
-                  amp_thread_id_t* id)
+int amp_internal_thread_id(amp_thread_t thread,
+                  amp_internal_thread_id_t* id)
 {
     assert(NULL != thread);
     assert(NULL != id);
@@ -246,7 +246,7 @@ int amp_thread_id(amp_thread_t thread,
         return AMP_ERROR;
     }
     
-    *id = (amp_thread_id_t)(thread->native_thread_description.thread_id);
+    *id = (amp_internal_thread_id_t)(thread->native_thread_description.thread_id);
     
     return AMP_SUCCESS;
 }

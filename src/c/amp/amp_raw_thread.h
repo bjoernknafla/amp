@@ -62,10 +62,6 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-    
-    
-#define AMP_INVALID_THREAD_ID ((amp_thread_id_t)0)
     
     
     /**

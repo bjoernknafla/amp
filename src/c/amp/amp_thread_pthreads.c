@@ -102,7 +102,7 @@ int amp_internal_native_thread_set_invalid(struct amp_native_thread_s *native_th
 {
     assert(NULL != native_thread);
     
-    native_thread->thread = AMP_INVALID_THREAD_ID;
+    native_thread->thread = AMP_INTERNAL_INVALID_THREAD_ID;
     
     return AMP_SUCCESS;
 }
@@ -179,28 +179,28 @@ int amp_raw_thread_join(amp_thread_t thread)
 
 
 
-amp_thread_id_t amp_thread_current_id(void)
+amp_internal_thread_id_t amp_internal_thread_current_id(void)
 {
     /*
      * TODO: @todo Replace hack!
      */
-    return (amp_thread_id_t)pthread_self();
+    return (amp_internal_thread_id_t)pthread_self();
 }
 
 
 
-int amp_thread_id(amp_thread_t thread,
-                  amp_thread_id_t *id)
+int amp_internal_thread_id(amp_thread_t thread,
+                  amp_internal_thread_id_t *id)
 {
     assert(NULL != thread);
     assert(NULL != id);
     
     if (amp_internal_thread_joinable_state != thread->state) {
-        *id = AMP_INVALID_THREAD_ID;
+        *id = AMP_INTERNAL_INVALID_THREAD_ID;
         return AMP_ERROR;
     }
     
-    *id = (amp_thread_id_t)(thread->native_thread_description.thread);
+    *id = (amp_internal_thread_id_t)(thread->native_thread_description.thread);
     
     return AMP_SUCCESS;
 }

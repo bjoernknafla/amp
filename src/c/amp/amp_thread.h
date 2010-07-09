@@ -74,10 +74,7 @@ extern "C" {
     typedef void (*amp_thread_func_t)(void *context);
     
     
-    /**
-     * Identifier of a thread.
-     */
-    typedef uintptr_t amp_thread_id_t;
+
     
     /**
      * Opaque thread type.
@@ -158,25 +155,6 @@ extern "C" {
     int amp_thread_join_and_destroy(amp_thread_t* thread,
                                     amp_allocator_t allocator);
 
-    /**
-     * Returns the thread id of the thread calling the function.
-     * The id can be compared to other ids.
-     * When a thread is joined its thread id might be reused by a newly started
-     * thread, therefore beware of joining with this new thread if you believe
-     * that its the old thread.
-     *
-     * @attention Work for the main thread but behavior is undefined if called
-     *            from non-amp-created threads.
-     */
-    amp_thread_id_t amp_thread_current_id(void);
-    
-    /**
-     * Returns the thread id associated with the amp_thread_t argument.
-     * 
-     * @attention Don't pass an non-launched or invalid thread as an argument.
-     */
-    int amp_thread_id(amp_thread_t thread,
-                      amp_thread_id_t* id);
     
     /**
      * Tells the operating system that it might be benificial to context switch

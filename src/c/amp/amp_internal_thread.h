@@ -44,6 +44,10 @@
  *             store and free the memory resources used by the thread. The 
  *             detach function should therefore take an allocator context and
  *             dealloc function argument.
+ *
+ * TODO: @todo amp_internal_thread_id querying is a terrible hack on Pthreads
+ *             right now. Fix it the moment atomics are supported and move
+ *             the whole thread id querying to the public thread header.
  */
 
 
@@ -59,6 +63,16 @@
 extern "C" {
 #endif
 
+    
+    /**
+     * Identifier of a thread.
+     */
+    typedef uintptr_t amp_internal_thread_id_t;
+    
+#define AMP_INTERNAL_INVALID_THREAD_ID ((amp_internal_thread_id_t)0)
+    
+    
+    
     
     /**
      * An initialized amp thread can be in the prelaunch state to configure it,
@@ -164,6 +178,26 @@ extern "C" {
     int amp_internal_thread_launch_configured(amp_thread_t thread);
     
     
+    
+    /**
+     * Returns the thread id of the thread calling the function.
+     * The id can be compared to other ids.
+     * When a thread is joined its thread id might be reused by a newly started
+     * thread, therefore beware of joining with this new thread if you believe
+     * that its the old thread.
+     *
+     * @attention Work for the main thread but behavior is undefined if called
+     *            from non-amp-created threads.
+     */
+    amp_internal_thread_id_t amp_internal_thread_current_id(void);
+    
+    /**
+     * Returns the thread id associated with the amp_thread_t argument.
+     * 
+     * @attention Don't pass an non-launched or invalid thread as an argument.
+     */
+    int amp_internal_thread_id(amp_thread_t thread,
+                      amp_internal_thread_id_t* id);
     
     
     
