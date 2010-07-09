@@ -180,7 +180,7 @@
  *
  * @section release_notes Release Notes
  * 
- * @subsection version_0_0_2 Version 0.0.2 (July 06, 2010)
+ * @subsection version_0_1_0 Version 0.1.0 (July 06, 2010)
  *
  *  - Separated raw and non-raw headers. Only raw headers include platform
  *    specific headers. Use non-raw headers for minimal compile-time 
