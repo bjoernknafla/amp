@@ -92,8 +92,8 @@ int amp_internal_native_thread_set_invalid(struct amp_native_thread_s *native_th
 {
     assert(NULL != native_thread);
     
-    native_thread->thread_handle = AMP_INVALID_THREAD_ID;
-    native_thread->thread_id = AMP_INVALID_THREAD_ID;
+    native_thread->thread_handle = AMP_INTERNAL_INVALID_THREAD_ID;
+    native_thread->thread_id = AMP_INTERNAL_INVALID_THREAD_ID;
     
     return AMP_SUCCESS;
 }
