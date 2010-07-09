@@ -196,6 +196,8 @@
  *  - Xcode test and platform check targets build and run different combinations
  *    of platform backends for easier testing and error detection than running
  *    all tests by hand.
+ *  - Made thread id querying internal because its Pthreads implementation is
+ *    currently a hack.
  * 
  * @subsection version_0_0_1 Version 0.0.1 (September 10, 2009)
  * - Initial release.

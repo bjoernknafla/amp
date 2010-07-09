@@ -187,7 +187,7 @@ copyright owners.
 
 ### Release Notes ###
 
-#### Version 0.0.2 (July 06, 2010) ####
+#### Version 0.1.0 (July 06, 2010) ####
 
  *  Separated raw and non-raw headers. Only raw headers include platform
     specific headers. Use non-raw headers for minimal compile-time dependencies.
@@ -202,6 +202,8 @@ copyright owners.
  *  Xcode test and platform check targets build and run different combinations
     of platform backends for easier testing and error detection than running
     all tests by hand.
+ *  Made thread id querying internal because its Pthreads implementation is
+    currently a hack.
     
 
 #### Version 0.0.1 (September 10, 2009) ####
