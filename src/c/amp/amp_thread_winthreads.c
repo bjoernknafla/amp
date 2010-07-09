@@ -242,7 +242,7 @@ int amp_internal_thread_id(amp_thread_t thread,
     assert(NULL != id);
     
     if (amp_internal_thread_joinable_state != thread->state) {
-        *id = AMP_INVALID_THREAD_ID;
+        *id = AMP_INTERNAL_INVALID_THREAD_ID;
         return AMP_ERROR;
     }
     
