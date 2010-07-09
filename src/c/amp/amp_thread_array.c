@@ -70,7 +70,8 @@ int amp_thread_array_create(amp_thread_array_t* thread_array,
     
     struct amp_thread_array_s* group = NULL;
     struct amp_raw_thread_s* threads = NULL;
-    
+    size_t i = 0;
+
     assert(NULL != thread_array);
     assert(0 != thread_count);
     assert(NULL != allocator);
@@ -101,7 +102,7 @@ int amp_thread_array_create(amp_thread_array_t* thread_array,
         return AMP_NOMEM;
     }
     
-    for (size_t i = 0; i < thread_count; ++i) {
+    for (i = 0; i < thread_count; ++i) {
         int const rv = amp_internal_thread_init_for_configuration(&threads[i]);
         assert(AMP_SUCCESS == rv);
         (void)rv;
@@ -159,7 +160,8 @@ int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
     size_t thread_count = 0;
     struct amp_raw_thread_s *threads = NULL;
     size_t range_end = 0;
-    
+    size_t i = 0;
+
     assert(NULL != thread_array);
     assert(range_begin < thread_array->thread_count);
     assert(range_length > 0);
@@ -183,7 +185,7 @@ int amp_thread_array_configure_contexts(amp_thread_array_t thread_array,
     threads = thread_array->threads;
     range_end = range_begin - 1 + range_length;
     
-    for (size_t i = range_begin; i <= range_end; ++i) {
+    for (i = range_begin; i <= range_end; ++i) {
         int const errc = amp_internal_thread_configure_context(&threads[i],
                                                                shared_context);
         if (AMP_SUCCESS != errc) {
@@ -204,7 +206,8 @@ int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
     size_t thread_count = 0;
     struct amp_raw_thread_s *threads = NULL;
     size_t range_end = 0;
-    
+    size_t i = 0;
+
     assert(NULL != thread_array);
     assert(range_begin < thread_array->thread_count);
     assert(range_length > 0);
@@ -229,7 +232,7 @@ int amp_thread_array_configure_functions(amp_thread_array_t thread_array,
     
     threads = thread_array->threads;
     range_end = range_begin - 1 + range_length;
-    for (size_t i = range_begin; i <= range_end; ++i) {
+    for (i = range_begin; i <= range_end; ++i) {
         int const errc = amp_internal_thread_configure_function(&threads[i],
                                                                 shared_function);
         if (AMP_SUCCESS != errc) {
@@ -251,7 +254,8 @@ int amp_thread_array_configure(amp_thread_array_t thread_array,
     size_t thread_count = 0;
     struct amp_raw_thread_s* threads = NULL;
     size_t range_end = 0;
-    
+    size_t i = 0;
+
     assert(NULL != thread_array);
     assert(range_begin < thread_array->thread_count);
     assert(range_length > 0);
@@ -276,7 +280,7 @@ int amp_thread_array_configure(amp_thread_array_t thread_array,
     
     threads = thread_array->threads;
     range_end = range_begin - 1 + range_length;
-    for (size_t i = range_begin; i <= range_end; ++i) {
+    for (i = range_begin; i <= range_end; ++i) {
         int errc0 = AMP_ERROR;
         int errc1 = AMP_ERROR;
         

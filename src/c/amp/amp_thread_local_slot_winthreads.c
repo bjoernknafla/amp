@@ -119,7 +119,7 @@ int amp_thread_local_slot_set_value(amp_thread_local_slot_key_t key,
 
 
 
-void* amp_raw_thread_local_slot_value(amp_thread_local_slot_key_t key)
+void* amp_thread_local_slot_value(amp_thread_local_slot_key_t key)
 {
     void *retval = NULL;
     DWORD last_error = 0;

@@ -124,7 +124,7 @@ int amp_raw_condition_variable_init(amp_condition_variable_t cond)
     if (NULL == cond->finished_waking_waiting_threads_event) {
         BOOL close_retval = FALSE;
         DWORD const create_event_error = GetLastError();
-        assert(ERROR_ALREADY_EXISTS != last_error);
+        assert(ERROR_ALREADY_EXISTS != create_event_error);
         
         DeleteCriticalSection(&cond->wake_waiting_threads_critsec);
         DeleteCriticalSection(&cond->access_waiting_threads_count_critsec);

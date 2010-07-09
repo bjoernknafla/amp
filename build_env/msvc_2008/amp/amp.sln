@@ -1,7 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "amp_unit_tests", "amp_unit_tests\amp_unit_tests.vcproj", "{B6E69837-8FA8-472A-9D8C-7E3C38AAB647}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libamp", "amp_lib\amp_lib.vcproj", "{298BA7A9-8CBF-4BE3-B5DE-B4460BD475F0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "amp_platform_check", "amp_platform_check\amp_platform_check.vcproj", "{CF1217FE-E825-47FF-A2E5-E4A19F1E0B6B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{298BA7A9-8CBF-4BE3-B5DE-B4460BD475F0} = {298BA7A9-8CBF-4BE3-B5DE-B4460BD475F0}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "amp_lib_test", "amp_lib_test\amp_lib_test.vcproj", "{1EB5C2CB-D424-4BB3-B2AC-CC1E04C07A12}"
+	ProjectSection(ProjectDependencies) = postProject
+		{298BA7A9-8CBF-4BE3-B5DE-B4460BD475F0} = {298BA7A9-8CBF-4BE3-B5DE-B4460BD475F0}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +19,18 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B6E69837-8FA8-472A-9D8C-7E3C38AAB647}.Debug|Win32.ActiveCfg = Debug|Win32
-		{B6E69837-8FA8-472A-9D8C-7E3C38AAB647}.Debug|Win32.Build.0 = Debug|Win32
-		{B6E69837-8FA8-472A-9D8C-7E3C38AAB647}.Release|Win32.ActiveCfg = Release|Win32
-		{B6E69837-8FA8-472A-9D8C-7E3C38AAB647}.Release|Win32.Build.0 = Release|Win32
+		{298BA7A9-8CBF-4BE3-B5DE-B4460BD475F0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{298BA7A9-8CBF-4BE3-B5DE-B4460BD475F0}.Debug|Win32.Build.0 = Debug|Win32
+		{298BA7A9-8CBF-4BE3-B5DE-B4460BD475F0}.Release|Win32.ActiveCfg = Release|Win32
+		{298BA7A9-8CBF-4BE3-B5DE-B4460BD475F0}.Release|Win32.Build.0 = Release|Win32
+		{CF1217FE-E825-47FF-A2E5-E4A19F1E0B6B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CF1217FE-E825-47FF-A2E5-E4A19F1E0B6B}.Debug|Win32.Build.0 = Debug|Win32
+		{CF1217FE-E825-47FF-A2E5-E4A19F1E0B6B}.Release|Win32.ActiveCfg = Release|Win32
+		{CF1217FE-E825-47FF-A2E5-E4A19F1E0B6B}.Release|Win32.Build.0 = Release|Win32
+		{1EB5C2CB-D424-4BB3-B2AC-CC1E04C07A12}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1EB5C2CB-D424-4BB3-B2AC-CC1E04C07A12}.Debug|Win32.Build.0 = Debug|Win32
+		{1EB5C2CB-D424-4BB3-B2AC-CC1E04C07A12}.Release|Win32.ActiveCfg = Release|Win32
+		{1EB5C2CB-D424-4BB3-B2AC-CC1E04C07A12}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
