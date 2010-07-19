@@ -46,6 +46,8 @@
 
 void* amp_default_allocator_context = NULL;
 
+
+
 static struct amp_raw_allocator_s amp_internal_allocator_default = {
     amp_default_alloc,
     amp_default_calloc,
@@ -56,6 +58,8 @@ static struct amp_raw_allocator_s amp_internal_allocator_default = {
 
 
 amp_allocator_t amp_default_allocator = &amp_internal_allocator_default;
+
+
 
 void* amp_default_alloc(void *dummy_allocator_context, 
                         size_t bytes_to_allocate,
