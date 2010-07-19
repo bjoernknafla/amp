@@ -85,14 +85,19 @@ grow from version to version.
 
 ### Acknowledgements ###
 
-Many thanks to Anthony Williams and Dimitriy V'jukov (names in order of
+Many thanks go to the following guys (in order of "appearance", twitter
+name in brackets) - you are awesome:
+
+ -  Anthony Williams ([@a_williams](http://twitter.com/a_williams)) and Dimitriy V'jukov ([@dvyukov](http://twitter.com/dvyukov))(names in order of
 discussion contacts) for their interest and time to discuss the WindowsXP
 condition variable implementation, and their invaluable and awesome feedback
 that opened my eyes and made this code more correct and faster. All remaining
 errors in the code are mine.
 
-Thanks to Jedd Orion Haberstro for feedback to the documentation of
+ -  Jedd Orion Haberstro ([@jhaberstro](http://twitter.com/jhaberstro)) for indepth feedback to the documentation of
 `amp_thread_yield` which resulted in a clearer explanation of the function.
+
+ -  Rick Molloy ([@rickmolloy](http://twitter.com/rickmolloy)) for insightful discussions and his help to port and test *amp* on Windows 7.
 
 
 ### Author(s) and Contact ###
@@ -125,46 +130,8 @@ Joint ownership of the copyright belongs to
 
 ### Building ###
 
-To build *amp* you have got the following options:
-
- *  Define `AMP_USE_PTHREADS` and only compile the generic C source files
-    and the C files ending in `_pthreads.c` to build for Pthreads.
-    
- *  Define `AMP_USE_PTHREADS` and `AMP_USE_POSIX_1003_1B_SEMAPHORES` and only
-    compile generic C source files, C files ending in `_pthreads.c`, but instead
-    of compiling `amp_raw_semaphore_pthreads.c` use 
-    `amp_raw_semaphore_posix_1003_b1.c` to build for Pthreads but use the
-    POSIX 1003 1b semaphores.
-    
- *  Define `AMP_USE_PTHREADS` and `AMP_USE_LIBDISPATCH_SEMAPHORES` and only
-    compile generic C source files, C files ending in `_pthreads.c`, but instead
-    of compiling `amp_raw_semaphore_pthreads.c` use 
-    `amp_raw_semaphore_libdispatch.c` to build for Pthreads but use Apple's
-    libdispatch semaphores.    
-    
- *  Define `AMP_USE_WINTHREADS` and only compile generic C files and C source
-    files ending in `_winthreads.c` to build for Windows threads.
- 
- *  Define `AMP_USE_WINTHREADS` and `AMP_USE_WINVISTA_CONDITION_VARIABLES` and 
-    only compile generic C source files, C files ending in `_winthreads.c`, but 
-    instead of compiling `amp_raw_condition_variable_winthreads.c` use 
-    `amp_raw_condition_variable_winvista.c` to build for Windows threads but use 
-    the Windows Vista backend for its build in condition variable support.
-    Also select the right platform and internal platorm source files for your
-    target version of Windows.
-    
-Additionally you need to define `AMP_USE_GENERIC_BROADCAST_BARRIERS` to use
-barriers with the generic *amp* backends which broadcasts threads waiting on the
-barrier to go on or define `AMP_USE_GENERIC_SIGNAL_BARRIERS` to use a chain of 
-signals to wake up threads. The broadcast method should be fairer while the 
-signal method should be faster.
-
-*amp* tests rely on the [UnitTest++](http://unittest-cpp.sourceforge.net/)
-library by Noel Llopis and Charles Nicholson. Download and install it and make 
-it accessible via your IDE or build-system of choice to build and run the tests.
-
-All parts of *amp* that are needed to build on Windows are C89 compliant while
-the non-Windows sources are programmed according to the C99 C standard.
+See the `BUILDING.txt` file in the root directory of the project for build
+instructions.
 
 
 ### References ###

@@ -82,14 +82,28 @@
  *
  * @section acknowledgements Acknowledgements
  *
- * Many thanks to Anthony Williams and Dimitriy V'jukov (names in order of 
- * discussion contacts) for their interest and time to discuss the WindowsXP
- * condition variable implementation, and their invaluable and awesome feedback
- * that opened my eyes and made this code more correct and faster. All remaining
- * errors in the code are mine.
+ * Many thanks go to the following guys (in order of "appearance", twitter
+ * name in brackets) - you are awesome:
  *
- * Thanks to Jedd Orion Haberstro for feedback to the documentation of
- * @c amp_thread_yield which resulted in a clearer explanation of the function.
+ * <ul>
+ * <li>Anthony Williams (<a href="http://twitter.com/a_williams">@a_williams</a>)
+ *     and Dimitriy V'jukov (<a href="http://twitter.com/dvyukov">@dvyukov</a>)
+ *     (names in order of discussion contacts) for their interest and time to 
+ *     discuss the WindowsXP condition variable implementation, and their 
+ *     invaluable and awesome feedback that opened my eyes and made this code 
+ *     more correct and faster. All remaining errors in the code are mine.
+ * </li>
+ *
+ * <li>Jedd Orion Haberstro 
+ *     (<a href="http://twitter.com/jhaberstro">@jhaberstro</a>) for indepth 
+ *     feedback to the documentation of @c amp_thread_yield which resulted in a 
+ *     clearer explanation of the function.</li>
+ *
+ * <li>Rick Molloy (<a href="http://twitter.com/rickmolloy">@rickmolloy</a>) for
+ *     insightful discussions and his help to port and test @em amp on 
+ *     Windows 7.</li>
+ * </ul>
+ *
  *
  * @section authors_and_contact Author(s) and Contact
  *
@@ -117,47 +131,8 @@
  *
  * @section building Building
  *
- * To build @em amp you have got the following options:
- *
- * -  Define @c AMP_USE_PTHREADS and only compile the generic C source files
- *    and the C files ending in @c _pthreads.c to build for Pthreads.
- *
- * -  Define @c AMP_USE_PTHREADS and @c AMP_USE_POSIX_1003_1B_SEMAPHORES and only
- *    compile generic C source files, C files ending in @c _pthreads.c, but instead
- *    of compiling @c amp_raw_semaphore_pthreads.c use 
- *    @c amp_raw_semaphore_posix_1003_b1.c to build for Pthreads but use the
- *    POSIX 1003 1b semaphores.
- *
- * -  Define @c AMP_USE_PTHREADS and @c AMP_USE_LIBDISPATCH_SEMAPHORES and only
- *    compile generic C source files, C files ending in @c _pthreads.c, but instead
- *    of compiling @c amp_raw_semaphore_pthreads.c use 
- *    @c amp_raw_semaphore_libdispatch.c to build for Pthreads but use Apple's
- *    libdispatch semaphores.
- *   
- * -  Define @c AMP_USE_WINTHREADS and only compile generic C files and C source
- *    files ending in @c _winthreads.c to build for Windows threads.
- *
- * -  Define @c AMP_USE_WINTHREADS and @c AMP_USE_WINVISTA_CONDITION_VARIABLES and only
- *    compile generic C source files, C files ending in @c _winthreads.c, but instead
- *    of compiling @c amp_raw_condition_variable_winthreads.c use 
- *    @c amp_raw_condition_variable_winvista.c to build for Windows threads but use the
- *    Windows Vista backend for its build in condition variable support. Also 
- *    select the right platform and internal platorm source files for your
- *    target version of Windows.
- *
- *
- * Additionally you need to define @c AMP_USE_GENERIC_BROADCAST_BARRIERS to use
- * barriers with the generic @em amp backends which broadcasts threads waiting on the
- * barrier to go on or define @c AMP_USE_GENERIC_SIGNAL_BARRIERS to use a chain of 
- * signals to wake up threads. The broadcast method should be fairer while the 
- * signal method should be faster.
- *
- * @em amp tests rely on the <a href="http://unittest-cpp.sourceforge.net/">UnitTest++</a>
- * library by Noel Llopis and Charles Nicholson. Download and install it and make 
- * it accessible via your IDE or build-system of choice to build and run the tests.
- *
- * All parts of *amp* that are needed to build on Windows are C89 compliant 
- * while the non-Windows sources are programmed according to the C99 C standard.
+ * See the @c BUILDING.txt file in the root directory of the project for build
+ * instructions.
  *
  *
  * @section references References

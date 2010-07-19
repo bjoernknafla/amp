@@ -196,11 +196,12 @@
 		3295734611E0F61000E6AE25 /* amp_semaphore_libdispatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 32B9B63E10769507009B33E6 /* amp_semaphore_libdispatch.c */; };
 		3296B3CF1132F8A600B6664B /* amp_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = 3296B3CE1132F8A600B6664B /* amp_platform.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3298F05511594F0700A976F2 /* amp_platform_sysctl.c in Sources */ = {isa = PBXBuildFile; fileRef = 3296B3D11132FAAF00B6664B /* amp_platform_sysctl.c */; };
-		32A4429D11CE70E800B79D38 /* amp_return_code.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A4429C11CE70E800B79D38 /* amp_return_code.h */; };
-		32A4429E11CE70E800B79D38 /* amp_return_code.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A4429C11CE70E800B79D38 /* amp_return_code.h */; };
+		32A4429D11CE70E800B79D38 /* amp_return_code.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A4429C11CE70E800B79D38 /* amp_return_code.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		32A4429E11CE70E800B79D38 /* amp_return_code.h in Headers */ = {isa = PBXBuildFile; fileRef = 32A4429C11CE70E800B79D38 /* amp_return_code.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		32A4A1831135495700D29CD2 /* amp_platform_check_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32A4A15F1135451300D29CD2 /* amp_platform_check_main.cpp */; };
 		32B23EA111C8EF9F002FE1BA /* amp_raw_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B23EA011C8EF9F002FE1BA /* amp_raw_platform.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		32B23EA211C8EF9F002FE1BA /* amp_raw_platform.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B23EA011C8EF9F002FE1BA /* amp_raw_platform.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		32B5ADC311F4534C00D68EC5 /* COPYRIGHT.txt in Resources */ = {isa = PBXBuildFile; fileRef = 3259288910586FE000D5379D /* COPYRIGHT.txt */; };
 		32C186D5109F341C001852EE /* amp_thread_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A21058711E00D5379D /* amp_thread_pthreads.c */; };
 		32C186D6109F341E001852EE /* amp_thread_local_slot_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 325928A11058711E00D5379D /* amp_thread_local_slot_pthreads.c */; };
 		32C186D8109F342B001852EE /* amp_mutex_pthreads.c in Sources */ = {isa = PBXBuildFile; fileRef = 3259289B1058711E00D5379D /* amp_mutex_pthreads.c */; };
@@ -600,6 +601,7 @@
 		32A4A1B911354B0B00D29CD2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		32A4A26B1135DD5A00D29CD2 /* amp_platform_windows_min_host_sdk_winserver2003_or_winxp_sp3_or_winxp_pro_x64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_platform_windows_min_host_sdk_winserver2003_or_winxp_sp3_or_winxp_pro_x64.c; sourceTree = "<group>"; };
 		32B23EA011C8EF9F002FE1BA /* amp_raw_platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = amp_raw_platform.h; sourceTree = "<group>"; };
+		32B5ADAB11F452B700D68EC5 /* BUILDING.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = BUILDING.txt; path = ../../../BUILDING.txt; sourceTree = SOURCE_ROOT; };
 		32B9B63E10769507009B33E6 /* amp_semaphore_libdispatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_semaphore_libdispatch.c; sourceTree = "<group>"; };
 		32B9B65410769ACB009B33E6 /* amp_condition_variable_winvista.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = amp_condition_variable_winvista.c; sourceTree = "<group>"; };
 		32C186AD109F30DE001852EE /* amp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "amp-Info.plist"; sourceTree = "<group>"; };
@@ -988,6 +990,7 @@
 			isa = PBXGroup;
 			children = (
 				3259288B1058700600D5379D /* doc */,
+				32B5ADAB11F452B700D68EC5 /* BUILDING.txt */,
 				3259288910586FE000D5379D /* COPYRIGHT.txt */,
 				3259288A10586FE000D5379D /* README.markdown */,
 				C6A0FF2C0290799A04C91782 /* amp.1 */,
@@ -1330,6 +1333,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				32B5ADC311F4534C00D68EC5 /* COPYRIGHT.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
